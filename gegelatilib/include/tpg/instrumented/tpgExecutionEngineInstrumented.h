@@ -101,7 +101,7 @@ namespace TPG {
          * TPGExecutionEngine, this specialization increments the number of
          * visits of the reached TPGAction.
          */
-        std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>>
+        std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>>
         executeFromRoot(const TPGVertex& root,
                         const std::vector<uint64_t>& initActions,
                         uint64_t nbEdgesActivated) override;

@@ -181,7 +181,7 @@ TEST(LearningEnvironmentTest, doAction)
     // Doing the same thing with doActions should lead to same result
     le.reset();
 
-    ASSERT_NO_THROW(le.doActions(std::vector<uint64_t>(1, 1)))
+    ASSERT_NO_THROW(le.doActions(std::vector<double>(1, 1)))
         << "Remove 2 stick after game init should not fail with doActions.";
     nbSticks = (le.getDataSources().at(1).get().getDataAt(typeid(int), 0))
                    .getSharedPointer<const int>();
@@ -198,16 +198,16 @@ TEST(LearningEnvironmentTest, doAction)
         << "Illegal action not detected as such.";
 
     FakeMarlLearningEnvironment marlLe(std::vector<uint64_t>(2, 2));
-    ASSERT_NO_THROW(marlLe.doActions(std::vector<uint64_t>{1, 1}))
+    ASSERT_NO_THROW(marlLe.doActions(std::vector<double>{1, 1}))
         << "Going right after game init should not fail.";
 
     // Check the illegal action
     ASSERT_THROW(marlLe.doAction(3), std::runtime_error)
         << "Illegal action not detected as such.";
-    ASSERT_THROW(marlLe.doActions(std::vector<uint64_t>(3, 1)),
+    ASSERT_THROW(marlLe.doActions(std::vector<double>(3, 1)),
                  std::runtime_error)
         << "Illegal action not detected as such.";
-    ASSERT_THROW(marlLe.doActions(std::vector<uint64_t>(2, 5)),
+    ASSERT_THROW(marlLe.doActions(std::vector<double>(2, 5)),
                  std::runtime_error)
         << "Illegal action not detected as such.";
 }

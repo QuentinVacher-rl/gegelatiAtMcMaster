@@ -41,15 +41,15 @@ bool GridWorld::positionAvailable(uint64_t pos_x, uint64_t pos_y)
     return true;
 }
 
-void GridWorld::doActions(std::vector<uint64_t> vectActionID)
+void GridWorld::doActions(std::vector<double> vectActionID)
 {
 
     // vectActionID[0] is Left / None / Right for (0, 1, 2)
     // vectActionID[1] is Up / None / Down for (0, 1, 2)
-    if (positionAvailable(agentCoord[0] - (vectActionID[0] - (uint64_t)1),
-                          agentCoord[1] - (vectActionID[1] - (uint64_t)1))) {
-        agentCoord[0] -= (vectActionID[0] - (uint64_t)1);
-        agentCoord[1] -= (vectActionID[1] - (uint64_t)1);
+    if (positionAvailable(agentCoord[0] - ((uint64_t)vectActionID[0] - (uint64_t)1),
+                          agentCoord[1] - ((uint64_t)vectActionID[1] - (uint64_t)1))) {
+        agentCoord[0] -= ((uint64_t)vectActionID[0] - (uint64_t)1);
+        agentCoord[1] -= ((uint64_t)vectActionID[1] - (uint64_t)1);
     }
 
     // Reward is always -1 except when an output is reached

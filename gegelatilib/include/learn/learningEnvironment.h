@@ -228,7 +228,7 @@ namespace Learn {
          * \throw std::runtime_error if the actionsID[i] exceeds vectActions[i]
          * - 1.
          */
-        virtual void doActions(std::vector<std::uint64_t> vectActionID);
+        virtual void doActions(std::vector<double> vectActionID);
 
         /**
          * \brief Reset the LearningEnvironment.

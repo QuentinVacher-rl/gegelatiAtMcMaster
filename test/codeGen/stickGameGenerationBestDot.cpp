@@ -199,7 +199,7 @@ TEST_F(StickGameGenerationBestDotTest, BestTPG)
                       .second[0]);
         ASSERT_EQ(inferenceCodeGen, inferenceGegelati)
             << "Error inference of Stick Game has changed";
-        le->doActions(std::vector<uint64_t>(1, inferenceGegelati));
+        le->doActions(std::vector<double>(1, inferenceGegelati));
     }
 }
 #endif // CODE_GENERATION

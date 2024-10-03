@@ -78,7 +78,7 @@ double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
     return result;
 }
 
-void TPG::TPGExecutionEngine::executeAction(
+bool TPG::TPGExecutionEngine::executeAction(
     const TPGVertex* currentAction, std::vector<std::int64_t>* actionsTaken)
 {
 
@@ -87,7 +87,10 @@ void TPG::TPGExecutionEngine::executeAction(
     // time.
     if ((*actionsTaken)[action->getActionClass()] == -1) {
         (*actionsTaken)[action->getActionClass()] = action->getActionID();
+
+        return true;
     }
+    return false;
 }
 
 std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
@@ -145,7 +148,9 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
         // If edge destination is an action
         if (dynamic_cast<const TPGAction*>(destination)) {
-            executeAction(destination, actionsTaken);
+            if(executeAction(destination, actionsTaken)){
+                lastProgramForAction = resultsBid[i].first->getProgramSharedPointer();
+            }
 
             // Add the action the the visited vertices and the edge to the
             // traversed edges.
@@ -175,7 +180,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
     return traversedEdges;
 }
 
-std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>> TPG::
+std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     TPGExecutionEngine::executeFromRoot(
         const TPGVertex& root, const std::vector<uint64_t>& initActions,
         uint64_t nbEdgesActivated)
@@ -198,17 +203,32 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>> TPG::
         rawActionsTaken[action->getActionClass()] = action->getActionID();
     }
 
-    // Browse the raw list of actions and replace the "-1" action by the initial
+    std::vector<double> actionsTaken;
+
+    // If discrete action are used, browse the raw list of actions and replace the "-1" action by the initial
     // value.
-    std::vector<uint64_t> actionsTaken;
-    for (uint64_t i = 0; i < rawActionsTaken.size(); i++) {
-        if (rawActionsTaken[i] == -1) {
-            actionsTaken.push_back((uint64_t)initActions[i]);
+    if(this->useDiscreteAction){
+        for (uint64_t i = 0; i < rawActionsTaken.size(); i++) {
+            if (rawActionsTaken[i] == -1) {
+                actionsTaken.push_back((double)initActions[i]);
+            }
+            else {
+                actionsTaken.push_back((double)rawActionsTaken[i]);
+            }
         }
-        else {
-            actionsTaken.push_back(rawActionsTaken[i]);
+        
+    // Else if continuous action are used, get the register of the action used and the X first values, with X equal to nbContinuousAction.
+    // Note that the number of edge activable must be fixed to 1 for this mode. (for now)
+    } else{
+        if(nbEdgesActivated != 1){
+            throw std::runtime_error("The number of edges activable can not be different to 1 in this mode");
         }
+
+        // Get the action taken
+        std::vector<double> actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
     }
+
+    lastProgramForAction.reset();
 
     auto results = std::make_pair(visitedVertices, actionsTaken);
 

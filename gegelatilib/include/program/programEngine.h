@@ -307,6 +307,16 @@ namespace Program {
         virtual const std::unordered_map<
             const Program*, std::shared_ptr<Data::PrimitiveTypeArray<double>>>&
         getMapMemoryRegisters();
+
+        /**
+         * \brief Return the current registers value of the program indicated.
+         * 
+         * \param prog The program from which the register values are got
+         * \param nbRegisters The number of register values that are taken (starting from the register 0)
+         * 
+         * \return a vector containing the different value of the registers.
+         */
+        virtual std::vector<double> getRegisterValues(std::shared_ptr<Program> prog, uint64_t nbRegisters);
     };
 
     template <class T>

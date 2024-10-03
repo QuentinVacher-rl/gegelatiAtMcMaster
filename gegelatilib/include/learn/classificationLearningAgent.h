@@ -179,7 +179,7 @@ namespace Learn {
                    nbActions < this->params.maxNbActionsPerEval) {
 
                 // Get the actions
-                std::vector<uint64_t> actionsID =
+                std::vector<double> actionsID =
                     tee.executeFromRoot(*root, le.getInitActions(),
                                         this->params.nbEdgesActivable)
                         .second; // TODO

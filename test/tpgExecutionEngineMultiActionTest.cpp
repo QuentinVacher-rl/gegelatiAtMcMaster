@@ -205,7 +205,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EvaluateFromRootZero)
     std::vector<uint64_t> initActions(2, 2);
     uint64_t nbEdgesActivable = 2;
 
-    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>> result;
+    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
 
     ASSERT_NO_THROW(result =
                         tpee.executeFromRoot(*tpg->getRootVertices().at(0),
@@ -213,7 +213,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EvaluateFromRootZero)
         << "Execution of a TPGGraph from a valid root failed.";
 
     std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
-    std::vector<uint64_t> actionResult = result.second;
+    std::vector<double> actionResult = result.second;
 
     // Check the traversed path of T0
     ASSERT_EQ(visitedVertexResult.size(), 6)
@@ -248,7 +248,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EvaluateFromRootOne)
     std::vector<uint64_t> initActions(2, 2);
     uint64_t nbEdgesActivable = 2;
 
-    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>> result;
+    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
 
     ASSERT_NO_THROW(result =
                         tpee.executeFromRoot(*tpg->getRootVertices().at(1),
@@ -256,7 +256,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EvaluateFromRootOne)
         << "Execution of a TPGGraph from a valid root failed.";
 
     std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
-    std::vector<uint64_t> actionResult = result.second;
+    std::vector<double> actionResult = result.second;
 
     // Check the traversed path of T3
     ASSERT_EQ(visitedVertexResult.size(), 3)
@@ -301,7 +301,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EarlyExit)
     std::vector<uint64_t> initActions(2, 2);
     uint64_t nbEdgesActivable = 2;
 
-    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>> result;
+    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
 
     ASSERT_NO_THROW(result =
                         tpee.executeFromRoot(*tpg->getRootVertices().at(0),
@@ -309,7 +309,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EarlyExit)
         << "Execution of a TPGGraph from a valid root failed.";
 
     std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
-    std::vector<uint64_t> actionResult = result.second;
+    std::vector<double> actionResult = result.second;
 
     // Check the traversed path of T3
     ASSERT_EQ(visitedVertexResult.size(), 4)
@@ -343,7 +343,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, ActionRoot)
     std::vector<uint64_t> initActions(2, 2);
     uint64_t nbEdgesActivable = 2;
 
-    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<uint64_t>> result;
+    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
 
     ASSERT_NO_THROW(result =
                         tpee.executeFromRoot(*tpg->getVertices().at(4),
@@ -351,7 +351,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, ActionRoot)
         << "Execution of a TPGGraph from a valid root failed.";
 
     std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
-    std::vector<uint64_t> actionResult = result.second;
+    std::vector<double> actionResult = result.second;
 
     // Check the traversed path of A0-0
     ASSERT_EQ(visitedVertexResult.size(), 1)

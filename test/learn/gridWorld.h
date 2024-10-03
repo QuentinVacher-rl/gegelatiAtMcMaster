@@ -58,7 +58,7 @@ class GridWorld : public Learn::LearningEnvironment
     bool positionAvailable(uint64_t pos_x, uint64_t pos_y);
 
     /// Inherited via LearningEnvironment
-    virtual void doActions(std::vector<uint64_t> vectActionID) override;
+    virtual void doActions(std::vector<double> vectActionID) override;
 
     /// Inherited via LearningEnvironment
     virtual double getScore() const override;

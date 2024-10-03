@@ -68,6 +68,24 @@ namespace TPG {
          */
         Program::ProgramExecutionEngine progExecutionEngine;
 
+        /**
+         * \brief Boolean indicating, if true that discrete actions are used, if false that continuous actions are used
+         */
+        bool useDiscreteAction;
+
+        /**
+         * \brief Number of continuous actions used.
+         * 
+         * This value is needed to now the number of registers to return.
+         * This value is ignored if useDiscreteAction is true.
+         */
+        uint64_t nbContinuousAction;
+
+        /**
+         * \brief Last program that activated an action
+         */
+        std::shared_ptr<Program::Program> lastProgramForAction;
+
       public:
         /**
          * \brief Main constructor of the class.
@@ -78,9 +96,11 @@ namespace TPG {
          *                 the Program Execution. By default, a NULL pointer is
          *                 given, meaning that no recording of the execution
          *                 will be made.
+         * \param[in] useDiscreteAction bool indicating if the action taken are discrete or continuous.
+         * \param[in] nbContinuousAction uint64_t indicating the number of continuous actions.
          */
-        TPGExecutionEngine(const Environment& env, Archive* arch = NULL)
-            : progExecutionEngine(env), archive{arch} {};
+        TPGExecutionEngine(const Environment& env, Archive* arch = NULL, bool useDiscreteAction = true, uint64_t nbContinuousAction = 0)
+            : progExecutionEngine(env), archive{arch}, useDiscreteAction{useDiscreteAction}, nbContinuousAction{nbContinuousAction} {};
 
         ///  Default virtual destructor
         virtual ~TPGExecutionEngine() = default;
@@ -126,8 +146,10 @@ namespace TPG {
          *
          * \param[in] currentAction the TPGAction evaluated.
          * \param[in] actionsTaken vector of int64_t of actions taken.
+         * 
+         * \return true if the action changed
          */
-        virtual void executeAction(const TPG::TPGVertex* currentAction,
+        virtual bool executeAction(const TPG::TPGVertex* currentAction,
                                    std::vector<std::int64_t>* actionsTaken);
 
         /**
@@ -175,7 +197,7 @@ namespace TPG {
          * returned vector.
          */
         virtual std::pair<std::vector<const TPG::TPGVertex*>,
-                          std::vector<uint64_t>>
+                          std::vector<double>>
         executeFromRoot(const TPGVertex& root,
                         const std::vector<uint64_t>& initActions,
                         uint64_t nbEdgesActivated);

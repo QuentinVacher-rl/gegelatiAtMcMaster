@@ -61,7 +61,7 @@ void Learn::LearningEnvironment::doAction(uint64_t actionID)
     }
 }
 
-void Learn::LearningEnvironment::doActions(std::vector<uint64_t> vectActionID)
+void Learn::LearningEnvironment::doActions(std::vector<double> vectActionID)
 {
     if (vectActionID.size() != this->vectActions.size()) {
         throw std::runtime_error("Vector of action ID given is not the same "
