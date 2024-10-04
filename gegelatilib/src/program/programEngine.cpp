@@ -225,7 +225,21 @@ Program::ProgramEngine::getMapMemoryRegisters()
 
 std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Program> prog, uint64_t nbRegisters){
 
-    this->setProgram(*prog);
+    // Try to find the program in the map.
+    auto it = this->mapMemoryRegisters.find(prog.get());
+    if (it != this->mapMemoryRegisters.end()) {
+
+        // If found, get the registers.
+        this->registers = it->second;
+    }
+    else {
+
+        // Else, create the registers and add them to the map.
+        this->mapMemoryRegisters[prog.get()] =
+            std::make_shared<Data::PrimitiveTypeArray<double>>(
+                prog->getEnvironment().getNbRegisters());
+        this->registers = this->mapMemoryRegisters[prog.get()];
+    }
 
     std::vector<double> registerValues;
     for(int i=0; i < nbRegisters; i++){

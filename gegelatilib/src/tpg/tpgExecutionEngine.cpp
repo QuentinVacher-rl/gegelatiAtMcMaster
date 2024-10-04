@@ -52,6 +52,13 @@ void TPG::TPGExecutionEngine::setArchive(Archive* newArchive)
 
 void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<double>& actionsTaken, std::string activationFunction)
 {
+
+    for(int i = 0; i < actionsTaken.size(); i++){
+        if(std::isnan(actionsTaken[i])){
+            actionsTaken[i] = -std::numeric_limits<double>::infinity();
+        }
+    }
+
     // Sigmoid function
     if(activationFunction == "sigmoid"){
         for(size_t i=0; i<actionsTaken.size(); i++){
