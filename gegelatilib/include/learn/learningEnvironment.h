@@ -96,6 +96,9 @@ namespace Learn {
         /// Activation function used by the environment for continuous actions.
         const std::string activationFunction;
 
+        /// Number of continuous actions
+        const uint64_t nbContinuousAction;
+
       public:
         /**
          * \brief Delete the default constructor of a LearningEnvironment.
@@ -114,11 +117,12 @@ namespace Learn {
          * \param[in] initAct init value of action if the TPG do not choose any
          * action default value set to 0.
          * \param[in] isDiscreteEnv Boolean indicating if this environment uses discrete or continuous actions.
+         * \param[in] nbContAct the number of continuous actions
          * \param[in] actFunc Activation function used by the environment for continuous actions.
          *
          */
-        LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0, bool isDiscreteEnv=true, std::string actFunc="none")
-            : vectActions{nbAct}, initActions{initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc} {};
+        LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0, bool isDiscreteEnv=true, uint64_t nbContAct=0, std::string actFunc="none")
+            : vectActions{nbAct}, initActions{initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc}, nbContinuousAction{nbContAct} {};
 
         /**
          * \brief Constructor for LearningEnviroment.
@@ -129,15 +133,16 @@ namespace Learn {
          * action default value set to a vector with size equal to vectAct and
          * fill with zeros.
          * \param[in] isDiscreteEnv Boolean indicating if this environment uses discrete or continuous actions.
+         * \param[in] nbContAct the number of continuous actions
          * \param[in] actFunc Activation function used by the environment for continuous actions.
          */
         LearningEnvironment(
             const std::vector<uint64_t>& vectAct,
-            const std::vector<uint64_t>& initAct = std::vector<uint64_t>(), bool isDiscreteEnv=true, std::string actFunc="none")
+            const std::vector<uint64_t>& initAct = std::vector<uint64_t>(), bool isDiscreteEnv=true, uint64_t nbContAct=0, std::string actFunc="none")
             : vectActions{vectAct}, initActions{initAct.empty()
                                                     ? std::vector<uint64_t>(
                                                           vectAct.size(), 0)
-                                                    : initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc}
+                                                    : initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc},nbContinuousAction{nbContAct}
         {
             if (this->initActions.size() != this->vectActions.size()) {
                 throw std::runtime_error(
@@ -201,6 +206,38 @@ namespace Learn {
         {
             return initActions;
         };
+        
+        /**
+         * \brief Get the information of the nature of the environment action type.
+         *
+         * \return true if the actions are discrete, either continuous.
+         */
+        const bool isDiscrete() const
+        {
+            return isDiscreteEnvironment;
+        }
+
+        /**
+         * \brief Return the number of continuous actions.
+         * Will be mixed with classic actions in the future.
+         * 
+         * \return the number of continuous actions.
+         */
+        const uint64_t getNbContinuousAction() const
+        {
+            return nbContinuousAction;
+        }
+
+        /**
+         * \brief get the type of activation function, "none" mean no activation function.
+         * 
+         * \return the activation function.
+         */
+        const std::string getActivationFunction() const
+        {
+            return activationFunction;
+        }
+
 
         /**
          * \brief Execute a single action on the LearningEnvironment.
