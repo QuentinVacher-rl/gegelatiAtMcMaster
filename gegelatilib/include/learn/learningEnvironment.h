@@ -90,6 +90,12 @@ namespace Learn {
         /// Make the default copy constructor protected.
         LearningEnvironment(const LearningEnvironment& other) = default;
 
+        /// Boolean indicating if this environment uses discrete or continuous actions.
+        const bool isDiscreteEnvironment;
+
+        /// Activation function used by the environment for continuous actions.
+        const std::string activationFunction;
+
       public:
         /**
          * \brief Delete the default constructor of a LearningEnvironment.
@@ -107,10 +113,12 @@ namespace Learn {
          * interacting with this LearningEnviromnent.
          * \param[in] initAct init value of action if the TPG do not choose any
          * action default value set to 0.
+         * \param[in] isDiscreteEnv Boolean indicating if this environment uses discrete or continuous actions.
+         * \param[in] actFunc Activation function used by the environment for continuous actions.
          *
          */
-        LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0)
-            : vectActions{nbAct}, initActions{initAct} {};
+        LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0, bool isDiscreteEnv=true, std::string actFunc="none")
+            : vectActions{nbAct}, initActions{initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc} {};
 
         /**
          * \brief Constructor for LearningEnviroment.
@@ -120,14 +128,16 @@ namespace Learn {
          * \param[in] initAct init values of action if the TPG do not choose an
          * action default value set to a vector with size equal to vectAct and
          * fill with zeros.
+         * \param[in] isDiscreteEnv Boolean indicating if this environment uses discrete or continuous actions.
+         * \param[in] actFunc Activation function used by the environment for continuous actions.
          */
         LearningEnvironment(
             const std::vector<uint64_t>& vectAct,
-            const std::vector<uint64_t>& initAct = std::vector<uint64_t>())
+            const std::vector<uint64_t>& initAct = std::vector<uint64_t>(), bool isDiscreteEnv=true, std::string actFunc="none")
             : vectActions{vectAct}, initActions{initAct.empty()
                                                     ? std::vector<uint64_t>(
                                                           vectAct.size(), 0)
-                                                    : initAct}
+                                                    : initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc}
         {
             if (this->initActions.size() != this->vectActions.size()) {
                 throw std::runtime_error(
@@ -206,7 +216,7 @@ namespace Learn {
          * execute.
          * \throw std::runtime_error if the actionID exceeds nbActions - 1.
          */
-        virtual void doAction(uint64_t actionID);
+        virtual void doAction(double actionID);
 
         /**
          * \brief Execute actions on the LearningEnvironment.
@@ -220,7 +230,7 @@ namespace Learn {
          * affected by the action.
          *
          * If the size of the vector is one, this method launches the method
-         * doAction(uint64_t actionID), the actionID being the only integer in
+         * doAction(double actionID), the actionID being the only integer in
          * the vector.
          *
          * \param[in] vectActionID the vector integer numbers of each actions to

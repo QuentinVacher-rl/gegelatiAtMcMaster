@@ -224,6 +224,7 @@ Program::ProgramEngine::getMapMemoryRegisters()
 
 
 std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Program> prog, uint64_t nbRegisters){
+
     this->setProgram(*prog);
 
     std::vector<double> registerValues;
@@ -231,6 +232,5 @@ std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Pr
         registerValues.push_back(*(this->registers->getDataAt(typeid(double), i)
                         .getSharedPointer<const double>()));
     }
-
     return registerValues;
 }

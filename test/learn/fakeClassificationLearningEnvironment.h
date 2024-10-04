@@ -53,7 +53,7 @@ class FakeClassificationLearningEnvironment
   public:
     FakeClassificationLearningEnvironment()
         : ClassificationLearningEnvironment(3), data(1), value{0} {};
-    void doAction(uint64_t actionId) override
+    void doAction(double actionId) override
     {
         // Increment classificationTable
         ClassificationLearningEnvironment::doAction(actionId);

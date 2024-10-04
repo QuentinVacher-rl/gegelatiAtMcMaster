@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+#include <cmath>  
 
 #include "program/programExecutionEngine.h"
 #include "tpg/tpgEdge.h"
@@ -47,6 +48,23 @@
 void TPG::TPGExecutionEngine::setArchive(Archive* newArchive)
 {
     this->archive = newArchive;
+}
+
+void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<double>& actionsTaken, std::string activationFunction)
+{
+    // Sigmoid function
+    if(activationFunction == "sigmoid"){
+        for(size_t i=0; i<actionsTaken.size(); i++){
+            actionsTaken[i] = 1.0 / (1.0 + std::exp(-actionsTaken[i]));
+        }
+    } else if(activationFunction == "tanh"){
+        std::transform(actionsTaken.begin(), actionsTaken.end(), actionsTaken.begin(), [](double x) { return std::tanh(x); });
+
+    } else if(activationFunction != "none"){
+        throw std::runtime_error("Activation function for converting continuous actions not known");
+    }
+    
+
 }
 
 void TPG::TPGExecutionEngine::resetAllMemoryRegisters()
@@ -183,7 +201,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     TPGExecutionEngine::executeFromRoot(
         const TPGVertex& root, const std::vector<uint64_t>& initActions,
-        uint64_t nbEdgesActivated)
+        uint64_t nbEdgesActivated, std::string activationFunction)
 {
     const TPGVertex* currentVertex = &root;
     std::vector<const TPGVertex*> visitedVertices;
@@ -225,7 +243,9 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
         }
 
         // Get the action taken
-        std::vector<double> actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
+        actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
+
+        this->applyActivationFunctionOnActions(actionsTaken, activationFunction);
     }
 
     lastProgramForAction.reset();

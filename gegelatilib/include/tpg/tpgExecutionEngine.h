@@ -113,6 +113,14 @@ namespace TPG {
         void setArchive(Archive* newArchive);
 
         /**
+         * \brief Apply a sigmoid function on all the actions
+         * 
+         * \param[in] actionsTaken a reference to the action taken
+         * \param[in] activationFunction the activation function used
+         */
+        void applyActivationFunctionOnActions(std::vector<double>& actionsTaken, std::string activationFunction);
+
+        /**
          * \brief Function that reset all the memory registers that have been
          * creating during the execution.
          *
@@ -191,7 +199,8 @@ namespace TPG {
          * \param[in] initActions the vector of initial action that can are
          * choosen by default by the root. \param[in] nbEdgesActivated the
          * number of edges that can be activated by team. A team can only
-         * activate a single other team. \return a vector containing all the
+         * activate a single other team. \param[in] activationFunction is activation function used
+         * \return a vector containing all the
          * TPGVertex traversed during the evaluation of the TPGGraph. The
          * TPGAction resulting from the TPGGraph execution is at the end of the
          * returned vector.
@@ -200,7 +209,7 @@ namespace TPG {
                           std::vector<double>>
         executeFromRoot(const TPGVertex& root,
                         const std::vector<uint64_t>& initActions,
-                        uint64_t nbEdgesActivated);
+                        uint64_t nbEdgesActivated, std::string activationFunction="none");
     };
 }; // namespace TPG
 

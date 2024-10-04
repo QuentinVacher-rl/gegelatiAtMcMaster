@@ -266,3 +266,66 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRoot)
     ASSERT_EQ(result.at(3), tpg->getVertices().at(6))
         << "2nd element of the traversed path during execution is incorrect.";
 }
+
+TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
+{
+    TPG::TPGExecutionEngine tpee(*e, &a, false, 1);
+
+    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
+
+    ASSERT_NO_THROW(
+        result =
+            tpee.executeFromRoot(*tpg->getRootVertices().at(0), {0}, 1, "none"))
+        << "Execution of a TPGGraph from a valid root failed.";
+
+    std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
+    std::vector<double> actionResult = result.second;
+
+    // Check the traversed path
+    ASSERT_EQ(visitedVertexResult.size(), 4)
+        << "Size of the traversed path during the execution of the TPGGraph is "
+           "not as expected.";
+    ASSERT_EQ(visitedVertexResult.at(0), tpg->getVertices().at(0))
+        << "0th element (i.e. the root) of the traversed path during execution "
+           "is incorrect.";
+    ASSERT_EQ(visitedVertexResult.at(1), tpg->getVertices().at(1))
+        << "1st element of the traversed path during execution is incorrect.";
+    ASSERT_EQ(visitedVertexResult.at(2), tpg->getVertices().at(2))
+        << "2nd element of the traversed path during execution is incorrect.";
+    ASSERT_EQ(visitedVertexResult.at(3), tpg->getVertices().at(6))
+        << "2nd element of the traversed path during execution is incorrect.";
+
+    ASSERT_EQ(actionResult[0], 0) <<"Action should be equal to 0 because we are without memory";
+}
+
+TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuousSigmoid)
+{
+    TPG::TPGExecutionEngine tpee(*e, &a, false, 2);
+
+    std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
+
+    ASSERT_NO_THROW(
+        result =
+            tpee.executeFromRoot(*tpg->getRootVertices().at(0), {0}, 1, "sigmoid"))
+        << "Execution of a TPGGraph from a valid root failed.";
+
+    std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
+    std::vector<double> actionResult = result.second;
+
+    // Check the traversed path
+    ASSERT_EQ(visitedVertexResult.size(), 4)
+        << "Size of the traversed path during the execution of the TPGGraph is "
+           "not as expected.";
+    ASSERT_EQ(visitedVertexResult.at(0), tpg->getVertices().at(0))
+        << "0th element (i.e. the root) of the traversed path during execution "
+           "is incorrect.";
+    ASSERT_EQ(visitedVertexResult.at(1), tpg->getVertices().at(1))
+        << "1st element of the traversed path during execution is incorrect.";
+    ASSERT_EQ(visitedVertexResult.at(2), tpg->getVertices().at(2))
+        << "2nd element of the traversed path during execution is incorrect.";
+    ASSERT_EQ(visitedVertexResult.at(3), tpg->getVertices().at(6))
+        << "2nd element of the traversed path during execution is incorrect.";
+
+    ASSERT_EQ(result.second[0], 0.5) <<"Action should be equal to 0.5 because we are without memory";
+    ASSERT_EQ(result.second[1], 0.5) <<"Action should be equal to 0.5 because we are without memory";
+}

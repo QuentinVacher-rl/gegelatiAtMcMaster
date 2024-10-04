@@ -47,7 +47,7 @@ bool Learn::LearningEnvironment::isCopyable() const
     return false;
 }
 
-void Learn::LearningEnvironment::doAction(uint64_t actionID)
+void Learn::LearningEnvironment::doAction(double actionID)
 {
     if (vectActions.size() > 1) {
         throw std::runtime_error(

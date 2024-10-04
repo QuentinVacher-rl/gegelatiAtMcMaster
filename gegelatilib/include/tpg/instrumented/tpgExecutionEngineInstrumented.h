@@ -104,7 +104,7 @@ namespace TPG {
         std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>>
         executeFromRoot(const TPGVertex& root,
                         const std::vector<uint64_t>& initActions,
-                        uint64_t nbEdgesActivated) override;
+                        uint64_t nbEdgesActivated, std::string activationFunction="none") override;
 
         /// Get all previous execution traces.
         const std::vector<std::vector<const TPGVertex*>>& getTraceHistory()
