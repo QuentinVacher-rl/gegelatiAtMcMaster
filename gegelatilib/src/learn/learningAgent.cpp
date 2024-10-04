@@ -196,7 +196,9 @@ Learn::LearningAgent::evaluateAllRoots(uint64_t generationNumber,
     std::unique_ptr<TPG::TPGExecutionEngine> tee =
         this->tpg->getFactory().createTPGExecutionEngine(
             this->env,
-            (mode == LearningMode::TRAINING) ? &this->archive : NULL);
+            (mode == LearningMode::TRAINING) ? &this->archive : NULL,
+            this->learningEnvironment.isDiscrete(), 
+            this->learningEnvironment.getNbContinuousAction());
 
     auto roots = tpg->getRootVertices();
     for (int i = 0; i < roots.size(); i++) {
