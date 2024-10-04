@@ -242,10 +242,15 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
             throw std::runtime_error("The number of edges activable can not be different to 1 in this mode");
         }
 
-        // Get the action taken
-        actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
+        if(dynamic_cast<const TPGTeam*>(currentVertex)){
+            // Get the action taken
+            actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
+        } else{
+            actionsTaken = std::vector<double>(nbContinuousAction, 0.0);
+        }
 
         this->applyActivationFunctionOnActions(actionsTaken, activationFunction);
+
     }
 
     lastProgramForAction.reset();
