@@ -70,7 +70,7 @@ namespace TPG {
         ///  Specialization of the method returning a
         ///  TPGExecutionEngineInstrumented
         virtual std::unique_ptr<TPGExecutionEngine> createTPGExecutionEngine(
-            const Environment& env, Archive* arch = NULL) const override;
+            const Environment& env, Archive* arch = NULL, bool useDiscreteAction=true, uint64_t nbContinuousAction=0) const override;
         /**
          * \brief Reset all visit and traversal counters of a TPGGraph.
          *

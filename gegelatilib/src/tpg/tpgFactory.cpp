@@ -62,7 +62,7 @@ std::unique_ptr<TPG::TPGEdge> TPG::TPGFactory::createTPGEdge(
 }
 
 std::unique_ptr<TPG::TPGExecutionEngine> TPG::TPGFactory::
-    createTPGExecutionEngine(const Environment& env, Archive* arch) const
+    createTPGExecutionEngine(const Environment& env, Archive* arch, bool useDiscreteAction, uint64_t nbContinuousAction) const
 {
-    return std::make_unique<TPG::TPGExecutionEngine>(env, arch);
+    return std::make_unique<TPG::TPGExecutionEngine>(env, arch, useDiscreteAction, nbContinuousAction);
 }

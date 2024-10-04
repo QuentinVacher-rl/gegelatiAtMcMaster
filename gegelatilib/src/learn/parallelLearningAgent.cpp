@@ -62,7 +62,9 @@ Learn::ParallelLearningAgent::evaluateAllRoots(uint64_t generationNumber,
         std::unique_ptr<TPG::TPGExecutionEngine> tee =
             this->tpg->getFactory().createTPGExecutionEngine(
                 this->env,
-                (mode == LearningMode::TRAINING) ? &this->archive : NULL);
+                (mode == LearningMode::TRAINING) ? &this->archive : NULL,
+                this->learningEnvironment.isDiscrete(), 
+                this->learningEnvironment.getNbContinuousAction());
 
         // Execute for all root
         auto roots = this->tpg->getRootVertices();
@@ -107,7 +109,9 @@ void Learn::ParallelLearningAgent::slaveEvalJobThread(
                            this->env.getNbConstant(),
                            this->env.isMemoryRegisters());
     std::unique_ptr<TPG::TPGExecutionEngine> tee =
-        this->tpg->getFactory().createTPGExecutionEngine(privateEnv, NULL);
+        this->tpg->getFactory().createTPGExecutionEngine(privateEnv, NULL,
+            this->learningEnvironment.isDiscrete(), 
+            this->learningEnvironment.getNbContinuousAction());
 
     int i = 0;
     // Pop a job

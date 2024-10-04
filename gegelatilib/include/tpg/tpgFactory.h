@@ -123,12 +123,15 @@ namespace TPG {
          * \param[in] arch pointer to the Archive for storing recordings of the
          * Program Execution. By default, a NULL pointer is given, meaning that
          * no recording of the execution will be made.
+         * \param[in] useDiscreteAction bool indicating if the action taken are discrete or continuous.
+         * \param[in] nbContinuousAction uint64_t indicating the number of continuous actions.
          *
          * \return the returned TPGExecutionEngine returned as an unique_ptr.
          */
         virtual std::unique_ptr<TPG::TPGExecutionEngine>
         createTPGExecutionEngine(const Environment& env,
-                                 Archive* arch = NULL) const;
+                                 Archive* arch = NULL, 
+                                 bool useDiscreteAction = true, uint64_t nbContinuousAction = 0) const;
     };
 
 } // namespace TPG

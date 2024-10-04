@@ -158,7 +158,8 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
             // Get the actions
             std::vector<double> actionsID =
                 tee.executeFromRoot(*root, le.getInitActions(),
-                                    this->params.nbEdgesActivable)
+                                    this->params.nbEdgesActivable,
+                                    this->learningEnvironment.getActivationFunction())
                     .second;
 
             // Do it
@@ -227,7 +228,9 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateOneRoot(
     std::unique_ptr<TPG::TPGExecutionEngine> tee =
         this->tpg->getFactory().createTPGExecutionEngine(
             this->env,
-            (mode == LearningMode::TRAINING) ? &this->archive : NULL);
+            (mode == LearningMode::TRAINING) ? &this->archive : NULL,
+            this->learningEnvironment.isDiscrete(), 
+            this->learningEnvironment.getNbContinuousAction());
 
     // Create and evaluate the job
     auto job = makeJob(*iterator, mode);
