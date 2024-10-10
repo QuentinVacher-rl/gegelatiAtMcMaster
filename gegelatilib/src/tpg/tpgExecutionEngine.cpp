@@ -69,6 +69,10 @@ void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<doubl
 
     } else if(activationFunction != "none"){
         throw std::runtime_error("Activation function for converting continuous actions not known");
+    } else {
+        for (double& actionTaken : actionsTaken) {
+            actionTaken = std::clamp(actionTaken, -1.0, 1.0);
+        }
     }
     
 
