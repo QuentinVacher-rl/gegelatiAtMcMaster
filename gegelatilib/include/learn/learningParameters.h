@@ -127,6 +127,13 @@ namespace Learn {
         size_t maxNbEvaluationPerPolicy = 1000;
 
         /// JSon comment
+        inline static const std::string evaluateOneGenComment =
+            "// The score of the root is only the current generation.\n"
+            "// \"evaluateOneGen\" : false, // Default value";
+        /// The score of the root is only the current generation
+        bool evaluateOneGen = false;
+
+        /// JSon comment
         inline static const std::string nbIterationsPerJobComment =
             "// [Only used in AdversarialLearningAgent.]\n"
             "// Number of times each job is evaluated in the learning "

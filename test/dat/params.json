@@ -6,6 +6,7 @@
   "ratioDeletedRoots": 0.85,
   "nbIterationsPerJob": 31,
   "maxNbEvaluationPerPolicy": 100,
+  "evaluateOneGen": false,
   "nbRegisters": 3,
   "useMemoryRegisters": false,
   "nbThreads": 2,

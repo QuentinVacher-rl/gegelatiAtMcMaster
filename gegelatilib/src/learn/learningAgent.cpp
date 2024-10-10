@@ -131,7 +131,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
     // performed. In the evaluation mode only.
     std::shared_ptr<Learn::EvaluationResult> previousEval;
     if (mode == LearningMode::TRAINING &&
-        this->isRootEvalSkipped(*root, previousEval)) {
+        this->isRootEvalSkipped(*root, previousEval) && !params.evaluateOneGen) {
         return previousEval;
     }
 
@@ -178,7 +178,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
             params.nbIterationsPerPolicyEvaluation));
 
     // Combine it with previous one if any
-    if (previousEval != nullptr) {
+    if (previousEval != nullptr && !params.evaluateOneGen) {
         *evaluationResult += *previousEval;
     }
     return evaluationResult;

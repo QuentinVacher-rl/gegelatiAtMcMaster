@@ -214,6 +214,10 @@ void File::ParametersParser::setParameterFromString(
         params.maxNbEvaluationPerPolicy = (size_t)value.asUInt();
         return;
     }
+    if (param == "evaluateOneGen") {
+        params.evaluateOneGen = (bool)value.asBool();
+        return;
+    }
     if (param == "nbRegisters") {
         params.nbRegisters = (size_t)value.asUInt();
         return;
@@ -277,6 +281,11 @@ void File::ParametersParser::writeParametersToJson(
     root["maxNbEvaluationPerPolicy"] = params.maxNbEvaluationPerPolicy;
     root["maxNbEvaluationPerPolicy"].setComment(
         Learn::LearningParameters::maxNbEvaluationPerPolicyComment,
+        Json::commentBefore);
+
+    root["evaluateOneGen"] = params.evaluateOneGen;
+    root["evaluateOneGen"].setComment(
+        Learn::LearningParameters::evaluateOneGenComment,
         Json::commentBefore);
 
     root["nbGenerations"] = params.nbGenerations;

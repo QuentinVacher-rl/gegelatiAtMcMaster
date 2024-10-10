@@ -295,7 +295,7 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
     ASSERT_EQ(visitedVertexResult.at(3), tpg->getVertices().at(6))
         << "2nd element of the traversed path during execution is incorrect.";
 
-    ASSERT_EQ(actionResult[0], 0) <<"Action should be equal to 0 because we are without memory";
+    ASSERT_EQ(actionResult[0], 3) <<"Action should be equal to 3";
 }
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuousSigmoid)
@@ -326,6 +326,6 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuousSigmoid)
     ASSERT_EQ(visitedVertexResult.at(3), tpg->getVertices().at(6))
         << "2nd element of the traversed path during execution is incorrect.";
 
-    ASSERT_EQ(result.second[0], 0.5) <<"Action should be equal to 0.5 because we are without memory";
-    ASSERT_EQ(result.second[1], 0.5) <<"Action should be equal to 0.5 because we are without memory";
+    ASSERT_EQ(result.second[0], 0.95257412682243336) <<"Action should be equal to sigmoid(3)";
+    ASSERT_EQ(result.second[1], 0.5) <<"Action should be equal to sigmoid(0)";
 }

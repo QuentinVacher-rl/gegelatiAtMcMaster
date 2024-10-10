@@ -218,7 +218,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     std::vector<std::int64_t> rawActionsTaken(initActions.size(), -1);
 
     // Execute the team only if it is really a team
-    if (dynamic_cast<const TPGTeam*>(currentVertex)) {
+    if (dynamic_cast<const TPGTeam*>(&root)) {
         executeTeam(dynamic_cast<const TPGTeam*>(currentVertex),
                     visitedVertices, &rawActionsTaken, nbEdgesActivated);
     }
@@ -249,7 +249,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
             throw std::runtime_error("The number of edges activable can not be different to 1 in this mode");
         }
 
-        if(dynamic_cast<const TPGTeam*>(currentVertex)){
+        if(dynamic_cast<const TPGTeam*>(&root)){
             // Get the action taken
             actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
         } else{
