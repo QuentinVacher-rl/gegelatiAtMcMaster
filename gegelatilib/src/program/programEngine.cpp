@@ -242,9 +242,11 @@ std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Pr
     }
 
     std::vector<double> registerValues;
-    for(int i=0; i < nbRegisters; i++){
+    // Return the register + 1 to keep the first one for bids.
+    for(int i=1; i < nbRegisters+1; i++){
         registerValues.push_back(*(this->registers->getDataAt(typeid(double), i)
                         .getSharedPointer<const double>()));
     }
+
     return registerValues;
 }
