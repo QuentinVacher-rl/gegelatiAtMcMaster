@@ -145,6 +145,13 @@ namespace Mutator {
         size_t maxProgramSize = 96;
 
         /// JSon comment
+        inline static const std::string initProgramSizeComment =
+            "// Number of Line within the Program of the TPG at the initialisation.\n"
+            "// \"initProgramSize\" : 10, // Default value";
+        /// Initial number of Line within the Program of the TPGGraph.
+        size_t initProgramSize = 10;
+
+        /// JSon comment
         inline static const std::string pDeleteComment =
             "// Probability of deleting a line of the Program.\n"
             "// \"pDelete\" : 0.5, // Default value";
