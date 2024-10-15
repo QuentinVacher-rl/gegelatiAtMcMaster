@@ -76,6 +76,11 @@ namespace Program {
          **/
         Data::ConstantHandler constants;
 
+        /**
+         * Number of continuous actions
+         */
+        uint64_t nbContinuousActions;
+
         /// Delete the default constructor.
         Program() = delete;
 
@@ -87,7 +92,7 @@ namespace Program {
          * in the Program attributes.
          */
         Program(const Environment& e)
-            : environment{e}, constants{e.getNbConstant()}
+            : environment{e}, constants{e.getNbConstant()}, nbContinuousActions{e.getNbContinuousActions()}
         {
             constants.resetData(); // force all constant to 0 at first.
         };

@@ -109,6 +109,9 @@ class Environment
     /// DataHandler whost type corresponds to the programs constants.
     const Data::ConstantHandler fakeConstants;
 
+    /// Number of continuous actions
+    const size_t nbContinuousActions;
+
     /// Number of Instruction in the Instructions::Set.
     const size_t nbInstructions;
 
@@ -123,6 +126,7 @@ class Environment
 
     /// Size of lines within this Environment
     const LineSize lineSize;
+
 
     /**
      * \brief Static method used when constructing a new Environment to compute
@@ -195,6 +199,7 @@ class Environment
      * \param[in] nbRegs the number of double registers in this Environment.
      * \param[in] nbConst the number of program's constants in this Environment.
      * \param[in] useMemoryRegs the boolean indicating if the memory registers
+     * \param[in] nbContinuousAct the number of continuous actions
      * are used or not is this Environment.
      */
     Environment(
@@ -202,7 +207,7 @@ class Environment
         const std::vector<std::reference_wrapper<const Data::DataHandler>>&
             dHandlers,
         const size_t nbRegs, const size_t nbConst = 0,
-        bool useMemoryRegs = false)
+        bool useMemoryRegs = false, size_t nbContinuousAct = 0)
         : instructionSet{filterInstructionSet(iSet, nbRegs, nbConst,
                                               dHandlers)},
           dataSources{dHandlers}, nbRegisters{nbRegs},
@@ -210,6 +215,7 @@ class Environment
           fakeRegisters(nbRegs), fakeConstants(nbConst),
           nbInstructions{instructionSet.getNbInstructions()},
           maxNbOperands{instructionSet.getMaxNbOperands()},
+          nbContinuousActions{nbContinuousAct},
           nbDataSources{
               dHandlers.size() +
               (nbConst > 0 ? 2
@@ -244,6 +250,13 @@ class Environment
      * \return the value of the nbParameters attribute.
      */
     size_t getNbConstant() const;
+
+    /**
+     * \brief Get the number of continuous actions.
+     *
+     * \return the value of the nbContinuousActions attribute.
+     */
+    size_t getNbContinuousActions() const;
 
     /**
      * \brief Get the information if the registers used memory or no.
