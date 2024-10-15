@@ -107,7 +107,7 @@ namespace Program {
          */
         Program(const Program& other)
             : environment{other.environment}, lines{other.lines},
-              constants{other.constants}
+              constants{other.constants}, nbContinuousActions{other.nbContinuousActions}
         {
             // Replace lines with their copy
             // Keep intro info

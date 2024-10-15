@@ -150,19 +150,12 @@ uint64_t Program::Program::identifyIntrons()
     for(auto i=0; i<nbContinuousActions; i++){
         usefulRegisters.insert(i+1);
     }
-    
-
-    bool resetDone = false;
+    bool resetDone = !environment.isMemoryRegisters();
 
     // Scan program lines backward
     auto backIter = this->lines.rbegin();
     while (backIter != this->lines.rend() || !resetDone) {
-        if (backIter == this->lines.rend()) {
-            // Si on arrive à la fin lors du premier passage, réinitialiser.
-            resetDone = true;
-            backIter = this->lines.rbegin();
-            continue; // Continuer pour éviter de traiter cette itération.
-        }
+
         // Check if the currentLine output is within usefulRegisters
         Line* currentLine = backIter->first;
         uint64_t destinationIndex = currentLine->getDestinationIndex();
@@ -208,6 +201,12 @@ uint64_t Program::Program::identifyIntrons()
         }
 
         backIter++;
+
+        if (backIter == this->lines.rend() && !resetDone) {
+            // Si on arrive à la fin lors du premier passage, réinitialiser.
+            resetDone = true;
+            backIter = this->lines.rbegin();
+        }
     }
 
     return nbIntrons;
