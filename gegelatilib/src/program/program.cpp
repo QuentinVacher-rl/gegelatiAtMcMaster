@@ -140,8 +140,6 @@ uint64_t Program::Program::identifyIntrons()
     // Create fake registers to identify accessed addresses.
     const Data::DataHandler& fakeRegisters =
         this->environment.getFakeDataSources().at(0);
-    // Number of introns within the Program.
-    uint64_t nbIntrons = 0;
     // Set of useful register
     std::set<uint64_t> usefulRegisters;
     // Start with only register 0
@@ -152,6 +150,12 @@ uint64_t Program::Program::identifyIntrons()
     }
     bool needReset = environment.isMemoryRegisters();
 
+    for(auto &line: this->lines){
+        line.second = true;
+    }
+
+
+
     // Scan program lines backward
     auto backIter = this->lines.rbegin();
     while (backIter != this->lines.rend() || needReset) {
@@ -160,9 +164,10 @@ uint64_t Program::Program::identifyIntrons()
         Line* currentLine = backIter->first;
         uint64_t destinationIndex = currentLine->getDestinationIndex();
         auto destinationRegister = usefulRegisters.find(destinationIndex);
-        if (destinationRegister != usefulRegisters.end()) {
+        if (destinationRegister != usefulRegisters.end() && backIter->second) {
             // The Line is useful (i.e. not an introns)
             backIter->second = false;
+
 
             // Remove the destination register from the list of useful operands
             usefulRegisters.erase(*destinationRegister);
@@ -190,18 +195,11 @@ uint64_t Program::Program::identifyIntrons()
                         usefulRegisters.insert(accessedAddress);
                     }
 
-                    if(accessedAddresses.size() > 1 && environment.isMemoryRegisters()){
+                    if(accessedAddresses.size() > 0 && environment.isMemoryRegisters()){
                         needReset = true;
                     }
                 }
             }
-        }
-        else {
-            // The destination of the line is not within useful registers
-            // the line does not contribute to the result of the Program
-            // it is an intron.
-            backIter->second = true;
-            nbIntrons++;
         }
 
         backIter++;
@@ -211,6 +209,13 @@ uint64_t Program::Program::identifyIntrons()
             needReset = false;
             backIter = this->lines.rbegin();
         }
+    }
+
+    // Number of introns within the Program.
+    uint64_t nbIntrons = 0;
+    // Compute the number of introns
+    for(auto line: this->lines){
+        nbIntrons += (line.second) ? 1 : 0;
     }
 
     return nbIntrons;
