@@ -150,11 +150,11 @@ uint64_t Program::Program::identifyIntrons()
     for(auto i=0; i<nbContinuousActions; i++){
         usefulRegisters.insert(i+1);
     }
-    bool resetDone = !environment.isMemoryRegisters();
+    bool needReset = environment.isMemoryRegisters();
 
     // Scan program lines backward
     auto backIter = this->lines.rbegin();
-    while (backIter != this->lines.rend() || !resetDone) {
+    while (backIter != this->lines.rend() || needReset) {
 
         // Check if the currentLine output is within usefulRegisters
         Line* currentLine = backIter->first;
@@ -189,6 +189,10 @@ uint64_t Program::Program::identifyIntrons()
                     for (size_t accessedAddress : accessedAddresses) {
                         usefulRegisters.insert(accessedAddress);
                     }
+
+                    if(accessedAddresses.size() > 1 && environment.isMemoryRegisters()){
+                        needReset = true;
+                    }
                 }
             }
         }
@@ -202,9 +206,9 @@ uint64_t Program::Program::identifyIntrons()
 
         backIter++;
 
-        if (backIter == this->lines.rend() && !resetDone) {
+        if (backIter == this->lines.rend() && needReset) {
             // Si on arrive à la fin lors du premier passage, réinitialiser.
-            resetDone = true;
+            needReset = false;
             backIter = this->lines.rbegin();
         }
     }
