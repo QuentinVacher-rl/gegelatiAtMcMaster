@@ -67,10 +67,12 @@ namespace TPG {
          *                 the Program Execution. By default, a NULL pointer is
          *                 given, meaning that no recording of the execution
          *                 will be made.
+         * \param[in] useDiscreteAction bool indicating if the action taken are discrete or continuous.
+         * \param[in] nbContinuousAction uint64_t indicating the number of continuous actions.
          */
         TPGExecutionEngineInstrumented(const Environment& env,
-                                       Archive* arch = NULL)
-            : TPGExecutionEngine(env, arch){};
+                                       Archive* arch = NULL, bool useDiscreteAction = true, uint64_t nbContinuousAction = 0)
+            : TPGExecutionEngine(env, arch, useDiscreteAction, nbContinuousAction){};
 
         /**
          * \brief Specialization of the evaluateEdge function.

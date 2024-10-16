@@ -70,13 +70,12 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
         uint64_t nbEdgesActivated, std::string activationFunction)
 {
     auto result = TPGExecutionEngine::executeFromRoot(root, initActions,
-                                                      nbEdgesActivated);
+                                                      nbEdgesActivated, activationFunction);
 
     // Increment actions visit
     for (auto vertex : result.first) {
-        if (auto* action =
-                dynamic_cast<const TPG::TPGActionInstrumented*>(vertex)) {
-            action->incrementNbVisits();
+        if (dynamic_cast<const TPG::TPGActionInstrumented*>(vertex) != nullptr) {
+            dynamic_cast<const TPG::TPGActionInstrumented*>(vertex)->incrementNbVisits();
         }
     }
 
