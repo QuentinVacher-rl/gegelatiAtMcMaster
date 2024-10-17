@@ -118,7 +118,7 @@ TEST(LearningParametersTest, setAllParamsFrom)
     ASSERT_EQ(1.0, params.mutation.prog.pMutate);
     ASSERT_EQ(1.0, params.mutation.prog.pSwap);
     ASSERT_EQ(0.5, params.mutation.prog.pConstantMutation);
-    ASSERT_EQ(-10, params.mutation.prog.minConstValue);
+    ASSERT_EQ(-10.0, params.mutation.prog.minConstValue);
     ASSERT_EQ(10, params.mutation.prog.maxConstValue);
 
     // check default parameters

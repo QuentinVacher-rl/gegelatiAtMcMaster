@@ -38,6 +38,7 @@
 #define TPG_GRAPH_H
 
 #include <list>
+#include <set>
 
 #include "environment.h"
 #include "tpg/tpgAction.h"
@@ -366,6 +367,22 @@ namespace TPG {
          */
         std::list<std::unique_ptr<TPGEdge>>::iterator findEdge(
             const TPGEdge* edge);
+
+        /**
+         * \brief Return all the constants used by the programs in the tree structure of the root
+         * 
+         * \param[in] indexRoot index of the root wanted
+         * \return A vector of pointer to the constants
+         */
+        std::set<std::shared_ptr<double>> getConstantsOfRoots(uint64_t indexRoot);
+
+        /**
+         * \brief Browse the graph to store the constants
+         * 
+         * \param[in] currentVertex TODO
+         * \param[in] constants TODO
+         */
+        void browseGraph(const TPG::TPGVertex* currentVertex, std::set<std::shared_ptr<double>>& constants);
     };
 }; // namespace TPG
 

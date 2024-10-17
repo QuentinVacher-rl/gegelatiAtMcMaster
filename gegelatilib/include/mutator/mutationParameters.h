@@ -198,14 +198,14 @@ namespace Mutator {
             "// Minimum constant value possible.\n"
             "// \"minConstValue\" : -10, // Default value";
         /// Minimum constant value possible
-        int32_t minConstValue = -100;
+        double minConstValue = -100;
 
         /// JSon comment
         inline static const std::string maxConstValueComment =
             "// Maximum constant value possible.\n"
             "// \"maxConstValue\" : 100, // Default value";
         /// Maximum constant value possible
-        int32_t maxConstValue = 100;
+        double maxConstValue = 100;
     } ProgramParameters;
 
     /**

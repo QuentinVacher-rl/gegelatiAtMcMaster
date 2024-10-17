@@ -179,11 +179,11 @@ void File::ParametersParser::setParameterFromString(
         return;
     }
     if (param == "minConstValue") {
-        params.mutation.prog.minConstValue = value.asInt();
+        params.mutation.prog.minConstValue = value.asDouble();
         return;
     }
     if (param == "maxConstValue") {
-        params.mutation.prog.maxConstValue = value.asInt();
+        params.mutation.prog.maxConstValue = value.asDouble();
         return;
     }
     if (param == "archiveSize") {

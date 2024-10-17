@@ -337,3 +337,32 @@ void TPG::TPGGraph::clearProgramIntrons()
         edge.get()->getProgram().clearIntrons();
     }
 }
+
+
+std::set<std::shared_ptr<double>> TPG::TPGGraph::getConstantsOfRoots(uint64_t indexRoot)
+{
+    if(indexRoot < this->getNbRootVertices()){
+        throw std::runtime_error("Not enough root in the graph");
+    }
+
+    const TPG::TPGVertex *root = this->getRootVertices().at(indexRoot);
+
+    std::set<std::shared_ptr<double>> constants;
+    
+    browseGraph(root, constants);
+
+    return constants;
+}
+
+void TPG::TPGGraph::browseGraph(const TPG::TPGVertex* currentVertex, std::set<std::shared_ptr<double>>& constants)
+{
+    for(auto edge: currentVertex->getOutgoingEdges()){
+        // get constants
+        std::shared_ptr<Program::Program> prog = edge->getProgramSharedPointer();
+        int nbConstants = 3;
+        for(auto i=0; i<nbConstants; i++){
+            constants.insert(prog->getConstantHandler().getDataAt(typeid(double), i).getSharedPointer<double>());
+        }
+        browseGraph(edge->getDestination(), constants);
+    }
+}
