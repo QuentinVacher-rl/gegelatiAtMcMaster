@@ -453,6 +453,7 @@ TEST_F(MutatorTest, ProgramMutatorInitProgram)
 
     Mutator::MutationParameters params;
     params.prog.maxProgramSize = 96;
+    params.prog.initProgramSize = 96;
     params.prog.maxConstValue = 10;
     params.prog.minConstValue = 0;
 

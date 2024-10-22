@@ -162,7 +162,7 @@ void File::TPGGraphDotImporter::readProgram(std::smatch& matches)
         for (;;) {
             if (pos1 != std::string::npos) {
                 v_constant.push_back(
-                    {std::stoi(this->lastLine.substr(pos, pos1 - pos))});
+                    {std::stod(this->lastLine.substr(pos, pos1 - pos))}); // Convertit la chaîne en double
             }
             else {
                 break;

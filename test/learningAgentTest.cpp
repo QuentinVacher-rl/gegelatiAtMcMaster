@@ -79,6 +79,7 @@ class LearningAgentTest : public ::testing::Test
         // Proba as in Kelly's paper
         params.mutation.tpg.maxInitOutgoingEdges = 3;
         params.mutation.prog.maxProgramSize = 96;
+        params.mutation.prog.initProgramSize = 96;
         params.mutation.tpg.nbRoots = 15;
         params.mutation.tpg.pEdgeDeletion = 0.7;
         params.mutation.tpg.pEdgeAddition = 0.7;
@@ -798,13 +799,13 @@ TEST_F(LearningAgentTest, TrainMemoryPortability)
     // end up with the same number of vertices, roots, edges and calls to
     // the RNG without being identical.
     TPG::TPGGraph& tpg = *la.getTPGGraph();
-    ASSERT_EQ(tpg.getNbVertices(), 29)
+    ASSERT_EQ(tpg.getNbVertices(), 31)
         << "Graph does not have the expected determinst characteristics.";
     ASSERT_EQ(tpg.getNbRootVertices(), 24)
         << "Graph does not have the expected determinist characteristics.";
-    ASSERT_EQ(tpg.getEdges().size(), 94)
+    ASSERT_EQ(tpg.getEdges().size(), 102)
         << "Graph does not have the expected determinst characteristics.";
-    ASSERT_EQ(la.getRNG().getUnsignedInt64(0, UINT64_MAX), 10828301062365825159)
+    ASSERT_EQ(la.getRNG().getUnsignedInt64(0, UINT64_MAX), 15656048843340085478)
         << "Graph does not have the expected determinst characteristics.";
 }
 

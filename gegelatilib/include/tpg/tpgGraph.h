@@ -319,6 +319,41 @@ namespace TPG {
          */
         void clearProgramIntrons();
 
+
+        /**
+         * \brief Return all the constants used by the programs in the tree structure of the team
+         * 
+         * \param[in] team vertex analyzed
+         * \return A vector of pointer to the constants
+         */
+        std::vector<std::shared_ptr<Data::Constant>> getConstantsOfRoots(const TPG::TPGVertex *team);
+
+        /**
+         * \brief Browse the graph to store the constants
+         * 
+         * \param[in] visitedVertices TODO
+         * \param[in] constants TODO
+         */
+        void browseGraphGetConstant(std::vector<const TPG::TPGVertex *> visitedVertices, std::vector<std::shared_ptr<Data::Constant>>& constants);
+
+
+        /**
+         * \brief Set all the constants used by the programs in the tree structure of the team
+         * 
+         * \param[in] team vertex analyzed
+         * \param[in] constants vector containing the new values of constants
+         */
+        void setConstantsOfRoots(const TPG::TPGVertex *team, std::vector<double> constants);
+
+        /**
+         * \brief Browse the graph to store the constants
+         * 
+         * \param[in] visitedVertices TODO
+         * \param[in] constants TODO
+         */
+        void browseGraphSetConstant(std::vector<const TPG::TPGVertex *> visitedVertices, std::vector<double>& constants);
+
+
       protected:
         /// Environment of the TPGGraph
         const Environment& env;
@@ -368,21 +403,6 @@ namespace TPG {
         std::list<std::unique_ptr<TPGEdge>>::iterator findEdge(
             const TPGEdge* edge);
 
-        /**
-         * \brief Return all the constants used by the programs in the tree structure of the root
-         * 
-         * \param[in] indexRoot index of the root wanted
-         * \return A vector of pointer to the constants
-         */
-        std::set<std::shared_ptr<double>> getConstantsOfRoots(uint64_t indexRoot);
-
-        /**
-         * \brief Browse the graph to store the constants
-         * 
-         * \param[in] currentVertex TODO
-         * \param[in] constants TODO
-         */
-        void browseGraph(const TPG::TPGVertex* currentVertex, std::set<std::shared_ptr<double>>& constants);
     };
 }; // namespace TPG
 

@@ -40,6 +40,7 @@
 
 #include "tpg/tpgGraph.h"
 
+
 TPG::TPGGraph::~TPGGraph()
 {
     // Just delete the vertices.
@@ -339,30 +340,81 @@ void TPG::TPGGraph::clearProgramIntrons()
 }
 
 
-std::set<std::shared_ptr<double>> TPG::TPGGraph::getConstantsOfRoots(uint64_t indexRoot)
+std::vector<std::shared_ptr<Data::Constant>> TPG::TPGGraph::getConstantsOfRoots(const TPG::TPGVertex *team)
 {
-    if(indexRoot < this->getNbRootVertices()){
-        throw std::runtime_error("Not enough root in the graph");
-    }
+    std::vector<std::shared_ptr<Data::Constant>> constants;
 
-    const TPG::TPGVertex *root = this->getRootVertices().at(indexRoot);
+    std::vector<const TPG::TPGVertex *> visitedVertices;
+    visitedVertices.push_back(team);
 
-    std::set<std::shared_ptr<double>> constants;
-    
-    browseGraph(root, constants);
+    browseGraphGetConstant(visitedVertices, constants);
 
     return constants;
 }
 
-void TPG::TPGGraph::browseGraph(const TPG::TPGVertex* currentVertex, std::set<std::shared_ptr<double>>& constants)
+
+void TPG::TPGGraph::browseGraphGetConstant(std::vector<const TPG::TPGVertex *> visitedVertices, std::vector<std::shared_ptr<Data::Constant>>& constants)
 {
+    const TPG::TPGVertex* currentVertex = visitedVertices.back();
+
     for(auto edge: currentVertex->getOutgoingEdges()){
         // get constants
         std::shared_ptr<Program::Program> prog = edge->getProgramSharedPointer();
-        int nbConstants = 3;
-        for(auto i=0; i<nbConstants; i++){
-            constants.insert(prog->getConstantHandler().getDataAt(typeid(double), i).getSharedPointer<double>());
+
+        for(auto i=0; i<env.getNbConstant(); i++){
+            constants.push_back(prog->getConstantHandler().getDataAt(typeid(Data::Constant), i).getSharedPointer<Data::Constant>());
+
         }
-        browseGraph(edge->getDestination(), constants);
+
+        // Dont execute multiple times the same team
+        auto it = std::find(visitedVertices.begin(), visitedVertices.end(), edge->getDestination());
+        if(it == visitedVertices.end()){
+            visitedVertices.push_back(edge->getDestination());
+            browseGraphGetConstant(visitedVertices, constants);
+        }
+
     }
+}
+
+
+void TPG::TPGGraph::setConstantsOfRoots(const TPG::TPGVertex *team, std::vector<double> constants)
+{
+    // We want to set the constants, not to get them
+    bool setconstants = true;
+
+    std::vector<const TPG::TPGVertex *> visitedVertices;
+    visitedVertices.push_back(team);
+
+    browseGraphSetConstant(visitedVertices, constants);
+
+}
+
+
+void TPG::TPGGraph::browseGraphSetConstant(std::vector<const TPG::TPGVertex *> visitedVertices, std::vector<double>& constants)
+{
+    const TPG::TPGVertex* currentVertex = visitedVertices.back();
+
+    for(auto edge: currentVertex->getOutgoingEdges()){
+        // get constants
+        std::shared_ptr<Program::Program> prog = edge->getProgramSharedPointer();
+
+        for(auto i=0; i<env.getNbConstant(); i++){
+
+            double constValue = constants.front();
+
+            prog->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(constValue)});
+
+            constants.erase(constants.begin());
+
+        }
+
+        // Dont execute multiple times the same team
+        auto it = std::find(visitedVertices.begin(), visitedVertices.end(), edge->getDestination());
+        if(it == visitedVertices.end()){
+            visitedVertices.push_back(edge->getDestination());
+            browseGraphSetConstant(visitedVertices, constants);
+        }
+
+    }
+
 }

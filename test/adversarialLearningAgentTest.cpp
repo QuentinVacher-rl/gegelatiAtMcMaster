@@ -69,6 +69,7 @@ class adversarialLearningAgentTest : public ::testing::Test
         params.ratioDeletedRoots = 0.5;
         params.mutation.tpg.maxInitOutgoingEdges = 3;
         params.mutation.prog.maxProgramSize = 96;
+        params.mutation.prog.initProgramSize = 96;
         params.mutation.tpg.nbRoots = 15;
         params.mutation.tpg.pEdgeDeletion = 0.7;
         params.mutation.tpg.pEdgeAddition = 0.7;

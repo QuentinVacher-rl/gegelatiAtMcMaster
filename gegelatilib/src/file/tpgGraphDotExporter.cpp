@@ -79,7 +79,7 @@ void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
                 this->offset.c_str(), progID);
         // add next the content of the constant data handler in a comment (//)
         for (int i = 0; i < p.getEnvironment().getNbConstant(); i++) {
-            fprintf(pFile, "%d|", static_cast<int>(p.getConstantAt(i)));
+            fprintf(pFile, "%f|", static_cast<double>(p.getConstantAt(i)));
         }
         fprintf(pFile, "\n");
         // print the program content :
