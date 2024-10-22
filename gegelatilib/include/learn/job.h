@@ -38,8 +38,10 @@
 
 #include <cstdint>
 #include <vector>
+#include <map>
 
 #include "tpg/tpgVertex.h"
+#include "program/program.h"
 
 namespace Learn {
     /**
@@ -67,6 +69,11 @@ namespace Learn {
          */
         const uint64_t archiveSeed;
 
+        /**
+         * error weights to set on each constants of each program.
+         */
+        const std::map<std::shared_ptr<Program::Program>, std::vector<double>>* errorWeights;
+
       public:
         /// Deleted default constructor.
         Job() = delete;
@@ -79,10 +86,11 @@ namespace Learn {
          * @param[in] archiveSeed The archive seed that will be used with this
          * job.
          * @param[in] idx The index of this job.
+         * @param[in] errorWeights The error weights to add on the constants' program.
          */
         Job(const TPG::TPGVertex* root, uint64_t archiveSeed = 0,
-            uint64_t idx = 0)
-            : root(root), archiveSeed(archiveSeed), idx(idx)
+            uint64_t idx = 0, std::map<std::shared_ptr<Program::Program>, std::vector<double>>* errorWeights = nullptr)
+            : root(root), archiveSeed(archiveSeed), idx(idx), errorWeights(errorWeights)
         {
         }
 
@@ -109,6 +117,13 @@ namespace Learn {
          * @return The root embedded by the job.
          */
         virtual const TPG::TPGVertex* getRoot() const;
+
+        /**
+         * \brief Getter of the errorWeights.
+         *
+         * @return The errorWeights embedded by the job.
+         */
+        virtual const std::map<std::shared_ptr<Program::Program>, std::vector<double>>* getErrorWeights() const;
     };
 } // namespace Learn
 

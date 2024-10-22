@@ -538,3 +538,24 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
     // Mutate the new Programs
     mutateNewProgramBehaviors(maxNbThreads, newPrograms, rng, params, archive);
 }
+
+
+std::map<std::shared_ptr<Program::Program>, std::vector<double>> Mutator::TPGMutator::generateErrorWeights(
+    TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng)
+{
+    // Initialise the map
+    std::map<std::shared_ptr<Program::Program>, std::vector<double>> errorWeights;
+
+    for(const std::unique_ptr<TPG::TPGEdge>& edge: graph.getEdges()){
+        std::shared_ptr<Program::Program> program = edge->getProgramSharedPointer();
+
+        // Initialise the vector of errors of the program
+        std::vector<double> errorThisProgram(program->getNbConstants());
+        std::generate(errorThisProgram.begin(), errorThisProgram.end(), [&rng]() {
+            return rng.getDouble(-1, 1); // TODO NORMAL DISTRIBUTION
+        });
+        errorWeights.insert(std::make_pair(program, errorThisProgram));
+    }
+
+    return errorWeights;
+}

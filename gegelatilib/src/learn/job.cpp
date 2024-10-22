@@ -50,3 +50,9 @@ const TPG::TPGVertex* Learn::Job::getRoot() const
 {
     return root;
 }
+
+
+const std::map<std::shared_ptr<Program::Program>, std::vector<double>>* Learn::Job::getErrorWeights() const
+{
+    return errorWeights;
+}

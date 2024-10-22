@@ -37,6 +37,7 @@
 #define TPG_MUTATOR_H
 
 #include <thread>
+#include <map>
 
 #include "archive.h"
 #include "mutator/mutationParameters.h"
@@ -277,6 +278,19 @@ namespace Mutator {
             const Mutator::MutationParameters& params, Mutator::RNG& rng,
             const std::vector<uint64_t>& vectActions,
             uint64_t maxNbThreads = std::thread::hardware_concurrency());
+
+        /**
+         * Generate a map containing, for each program in the graph, a vector of error weights.
+         * 
+         * The number of error weights is based on the number of constants in the program.
+         * 
+         * \param[in,out] graph the TPGGraph to mutate.
+         * \param[in] params Probability parameters for the mutation.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        std::map<std::shared_ptr<Program::Program>, std::vector<double>> generateErrorWeights(
+            TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng
+        );
     }; // namespace TPGMutator
 };     // namespace Mutator
 

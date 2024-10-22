@@ -83,7 +83,7 @@ namespace Program {
 
 
         /// Number of constants (TODO Change for weights) contained by the program.
-        uint64_t nbConstants;
+        uint64_t nbConstants = 0;
 
 
         /// Delete the default constructor.
@@ -112,7 +112,7 @@ namespace Program {
          */
         Program(const Program& other)
             : environment{other.environment}, lines{other.lines},
-              constants{other.constants}, nbContinuousActions{other.nbContinuousActions}
+              constants{other.constants}, nbContinuousActions{other.nbContinuousActions}, nbConstants{other.nbConstants}
         {
             // Replace lines with their copy
             // Keep intro info
