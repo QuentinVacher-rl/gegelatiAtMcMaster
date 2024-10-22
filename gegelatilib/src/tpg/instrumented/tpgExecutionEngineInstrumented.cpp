@@ -67,10 +67,10 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngineInstrumented::
 std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     TPGExecutionEngineInstrumented::executeFromRoot(
         const TPG::TPGVertex& root, const std::vector<uint64_t>& initActions,
-        uint64_t nbEdgesActivated, std::string activationFunction)
+        uint64_t nbEdgesActivated)
 {
     auto result = TPGExecutionEngine::executeFromRoot(root, initActions,
-                                                      nbEdgesActivated, activationFunction);
+                                                      nbEdgesActivated);
 
     // Increment actions visit
     for (auto vertex : result.first) {

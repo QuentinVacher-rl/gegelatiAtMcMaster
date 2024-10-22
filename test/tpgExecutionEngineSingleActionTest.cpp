@@ -269,13 +269,14 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRoot)
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
 {
-    TPG::TPGExecutionEngine tpee(*e, &a, false, 1);
+    e = new Environment(set, vect, 8, 1, false, 1, "none");
+    TPG::TPGExecutionEngine tpee(*e, &a);
 
     std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
 
     ASSERT_NO_THROW(
         result =
-            tpee.executeFromRoot(*tpg->getRootVertices().at(0), {0}, 1, "none"))
+            tpee.executeFromRoot(*tpg->getRootVertices().at(0)))
         << "Execution of a TPGGraph from a valid root failed.";
 
     std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;
@@ -300,13 +301,14 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuousSigmoid)
 {
-    TPG::TPGExecutionEngine tpee(*e, &a, false, 2);
+    e = new Environment(set, vect, 8, 1, false, 2, "sigmoid");
+    TPG::TPGExecutionEngine tpee(*e, &a);
 
     std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
 
     ASSERT_NO_THROW(
         result =
-            tpee.executeFromRoot(*tpg->getRootVertices().at(0), {0}, 1, "sigmoid"))
+            tpee.executeFromRoot(*tpg->getRootVertices().at(0)))
         << "Execution of a TPGGraph from a valid root failed.";
 
     std::vector<const TPG::TPGVertex*> visitedVertexResult = result.first;

@@ -131,7 +131,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
     // performed. In the evaluation mode only.
     std::shared_ptr<Learn::EvaluationResult> previousEval;
     if (mode == LearningMode::TRAINING &&
-        this->isRootEvalSkipped(*root, previousEval) && !params.evaluateOneGen) {
+        this->isRootEvalSkipped(*root, previousEval)) {
         return previousEval;
     }
 
@@ -158,8 +158,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
             // Get the actions
             std::vector<double> actionsID =
                 tee.executeFromRoot(*root, le.getInitActions(),
-                                    this->params.nbEdgesActivable,
-                                    this->learningEnvironment.getActivationFunction())
+                                    this->params.nbEdgesActivable)
                     .second;
 
             // Do it
@@ -178,7 +177,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
             params.nbIterationsPerPolicyEvaluation));
 
     // Combine it with previous one if any
-    if (previousEval != nullptr && !params.evaluateOneGen) {
+    if (previousEval != nullptr) {
         *evaluationResult += *previousEval;
     }
     return evaluationResult;
@@ -196,13 +195,11 @@ Learn::LearningAgent::evaluateAllRoots(uint64_t generationNumber,
     std::unique_ptr<TPG::TPGExecutionEngine> tee =
         this->tpg->getFactory().createTPGExecutionEngine(
             this->env,
-            (mode == LearningMode::TRAINING) ? &this->archive : NULL,
-            this->learningEnvironment.isDiscrete(), 
-            this->learningEnvironment.getNbContinuousAction());
+            (mode == LearningMode::TRAINING) ? &this->archive : NULL);
 
     auto roots = tpg->getRootVertices();
     for (int i = 0; i < roots.size(); i++) {
-        auto job = makeJob(roots.at(i), mode);
+        auto job = makeJob(roots.at(i), mode, i);
         this->archive.setRandomSeed(job->getArchiveSeed());
         std::shared_ptr<EvaluationResult> avgScore = this->evaluateJob(
             *tee, *job, generationNumber, mode, this->learningEnvironment);
@@ -230,9 +227,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateOneRoot(
     std::unique_ptr<TPG::TPGExecutionEngine> tee =
         this->tpg->getFactory().createTPGExecutionEngine(
             this->env,
-            (mode == LearningMode::TRAINING) ? &this->archive : NULL,
-            this->learningEnvironment.isDiscrete(), 
-            this->learningEnvironment.getNbContinuousAction());
+            (mode == LearningMode::TRAINING) ? &this->archive : NULL);
 
     // Create and evaluate the job
     auto job = makeJob(*iterator, mode);

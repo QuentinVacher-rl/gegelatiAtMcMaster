@@ -218,10 +218,6 @@ void File::ParametersParser::setParameterFromString(
         params.maxNbEvaluationPerPolicy = (size_t)value.asUInt();
         return;
     }
-    if (param == "evaluateOneGen") {
-        params.evaluateOneGen = (bool)value.asBool();
-        return;
-    }
     if (param == "nbRegisters") {
         params.nbRegisters = (size_t)value.asUInt();
         return;
@@ -240,6 +236,10 @@ void File::ParametersParser::setParameterFromString(
     }
     if (param == "doValidation") {
         params.doValidation = value.asBool();
+        return;
+    }
+    if (param == "activationFunction") {
+        params.activationFunction = value.asString();
         return;
     }
     // we didn't recognize the symbol
@@ -277,6 +277,10 @@ void File::ParametersParser::writeParametersToJson(
     root["doValidation"].setComment(
         Learn::LearningParameters::doValidationComment, Json::commentBefore);
 
+    root["activationFunction"] = params.activationFunction;
+    root["activationFunction"].setComment(
+        Learn::LearningParameters::activationFunctionComment, Json::commentBefore);
+
     root["maxNbActionsPerEval"] = params.maxNbActionsPerEval;
     root["maxNbActionsPerEval"].setComment(
         Learn::LearningParameters::maxNbActionsPerEvalComment,
@@ -285,11 +289,6 @@ void File::ParametersParser::writeParametersToJson(
     root["maxNbEvaluationPerPolicy"] = params.maxNbEvaluationPerPolicy;
     root["maxNbEvaluationPerPolicy"].setComment(
         Learn::LearningParameters::maxNbEvaluationPerPolicyComment,
-        Json::commentBefore);
-
-    root["evaluateOneGen"] = params.evaluateOneGen;
-    root["evaluateOneGen"].setComment(
-        Learn::LearningParameters::evaluateOneGenComment,
         Json::commentBefore);
 
     root["nbGenerations"] = params.nbGenerations;

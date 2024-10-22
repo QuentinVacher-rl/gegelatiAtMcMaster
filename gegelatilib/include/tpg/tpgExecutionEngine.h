@@ -61,25 +61,17 @@ namespace TPG {
         Archive* archive;
 
         /**
+         * \brief Environment used  
+         */  
+        const Environment& env;
+
+        /**
          * \brief ProgramExecutionEngine for executing Programs of edges.
          *
          * Keeping this ProgramExecutionEngine as an attribute avoids wasting
          * time rebuilding a new one for each edge.
          */
         Program::ProgramExecutionEngine progExecutionEngine;
-
-        /**
-         * \brief Boolean indicating, if true that discrete actions are used, if false that continuous actions are used
-         */
-        bool useDiscreteAction;
-
-        /**
-         * \brief Number of continuous actions used.
-         * 
-         * This value is needed to now the number of registers to return.
-         * This value is ignored if useDiscreteAction is true.
-         */
-        uint64_t nbContinuousAction;
 
         /**
          * \brief Last program that activated an action
@@ -96,11 +88,9 @@ namespace TPG {
          *                 the Program Execution. By default, a NULL pointer is
          *                 given, meaning that no recording of the execution
          *                 will be made.
-         * \param[in] useDiscreteAction bool indicating if the action taken are discrete or continuous.
-         * \param[in] nbContinuousAction uint64_t indicating the number of continuous actions.
          */
-        TPGExecutionEngine(const Environment& env, Archive* arch = NULL, bool useDiscreteAction = true, uint64_t nbContinuousAction = 0)
-            : progExecutionEngine(env), archive{arch}, useDiscreteAction{useDiscreteAction}, nbContinuousAction{nbContinuousAction} {};
+        TPGExecutionEngine(const Environment& env, Archive* arch = NULL)
+            : progExecutionEngine(env), env{env}, archive{arch} {};
 
         ///  Default virtual destructor
         virtual ~TPGExecutionEngine() = default;
@@ -113,12 +103,18 @@ namespace TPG {
         void setArchive(Archive* newArchive);
 
         /**
+         * \brief get the environment used
+         * 
+         */
+        Environment getEnvironment();
+
+
+        /**
          * \brief Apply a sigmoid function on all the actions
          * 
          * \param[in] actionsTaken a reference to the action taken
-         * \param[in] activationFunction the activation function used
          */
-        void applyActivationFunctionOnActions(std::vector<double>& actionsTaken, std::string activationFunction);
+        void applyActivationFunctionOnActions(std::vector<double>& actionsTaken);
 
         /**
          * \brief Function that reset all the memory registers that have been
@@ -199,7 +195,7 @@ namespace TPG {
          * \param[in] initActions the vector of initial action that can are
          * choosen by default by the root. \param[in] nbEdgesActivated the
          * number of edges that can be activated by team. A team can only
-         * activate a single other team. \param[in] activationFunction is activation function used
+         * activate a single other team.
          * \return a vector containing all the
          * TPGVertex traversed during the evaluation of the TPGGraph. The
          * TPGAction resulting from the TPGGraph execution is at the end of the
@@ -208,8 +204,8 @@ namespace TPG {
         virtual std::pair<std::vector<const TPG::TPGVertex*>,
                           std::vector<double>>
         executeFromRoot(const TPGVertex& root,
-                        const std::vector<uint64_t>& initActions,
-                        uint64_t nbEdgesActivated, std::string activationFunction="none");
+                        const std::vector<uint64_t>& initActions={0},
+                        uint64_t nbEdgesActivated=1);
     };
 }; // namespace TPG
 

@@ -237,7 +237,7 @@ TEST_F(ProgramExecutionEngineTest, execute)
 
     double r6 = (value0 + value1 + value0 + value0) / 4;
     double r1 = value0 + r6;
-    double r0 = r1 * ((int)value1);
+    double r0 = r1 * (value1);
     r0 = r0 * value2 + r1 * value3;
 
     ASSERT_NO_THROW(result = progExecEng.executeProgram())

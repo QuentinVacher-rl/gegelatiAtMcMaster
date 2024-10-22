@@ -183,6 +183,10 @@ size_t Environment::getNbContinuousActions() const{
     return nbContinuousActions;
 }
 
+std::string Environment::getActivationFunction() const{
+    return activationFunction;
+}
+
 size_t Environment::getNbInstructions() const
 {
     return this->nbInstructions;

@@ -112,6 +112,9 @@ class Environment
     /// Number of continuous actions
     const size_t nbContinuousActions;
 
+    /// Activation function for continuous actions
+    const std::string activationFunction;
+
     /// Number of Instruction in the Instructions::Set.
     const size_t nbInstructions;
 
@@ -201,13 +204,15 @@ class Environment
      * \param[in] useMemoryRegs the boolean indicating if the memory registers
      * \param[in] nbContinuousAct the number of continuous actions
      * are used or not is this Environment.
+     * \param[in] activationFunction the activation function used for continuous actions
      */
     Environment(
         const Instructions::Set& iSet,
         const std::vector<std::reference_wrapper<const Data::DataHandler>>&
             dHandlers,
         const size_t nbRegs, const size_t nbConst = 0,
-        bool useMemoryRegs = false, size_t nbContinuousAct = 0)
+        bool useMemoryRegs = false, size_t nbContinuousAct = 0,
+        std::string activationFunction = "none")
         : instructionSet{filterInstructionSet(iSet, nbRegs, nbConst,
                                               dHandlers)},
           dataSources{dHandlers}, nbRegisters{nbRegs},
@@ -216,6 +221,7 @@ class Environment
           nbInstructions{instructionSet.getNbInstructions()},
           maxNbOperands{instructionSet.getMaxNbOperands()},
           nbContinuousActions{nbContinuousAct},
+          activationFunction{activationFunction},
           nbDataSources{
               dHandlers.size() +
               (nbConst > 0 ? 2
@@ -257,6 +263,13 @@ class Environment
      * \return the value of the nbContinuousActions attribute.
      */
     size_t getNbContinuousActions() const;
+
+    /**
+     * \brief Get the activation function used for continuous actions.
+     *
+     * \return the activation function attribute.
+     */
+    std::string getActivationFunction() const;
 
     /**
      * \brief Get the information if the registers used memory or no.

@@ -50,7 +50,12 @@ void TPG::TPGExecutionEngine::setArchive(Archive* newArchive)
     this->archive = newArchive;
 }
 
-void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<double>& actionsTaken, std::string activationFunction)
+Environment TPG::TPGExecutionEngine::getEnvironment()
+{
+    return this->env;
+}
+
+void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<double>& actionsTaken)
 {
 
     for(int i = 0; i < actionsTaken.size(); i++){
@@ -60,19 +65,19 @@ void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<doubl
     }
 
     // Sigmoid function
-    if(activationFunction == "sigmoid"){
+    if(env.getActivationFunction() == "sigmoid"){
         for(size_t i=0; i<actionsTaken.size(); i++){
             actionsTaken[i] = 1.0 / (1.0 + std::exp(-actionsTaken[i]));
         }
-    } else if(activationFunction == "tanh"){
+    } else if(env.getActivationFunction() == "tanh"){
         std::transform(actionsTaken.begin(), actionsTaken.end(), actionsTaken.begin(), [](double x) { return std::tanh(x); });
 
-    } else if(activationFunction != "none"){
-        throw std::runtime_error("Activation function for converting continuous actions not known");
-    } else {
+    } else if(env.getActivationFunction() == "none"){
         for (double& actionTaken : actionsTaken) {
             actionTaken = std::clamp(actionTaken, -1.0, 1.0);
         }
+    } else {
+        throw std::runtime_error("Activation function for converting continuous actions not known");
     }
     
 
@@ -212,7 +217,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     TPGExecutionEngine::executeFromRoot(
         const TPGVertex& root, const std::vector<uint64_t>& initActions,
-        uint64_t nbEdgesActivated, std::string activationFunction)
+        uint64_t nbEdgesActivated)
 {
     const TPGVertex* currentVertex = &root;
     std::vector<const TPGVertex*> visitedVertices;
@@ -236,7 +241,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
 
     // If discrete action are used, browse the raw list of actions and replace the "-1" action by the initial
     // value.
-    if(this->useDiscreteAction){
+    if(this->getEnvironment().getNbContinuousActions() == 0){
         for (uint64_t i = 0; i < rawActionsTaken.size(); i++) {
             if (rawActionsTaken[i] == -1) {
                 actionsTaken.push_back((double)initActions[i]);
@@ -255,12 +260,12 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
 
         if(dynamic_cast<const TPGTeam*>(&root)){
             // Get the action taken
-            actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, nbContinuousAction);
+            actionsTaken = this->progExecutionEngine.getRegisterValues(lastProgramForAction, this->getEnvironment().getNbContinuousActions());
         } else{
-            actionsTaken = std::vector<double>(nbContinuousAction, 0.0);
+            actionsTaken = std::vector<double>(this->getEnvironment().getNbContinuousActions(), 0.0);
         }
 
-        this->applyActivationFunctionOnActions(actionsTaken, activationFunction);
+        this->applyActivationFunctionOnActions(actionsTaken);
 
     }
 

@@ -93,7 +93,7 @@ TEST(LearningParametersTest, setAllParamsFrom)
     ASSERT_EQ(5, params.maxNbActionsPerEval);
     ASSERT_EQ(0.85, params.ratioDeletedRoots);
     ASSERT_EQ(100, params.maxNbEvaluationPerPolicy);
-    ASSERT_EQ(false, params.evaluateOneGen);
+    ASSERT_EQ("none", params.activationFunction);
     ASSERT_EQ(3.0, params.nbRegisters);
     ASSERT_EQ(false, params.useMemoryRegisters);
     ASSERT_EQ(5, params.nbProgramConstant);
@@ -186,7 +186,7 @@ TEST(LearningParametersTest, writeParametersToJson)
     ASSERT_EQ(params.nbEdgesActivable, params2.nbEdgesActivable);
     ASSERT_EQ(params.nbThreads, params2.nbThreads);
     ASSERT_EQ(params.ratioDeletedRoots, params2.ratioDeletedRoots);
-    ASSERT_EQ(params.evaluateOneGen, params2.evaluateOneGen);
+    ASSERT_EQ(params.activationFunction, params2.activationFunction);
 
     // Mutation prog parameters 
     ASSERT_EQ(params.mutation.prog.maxConstValue,

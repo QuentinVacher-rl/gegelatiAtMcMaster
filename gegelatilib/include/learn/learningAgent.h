@@ -134,7 +134,7 @@ namespace Learn {
                       const TPG::TPGFactory& factory = TPG::TPGFactory())
             : learningEnvironment{le},
               env(iSet, le.getDataSources(), p.nbRegisters, p.nbProgramConstant,
-                  p.useMemoryRegisters, le.getNbContinuousAction()),
+                  p.useMemoryRegisters, le.getNbContinuousAction(), p.activationFunction),
               tpg(factory.createTPGGraph(env)), params{p},
               archive(p.archiveSize, p.archivingProbability)
         {
@@ -167,6 +167,17 @@ namespace Learn {
 
         /// Default destructor for polymorphism
         virtual ~LearningAgent() = default;
+
+
+        /// Constructor for copying LearningAgent
+        LearningAgent(const LearningAgent& other)
+            : learningEnvironment(other.learningEnvironment),
+            env(other.env),
+            params(other.params),
+            tpg(other.tpg),
+            rng(other.rng),
+            loggers(other.loggers),
+            archive(other.params.archiveSize, other.params.archivingProbability) {}
 
         /**
          * \brief Getter for the TPGGraph built by the LearningAgent.

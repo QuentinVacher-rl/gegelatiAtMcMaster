@@ -126,12 +126,6 @@ namespace Learn {
         /// evaluated.
         size_t maxNbEvaluationPerPolicy = 1000;
 
-        /// JSon comment
-        inline static const std::string evaluateOneGenComment =
-            "// The score of the root is only the current generation.\n"
-            "// \"evaluateOneGen\" : false, // Default value";
-        /// The score of the root is only the current generation
-        bool evaluateOneGen = false;
 
         /// JSon comment
         inline static const std::string nbIterationsPerJobComment =
@@ -217,6 +211,15 @@ namespace Learn {
          *   - `n > 1`: Set the number of threads explicitly.
          */
         size_t nbThreads = std::thread::hardware_concurrency();
+
+
+
+        /// JSon comment
+        inline static const std::string activationFunctionComment =
+            "// string that indicate the activation function used for continuous actions \n"
+            "// \"activationFunction\" : 'none', // Default value";
+        /// string that indicate the activation function used for continuous actions
+        std::string activationFunction = "none";
 
         /// JSon comment
         inline static const std::string doValidationComment =

@@ -67,12 +67,10 @@ namespace TPG {
          *                 the Program Execution. By default, a NULL pointer is
          *                 given, meaning that no recording of the execution
          *                 will be made.
-         * \param[in] useDiscreteAction bool indicating if the action taken are discrete or continuous.
-         * \param[in] nbContinuousAction uint64_t indicating the number of continuous actions.
          */
         TPGExecutionEngineInstrumented(const Environment& env,
-                                       Archive* arch = NULL, bool useDiscreteAction = true, uint64_t nbContinuousAction = 0)
-            : TPGExecutionEngine(env, arch, useDiscreteAction, nbContinuousAction){};
+                                       Archive* arch = NULL)
+            : TPGExecutionEngine(env, arch){};
 
         /**
          * \brief Specialization of the evaluateEdge function.
@@ -105,8 +103,8 @@ namespace TPG {
          */
         std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>>
         executeFromRoot(const TPGVertex& root,
-                        const std::vector<uint64_t>& initActions,
-                        uint64_t nbEdgesActivated, std::string activationFunction="none") override;
+                        const std::vector<uint64_t>& initActions={},
+                        uint64_t nbEdgesActivated=1) override;
 
         /// Get all previous execution traces.
         const std::vector<std::vector<const TPGVertex*>>& getTraceHistory()
