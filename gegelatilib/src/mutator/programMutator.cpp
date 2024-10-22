@@ -52,6 +52,7 @@ void Mutator::ProgramMutator::initRandomProgram(
         c_value = {
             rng.getDouble(params.prog.minConstValue, params.prog.maxConstValue)};
         p.getConstantHandler().setDataAt(typeid(Data::Constant), i, c_value);
+        p.setNbConstants(p.getEnvironment().getNbConstant());
     }
 
     // Select the number of line randomly

@@ -129,6 +129,16 @@ Program::Line& Program::Program::getLine(uint64_t index)
                 .first; // throws std::out_of_range on bad index.
 }
 
+uint64_t Program::Program::getNbConstants()
+{
+    return this->nbConstants;
+}
+
+void Program::Program::setNbConstants(uint64_t newNbConstants)
+{
+    this->nbConstants = newNbConstants;
+}
+
 bool Program::Program::isIntron(uint64_t index) const
 {
     return this->lines.at(index)

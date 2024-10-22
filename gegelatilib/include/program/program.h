@@ -81,6 +81,11 @@ namespace Program {
          */
         uint64_t nbContinuousActions;
 
+
+        /// Number of constants (TODO Change for weights) contained by the program.
+        uint64_t nbConstants;
+
+
         /// Delete the default constructor.
         Program() = delete;
 
@@ -222,6 +227,17 @@ namespace Program {
          */
         Line& getLine(uint64_t index);
 
+        /**
+         * \brief Get the number of constants in the program.
+         */
+        uint64_t getNbConstants();
+
+        /** 
+         * \brief set a new number of constants in the program.
+         * 
+         * \param[in] newNbConstants set the new number of constants in the program
+         */
+        void setNbConstants(uint64_t newNbConstants);
         /**
          * \brief Checks whether a Line at the given index is an intron.
          *
