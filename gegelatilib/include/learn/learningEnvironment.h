@@ -115,7 +115,6 @@ namespace Learn {
          * action default value set to 0.
          * \param[in] isDiscreteEnv Boolean indicating if this environment uses discrete or continuous actions.
          * \param[in] nbContAct the number of continuous actions
-         * \param[in] actFunc Activation function used by the environment for continuous actions.
          *
          */
         LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0, bool isDiscreteEnv=true, uint64_t nbContAct=0)
@@ -131,11 +130,10 @@ namespace Learn {
          * fill with zeros.
          * \param[in] isDiscreteEnv Boolean indicating if this environment uses discrete or continuous actions.
          * \param[in] nbContAct the number of continuous actions
-         * \param[in] actFunc Activation function used by the environment for continuous actions.
          */
         LearningEnvironment(
             const std::vector<uint64_t>& vectAct,
-            const std::vector<uint64_t>& initAct = std::vector<uint64_t>(), bool isDiscreteEnv=true, uint64_t nbContAct=0, std::string actFunc="none")
+            const std::vector<uint64_t>& initAct = std::vector<uint64_t>(), bool isDiscreteEnv=true, uint64_t nbContAct=0)
             : vectActions{vectAct}, initActions{initAct.empty()
                                                     ? std::vector<uint64_t>(
                                                           vectAct.size(), 0)
