@@ -93,9 +93,6 @@ namespace Learn {
         /// Boolean indicating if this environment uses discrete or continuous actions.
         const bool isDiscreteEnvironment;
 
-        /// Activation function used by the environment for continuous actions.
-        const std::string activationFunction;
-
         /// Number of continuous actions
         const uint64_t nbContinuousAction;
 
@@ -121,8 +118,8 @@ namespace Learn {
          * \param[in] actFunc Activation function used by the environment for continuous actions.
          *
          */
-        LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0, bool isDiscreteEnv=true, uint64_t nbContAct=0, std::string actFunc="none")
-            : vectActions{nbAct}, initActions{initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc}, nbContinuousAction{nbContAct} {};
+        LearningEnvironment(uint64_t nbAct, uint64_t initAct = 0, bool isDiscreteEnv=true, uint64_t nbContAct=0)
+            : vectActions{nbAct}, initActions{initAct}, isDiscreteEnvironment{isDiscreteEnv}, nbContinuousAction{nbContAct} {};
 
         /**
          * \brief Constructor for LearningEnviroment.
@@ -142,7 +139,7 @@ namespace Learn {
             : vectActions{vectAct}, initActions{initAct.empty()
                                                     ? std::vector<uint64_t>(
                                                           vectAct.size(), 0)
-                                                    : initAct}, isDiscreteEnvironment{isDiscreteEnv}, activationFunction{actFunc},nbContinuousAction{nbContAct}
+                                                    : initAct}, isDiscreteEnvironment{isDiscreteEnv}, nbContinuousAction{nbContAct}
         {
             if (this->initActions.size() != this->vectActions.size()) {
                 throw std::runtime_error(
@@ -227,17 +224,6 @@ namespace Learn {
         {
             return nbContinuousAction;
         }
-
-        /**
-         * \brief get the type of activation function, "none" mean no activation function.
-         * 
-         * \return the activation function.
-         */
-        const std::string getActivationFunction() const
-        {
-            return activationFunction;
-        }
-
 
         /**
          * \brief Execute a single action on the LearningEnvironment.
