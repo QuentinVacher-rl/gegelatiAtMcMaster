@@ -177,6 +177,7 @@ void File::TPGGraphDotImporter::readProgram(std::smatch& matches)
             p->getConstantHandler().setDataAt(typeid(Data::Constant), i,
                                               v_constant.at(i));
         }
+        p->setNbConstants(v_constant.size());
         this->programID.insert(
             std::pair<uint64_t, std::shared_ptr<Program::Program>>(
                 std::stoi(matches[1]), p));

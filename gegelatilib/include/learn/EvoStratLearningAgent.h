@@ -39,7 +39,7 @@
 #ifndef EVO_STRAT_LEARNING_AGENT_H
 #define EVO_STRAT_LEARNING_AGENT_H
 
-#include "learn/learningAgent.h"
+#include "learn/parallelLearningAgent.h"
 
 namespace Learn {
 
@@ -56,8 +56,7 @@ namespace Learn {
          * 
          * Each map link each program in the graph to a vector of error weights applied to the constant of the program.
          */
-        std::vector<std::map<std::shared_ptr<Program::Program>, std::vector<double>>> errorWeightsPopulation;
-
+        std::vector<std::map<Program::Program*, std::vector<double>>> errorWeightsPopulation;
 
       public:
 
@@ -83,6 +82,48 @@ namespace Learn {
          * generation.
          */
         virtual void trainOneGeneration(uint64_t generationNumber);
+
+        /**
+         * \brief Evaluates policy starting from the given root.
+         *
+         * Add the error weights to the TPGExecutionEngine then call the Learn::LearningAgent evaluateJob method.
+         *
+         * The method is const to enable potential parallel calls to it.
+         *
+         * \param[in] tee The TPGExecutionEngine to use.
+         * \param[in] job The job containing the root and archiveSeed for
+         * the evaluation.
+         * \param[in] generationNumber the integer number of the current
+         * generation.
+         * \param[in] mode the LearningMode to use during the policy
+         * evaluation.
+         * \param[in] le Reference to the LearningEnvironment to use
+         * during the policy evaluation (may be different from the attribute of
+         * the class in child LearningAgentClass).
+         *
+         * \return a std::shared_ptr to the EvaluationResult for the root. If
+         * this root was already evaluated more times then the limit in
+         * params.maxNbEvaluationPerPolicy, then the EvaluationResult from the
+         * resultsPerRoot map is returned, else the EvaluationResult of the
+         * current generation is returned, already combined with the
+         * resultsPerRoot for this root (if any).
+         */
+        virtual std::shared_ptr<EvaluationResult> evaluateJob(
+            TPG::TPGExecutionEngine& tee, const Job& job,
+            uint64_t generationNumber, LearningMode mode,
+            LearningEnvironment& le) const override;
+
+        /**
+         * \brief Override on the evaluateAllRoots of LearningAgent
+         *
+         * \param[in] generationNumber the integer number of the current
+         * generation.
+         * \param[in] mode the LearningMode to use during the policy
+         * evaluation.
+         */
+        virtual std::multimap<std::shared_ptr<EvaluationResult>, std::map<Program::Program*, std::vector<double>>*>
+        evaluateAllErrorWeights(uint64_t generationNumber, LearningMode mode);
+
 
         /**
          * \brief Takes a given TPGVertex and creates a job containing it.

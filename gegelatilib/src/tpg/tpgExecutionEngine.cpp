@@ -50,6 +50,11 @@ void TPG::TPGExecutionEngine::setArchive(Archive* newArchive)
     this->archive = newArchive;
 }
 
+void TPG::TPGExecutionEngine::setErrorWeights(const std::map<const Program::Program*, std::vector<double>>* newErrorWeights)
+{
+    progExecutionEngine.setErrorWeights(newErrorWeights);
+}
+
 Environment TPG::TPGExecutionEngine::getEnvironment()
 {
     return this->env;

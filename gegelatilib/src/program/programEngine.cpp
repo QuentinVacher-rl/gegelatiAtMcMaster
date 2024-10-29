@@ -63,8 +63,39 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     // are constants used here ?
     size_t offset = 1;
     if (prog.getEnvironment().getNbConstant() > 0) {
-        // replace programs constants if already existing
-        dataScsConstsAndRegs.at(1) = prog.cGetConstantHandler();
+        
+
+        if(errorWeights == nullptr){
+            // replace programs constants if already existing
+            dataScsConstsAndRegs.at(1) = prog.cGetConstantHandler();
+
+        } else {
+            // Create pointer to the program
+            const Program* progPtr = &prog;
+
+            // Find it in the map
+            auto it = errorWeights->find(progPtr);
+            if (it != errorWeights->end()) {
+
+                // Get the weights
+                const std::vector<double>& weights = it->second;
+
+                // If error on weights have been set
+                for(size_t i = 0; i < prog.getEnvironment().getNbConstant(); i++){
+
+                    double* originConstValue = (double*)prog.cGetConstantHandler().getDataAt(typeid(Data::Constant), i).getSharedPointer<Data::Constant>().get();
+                    double weightConstValue = weights.at(i);
+                    constants.setDataAt(typeid(Data::Constant), i, {*originConstValue + weightConstValue});
+                }
+
+                dataScsConstsAndRegs.at(1) = constants;
+
+            } else {
+                 throw std::runtime_error("Program not find in the map of error weights");
+            }
+
+        }
+
         // increment offset for the datahandlers verification
         offset++;
     }
@@ -107,6 +138,12 @@ void Program::ProgramEngine::setProgram(const Program& prog)
 
     // Reset the counters
     this->programCounter = 0;
+
+}
+
+void Program::ProgramEngine::setErrorWeights(const std::map<const Program*, std::vector<double>>* newErrorWeights)
+{
+    this->errorWeights = newErrorWeights;
 }
 
 const std::vector<std::reference_wrapper<const Data::DataHandler>>& Program::

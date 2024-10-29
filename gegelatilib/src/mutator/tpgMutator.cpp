@@ -540,22 +540,44 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 }
 
 
-std::map<std::shared_ptr<Program::Program>, std::vector<double>> Mutator::TPGMutator::generateErrorWeights(
-    TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng)
+std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateErrorWeights(
+    TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng, double xmin, double xmax)
 {
     // Initialise the map
-    std::map<std::shared_ptr<Program::Program>, std::vector<double>> errorWeights;
+    std::map<Program::Program*, std::vector<double>> errorWeights;
 
     for(const std::unique_ptr<TPG::TPGEdge>& edge: graph.getEdges()){
-        std::shared_ptr<Program::Program> program = edge->getProgramSharedPointer();
+        Program::Program* program = &edge->getProgram();
 
         // Initialise the vector of errors of the program
         std::vector<double> errorThisProgram(program->getNbConstants());
-        std::generate(errorThisProgram.begin(), errorThisProgram.end(), [&rng]() {
-            return rng.getDouble(-1, 1); // TODO NORMAL DISTRIBUTION
+
+        std::generate(errorThisProgram.begin(), errorThisProgram.end(), [&rng, &xmin, xmax]() {
+            return rng.getDouble(xmin, xmax); // TODO NORMAL DISTRIBUTION
         });
+
+
         errorWeights.insert(std::make_pair(program, errorThisProgram));
     }
 
     return errorWeights;
 }
+
+std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateTwinNegErrorWeights(
+    TPG::TPGGraph& graph, std::map<Program::Program*, std::vector<double>> initError)
+{
+    // Initialise the map
+    std::map<Program::Program*, std::vector<double>> twinNegErrorWeights;
+
+    for(auto pair: initError){
+        std::vector<double> negatedError(pair.first->getNbConstants());
+        std::transform(pair.second.begin(), pair.second.end(), negatedError.begin(),
+                [](double x) { return -x; });
+        
+        twinNegErrorWeights.insert(std::make_pair(pair.first, negatedError));  
+    }
+
+    return twinNegErrorWeights;
+   
+}
+

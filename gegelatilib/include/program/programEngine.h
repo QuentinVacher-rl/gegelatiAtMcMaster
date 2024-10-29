@@ -69,6 +69,9 @@ namespace Program {
         // Data::PrimitiveTypeArray<double> to keep track of
         // accessed addresses.
 
+        /// Constants used for the Program execution.
+        Data::ConstantHandler constants; 
+
         /// @brief TODO
         std::unordered_map<const Program*,
                            std::shared_ptr<Data::PrimitiveTypeArray<double>>>
@@ -85,6 +88,10 @@ namespace Program {
         /// Program counter of the execution engine.
         uint64_t programCounter;
 
+        /// Pointer (possibly null) to the error weights.
+        const std::map<const Program*, std::vector<double>>* errorWeights = nullptr;
+
+
       protected:
         /**
          * \brief Constructor of the class.
@@ -98,6 +105,7 @@ namespace Program {
             : programCounter{0},
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   env.getNbRegisters())},
+              constants{env.getNbConstant()},
               program{NULL}, dataSources{env.getDataSources()}
         {
             // Setup the data sources
@@ -135,6 +143,7 @@ namespace Program {
             : programCounter{0},
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   prog.getEnvironment().getNbRegisters())},
+              constants{prog.getEnvironment().getNbConstant()},
               program{NULL}
         {
             // Check that T is either convertible to a const DataHandler
@@ -188,6 +197,14 @@ namespace Program {
          * ProgramExecutionEngine.
          */
         void setProgram(const Program& prog);
+
+
+        /**
+         * \brief Set the errorWeights for the programs to the programEngine.
+         * 
+         * \param[in] newErrorWeights A pointer to the error weights
+         */
+        void setErrorWeights(const std::map<const Program*, std::vector<double>>* newErrorWeights);
 
         /**
          * \brief Method for changing the dataSources on which the Program will

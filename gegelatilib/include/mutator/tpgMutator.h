@@ -287,10 +287,22 @@ namespace Mutator {
          * \param[in,out] graph the TPGGraph to mutate.
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
+         * \param[in] xmin leave alone
+         * \param[in] xmax leave alone
          */
-        std::map<std::shared_ptr<Program::Program>, std::vector<double>> generateErrorWeights(
-            TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng
+        std::map<Program::Program*, std::vector<double>> generateErrorWeights(
+            TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng, double xmin, double xmax
         );
+        /**
+         * Generate a map containing, for each program in the graph, a vector of error weights.
+         * 
+         * The number of error weights is based on the number of constants in the program.
+         * 
+         * \param[in,out] graph the TPGGraph to mutate.
+         * \param[in,out] initError the TPGGraph to mutate.
+         */
+        std::map<Program::Program*, std::vector<double>> generateTwinNegErrorWeights(
+            TPG::TPGGraph& graph, std::map<Program::Program*, std::vector<double>> initError);
     }; // namespace TPGMutator
 };     // namespace Mutator
 

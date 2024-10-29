@@ -103,6 +103,13 @@ namespace TPG {
         void setArchive(Archive* newArchive);
 
         /**
+         * \brief Set the errorWeights for the programs to the programExecutionEngine.
+         * 
+         * \param[in] newErrorWeights A pointer to the error weights
+         */
+        void setErrorWeights(const std::map<const Program::Program*, std::vector<double>>* newErrorWeights);
+
+        /**
          * \brief get the environment used
          * 
          */

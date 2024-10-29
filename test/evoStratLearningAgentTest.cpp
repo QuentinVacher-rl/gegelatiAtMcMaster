@@ -52,6 +52,7 @@
 #include "tpg/policyStats.h"
 #include "tpg/tpgGraph.h"
 
+#include "instructions/multByConstant.h"
 #include "instructions/addPrimitiveType.h"
 #include "mutator/rng.h"
 #include "mutator/tpgMutator.h"
@@ -68,20 +69,21 @@ class EvoStratLearningAgentTest : public ::testing::Test
 {
   protected:
     Instructions::Set set;
-    StickGameWithOpponent le;
+    GridWorld le;
     Learn::LearningParameters params;
     Learn::LearningAgent* la;
 
     virtual void SetUp()
     {
-        set.add(*(new Instructions::AddPrimitiveType<int>()));
         set.add(*(new Instructions::AddPrimitiveType<double>()));
+        set.add(*(new Instructions::MultByConstant<double>()));
+
 
         // Proba as in Kelly's paper
         params.mutation.tpg.maxInitOutgoingEdges = 3;
         params.mutation.prog.maxProgramSize = 96;
         params.mutation.prog.initProgramSize = 96;
-        params.mutation.tpg.nbRoots = 15;
+        params.mutation.tpg.nbRoots = 20;
         params.mutation.tpg.pEdgeDeletion = 0.7;
         params.mutation.tpg.pEdgeAddition = 0.7;
         params.mutation.tpg.pProgramMutation = 0.2;
@@ -95,11 +97,15 @@ class EvoStratLearningAgentTest : public ::testing::Test
         params.mutation.prog.pConstantMutation = 0.5;
         params.mutation.prog.minConstValue = 0;
         params.mutation.prog.maxConstValue = 1;
-        params.nbProgramConstant = 5;
+        params.nbProgramConstant = 10;
 
         la = new Learn::LearningAgent(le, set, params);
         la->init();
         la->trainOneGeneration(0);
+        la->trainOneGeneration(1);
+        la->trainOneGeneration(2);
+        la->trainOneGeneration(3);
+        la->trainOneGeneration(4);
 
     }
 
@@ -127,9 +133,14 @@ TEST_F(EvoStratLearningAgentTest, initConstants)
 {
     std::cout << "Test de l'initialisation des constantes..." << std::endl;
 
+    la->keepBestPolicy();
+
     Learn::EvoStratLearningAgent esLa(*la);
 
-    esLa.trainOneGeneration(0);
+    for(auto i = 0; i < 3; i++){
+
+        esLa.trainOneGeneration(i);
+    }
 
 
 }
