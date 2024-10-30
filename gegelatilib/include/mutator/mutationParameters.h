@@ -60,10 +60,24 @@ namespace Mutator {
             "// Number of root TPGTeams at the initialisation of a "
             "TPGGraph.\n"
             "// If 0, if will be init to the number of surviving roots\n"
-            "// \"nbRoots\" : 0, // Default value";
+            "// \"nbInitRoots\" : 0, // Default value";
         /// Number of root TPGTeams at the initialisation of a TPGGraph
         /// If 0, if will be init to the number of surviving roots
         size_t initNbRoots = 0;
+
+        /// JSon comment
+        inline static const std::string initNbActionsComment =
+            "//  Number of actions vertex at the initialisation of a TPGGraph\n"
+            "// \"initNbActions\" : 10, // Default value";
+        /// Number of actions vertex at the initialisation of a TPGGraph
+        size_t initNbActions = 10;
+    
+        /// JSon comment
+        inline static const std::string pCreateNewActionComment =
+            "//  Probablity of creating a new action vertex, with a new action program\n"
+            "// \"pCreateNewAction\" : 0.1, // Default value";
+        ///  Probablity of creating a new action vertex, with a new action program
+        double pCreateNewAction = 0.1;
 
         /// JSon comment
         inline static const std::string maxInitOutgoingEdgesComment =

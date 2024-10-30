@@ -73,11 +73,6 @@ namespace TPG {
          */
         Program::ProgramExecutionEngine progExecutionEngine;
 
-        /**
-         * \brief Last program that activated an action
-         */
-        std::shared_ptr<Program::Program> lastProgramForAction;
-
       public:
         /**
          * \brief Main constructor of the class.
@@ -161,7 +156,7 @@ namespace TPG {
          * \return true if the action changed
          */
         virtual bool executeAction(const TPG::TPGVertex* currentAction,
-                                   std::vector<std::int64_t>* actionsTaken);
+                                   std::vector<double>* actionsTaken);
 
         /**
          * \brief Execute all the Program of the outgoing TPGEdge of the
@@ -190,7 +185,7 @@ namespace TPG {
         virtual std::vector<const TPGEdge*> executeTeam(
             const TPG::TPGVertex* currentTeam,
             std::vector<const TPG::TPGVertex*>& visitedTeams,
-            std::vector<std::int64_t>* actionsTaken, uint64_t nbEdgesActivated);
+            std::vector<double>* actionsTaken, uint64_t nbEdgesActivated);
 
         /**
          * \brief Execute the TPGGraph starting from the given TPGVertex.

@@ -142,11 +142,13 @@ namespace TPG {
          *
          * \param[in] actionID the ID identifier to associate to the TPGAction.
          * \param[in] actionClass the Class identifier to associate to the
+         * \param[in] prog TODO
          * TPGAction. Default value set to 0 for single action cases; \return a
          * const reference to the newly created TPGAction.
          */
         const TPGAction& addNewAction(uint64_t actionID,
-                                      uint64_t actionClass = 0);
+                                      uint64_t actionClass = 0,
+                                      const std::shared_ptr<Program::Program> prog = nullptr);
 
         /**
          * \brief Get the number of TPGVertex contained in the TPGGraph.

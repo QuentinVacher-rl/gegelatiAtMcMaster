@@ -307,7 +307,9 @@ void Learn::LearningAgent::decimateWorstRoots(
     while (i < nbRootsToDelete && results.size() > 0) {
         // If the root is an action, do not remove it!
         const TPG::TPGVertex* root = results.begin()->second;
-        if (dynamic_cast<const TPG::TPGAction*>(root) == nullptr) {
+
+        // Action can now be removed when continuous action are used
+        if (env.getNbContinuousActions() > 0 || dynamic_cast<const TPG::TPGAction*>(root) == nullptr) {
             tpg->removeVertex(*results.begin()->second);
             // Removed stored result (if any)
             this->resultsPerRoot.erase(results.begin()->second);

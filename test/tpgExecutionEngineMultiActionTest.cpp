@@ -182,7 +182,7 @@ TEST_F(TPGExecutionEngineTestMultiAction, EvaluateTeam)
 {
     TPG::TPGExecutionEngine tpee(*e);
 
-    std::vector<int64_t> initActions(2, -1);
+    std::vector<double> initActions(2, 0);
     std::vector<const TPG::TPGVertex*> visitedVertices;
 
     std::vector<const TPG::TPGEdge*> result;

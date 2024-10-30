@@ -42,3 +42,18 @@ void TPG::TPGAction::addOutgoingEdge(TPGEdge* edge)
     throw std::runtime_error(
         "Cannot add an outgoing edge to an Action vertex.");
 }
+
+Program::Program& TPG::TPGAction::getProgram() const
+{
+    return *this->actionProgram;
+}
+
+std::shared_ptr<Program::Program> TPG::TPGAction::getPtrProgram() const{
+    return this->actionProgram;
+}
+
+void TPG::TPGAction::setProgram(
+    const std::shared_ptr<Program::Program> prog) const
+{
+    this->actionProgram = prog;
+}

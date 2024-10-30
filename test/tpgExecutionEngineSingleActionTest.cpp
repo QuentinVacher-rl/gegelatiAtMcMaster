@@ -214,7 +214,7 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateAction)
 {
     TPG::TPGExecutionEngine tpee(*e);
 
-    std::vector<int64_t> actionsTaken(1, -1);
+    std::vector<double> actionsTaken(0);
     std::vector<const TPG::TPGVertex*> visitedVertices;
 
     ASSERT_NO_THROW(
@@ -229,7 +229,7 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateTeam)
 {
     TPG::TPGExecutionEngine tpee(*e);
 
-    std::vector<int64_t> actionsTaken(1, -1);
+    std::vector<double> actionsTaken(0);
     std::vector<const TPG::TPGVertex*> visitedVertices;
 
     const TPG::TPGEdge* result = NULL;

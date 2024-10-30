@@ -81,9 +81,16 @@ const TPG::TPGTeam& TPG::TPGGraph::addNewTeam()
 }
 
 const TPG::TPGAction& TPG::TPGGraph::addNewAction(uint64_t actionID,
-                                                  uint64_t actionClass)
+                                                  uint64_t actionClass,
+                                                  const std::shared_ptr<Program::Program> prog)
 {
-    this->vertices.push_back(factory->createTPGAction(actionID, actionClass));
+
+    TPGAction* newAction = factory->createTPGAction(actionID, actionClass);
+
+    newAction->setProgram(prog);
+
+    this->vertices.push_back(newAction);
+
     return (const TPGAction&)(*this->vertices.back());
 }
 
@@ -172,12 +179,20 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
         this->addNewTeam();
     }
     else if (dynamic_cast<const TPG::TPGAction*>(&vertex) != nullptr) {
-        const TPGAction action = (const TPGAction&)vertex;
-        this->addNewAction(action.getActionID(), action.getActionClass());
+        const TPGAction action = (const TPGAction&)vertex; 
+
+        std::shared_ptr<Program::Program> prog = action.getPtrProgram();
+        std::shared_ptr<Program::Program> newProg = nullptr;
+        if(prog != nullptr){
+            newProg = std::make_shared<Program::Program>(*prog);
+        }
+
+        this->addNewAction(action.getActionID(), action.getActionClass(), newProg);
     }
 
     // Get the new vertex
     TPGVertex* newVertex = this->vertices.back();
+
 
     // Copy the outgoing edges (if any).
     for (auto edge : vertex.getOutgoingEdges()) {

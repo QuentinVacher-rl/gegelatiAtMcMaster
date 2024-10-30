@@ -227,7 +227,7 @@ TEST_F(TPGExecutionEngineInstrumentedTest, EvaluateTeam)
     const TPG::TPGEdge* result = NULL;
     ASSERT_NO_THROW(result =
                         tpeei.executeTeam(tpg->getVertices().at(1),
-                                          visitedVertices, &initActions, 1)[0];)
+                                          visitedVertices, new std::vector<double>(0), 1)[0];)
         << "Evaluation of a valid TPGTeam with no exclusion failed.";
     // Expected result is edge between T1 -> T2 (with 0.9)
     ASSERT_EQ(result, edges.at(5))

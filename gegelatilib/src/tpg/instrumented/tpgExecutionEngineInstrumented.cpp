@@ -48,7 +48,7 @@ double TPG::TPGExecutionEngineInstrumented::evaluateEdge(const TPGEdge& edge)
 std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngineInstrumented::
     executeTeam(const TPGVertex* currentTeam,
                 std::vector<const TPGVertex*>& visitedVertices,
-                std::vector<std::int64_t>* actionsTaken,
+                std::vector<double>* actionsTaken,
                 uint64_t nbEdgesActivated)
 {
 

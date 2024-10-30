@@ -40,6 +40,8 @@
 #include <cstdint>
 
 #include "tpg/tpgVertex.h"
+#include "program/program.h"
+
 
 namespace TPG {
     /**
@@ -50,6 +52,12 @@ namespace TPG {
      */
     class TPGAction : public TPGVertex
     {
+
+        /// Shared pointer to the Program to execute when doing continuous Action
+        /// of this TPGEdge.
+        /// This attribute is mutable to enable its modification during
+        /// mutations.
+        mutable std::shared_ptr<Program::Program> actionProgram;
 
         /**
          * \brief Integer number abstracting the ID of selected action.
@@ -79,6 +87,32 @@ namespace TPG {
          */
         TPGAction(const uint64_t actID, const uint64_t actClass = 0)
             : actionID{actID}, actionClass{actClass} {};
+
+        /**
+         * \brief Get a const reference to the Program of the TPGEdge.
+         *
+         * \return a const reference to the Program of the TPGEdge.
+         */
+        Program::Program& getProgram() const;
+
+        /**
+         * \brief Get a const reference to the Program of the TPGEdge.
+         *
+         * \return a const reference to the Program of the TPGEdge.
+         */
+        std::shared_ptr<Program::Program> getPtrProgram() const;
+
+        /**
+         * \brief Set a new Program for the TPGEdge.
+         *
+         * This method is const to enable use outside of the TPGGraph which is
+         * the only class accessing the non-const TPGEdge. Since the program
+         * pointer attribute is mutable, this method can successfully be used to
+         * alter the program.
+         *
+         * \param[in] prog the new shared pointer to a Program.
+         */
+        void setProgram(const std::shared_ptr<Program::Program> prog) const;
 
         /**
          * \brief Specialization throwing an std::runtime_exception.

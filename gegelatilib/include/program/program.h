@@ -76,11 +76,6 @@ namespace Program {
          **/
         Data::ConstantHandler constants;
 
-        /**
-         * Number of continuous actions
-         */
-        uint64_t nbContinuousActions;
-
 
         /// Number of constants (TODO Change for weights) contained by the program.
         uint64_t nbConstants = 0;
@@ -97,7 +92,7 @@ namespace Program {
          * in the Program attributes.
          */
         Program(const Environment& e)
-            : environment{e}, constants{e.getNbConstant()}, nbContinuousActions{e.getNbContinuousActions()}
+            : environment{e}, constants{e.getNbConstant()}
         {
             constants.resetData(); // force all constant to 0 at first.
         };
@@ -112,7 +107,7 @@ namespace Program {
          */
         Program(const Program& other)
             : environment{other.environment}, lines{other.lines},
-              constants{other.constants}, nbContinuousActions{other.nbContinuousActions}, nbConstants{other.nbConstants}
+              constants{other.constants}, nbConstants{other.nbConstants}
         {
             // Replace lines with their copy
             // Keep intro info

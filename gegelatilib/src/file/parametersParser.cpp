@@ -109,6 +109,15 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.initNbRoots = (size_t)value.asUInt();
         return;
     }
+    if (param == "initNbActions") {
+        params.mutation.tpg.initNbActions = (size_t)value.asUInt();
+        return;
+    }
+    if (param == "pCreateNewAction") {
+        params.mutation.tpg.pCreateNewAction = (double)value.asDouble();
+        return;
+    }
+
     if (param == "maxInitOutgoingEdges") {
         params.mutation.tpg.maxInitOutgoingEdges = (size_t)value.asUInt();
         return;

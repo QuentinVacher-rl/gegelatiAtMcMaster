@@ -140,6 +140,7 @@ namespace Mutator {
             TPG::TPGGraph& graph, const TPG::TPGEdge* edge,
             const std::vector<const TPG::TPGTeam*>& preExistingTeams,
             const std::vector<const TPG::TPGAction*>& preExistingActions,
+            std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
 
         /**

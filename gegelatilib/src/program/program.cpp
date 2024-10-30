@@ -155,7 +155,7 @@ uint64_t Program::Program::identifyIntrons()
     // Start with only register 0
     usefulRegisters.insert(0);
 
-    for(auto i=0; i<nbContinuousActions; i++){
+    for(auto i=0; i<this->environment.getNbContinuousActions(); i++){
         usefulRegisters.insert(i+1);
     }
     bool needReset = environment.isMemoryRegisters();

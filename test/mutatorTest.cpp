@@ -735,9 +735,10 @@ TEST_F(MutatorTest, TPGMutatorMutateEdgeDestination)
     params.tpg.pEdgeDestinationIsAction = 0.5;
 
     Mutator::RNG rng;
+    std::list<std::shared_ptr<Program::Program>> programs;
     rng.setSeed(2);
     ASSERT_NO_THROW(Mutator::TPGMutator::mutateEdgeDestination(
-        tpg, &edge1, {&vertex3, &vertex4}, {&vertex1, &vertex2}, params, rng));
+        tpg, &edge1, {&vertex3, &vertex4}, {&vertex1, &vertex2}, programs, params, rng));
     // Check properties of the tpg
     ASSERT_EQ(tpg.getEdges().size(), 2)
         << "Number of edge should remain unchanged after destination change.";
