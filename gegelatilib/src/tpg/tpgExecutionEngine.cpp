@@ -84,8 +84,6 @@ void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<doubl
     } else {
         throw std::runtime_error("Activation function for converting continuous actions not known");
     }
-    
-
 }
 
 void TPG::TPGExecutionEngine::resetAllMemoryRegisters()
@@ -138,6 +136,8 @@ bool TPG::TPGExecutionEngine::executeAction(
         auto result = this->progExecutionEngine.getRegisterValues(action->getPtrProgram(), this->getEnvironment().getNbContinuousActions());
 
         actionsTaken->assign(result.begin(), result.end());
+
+
     }
     return true;
 
@@ -240,9 +240,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
                     visitedVertices, &actionsTaken, nbEdgesActivated);
     }
     else {
-        auto action = (const TPGAction*)currentVertex;
-        visitedVertices.push_back(currentVertex);
-        actionsTaken[action->getActionClass()] = action->getActionID();
+        executeAction(currentVertex, &actionsTaken);
     }
 
 

@@ -91,7 +91,7 @@ void Mutator::TPGMutator::initRandomTPG(
              actionID++) {
 
             if(graph.getEnvironment().getNbContinuousActions() > 0){
-                std::shared_ptr<Program::Program> prog = std::make_shared<Program::Program>(graph.getEnvironment());
+                std::shared_ptr<Program::Program> prog = std::make_shared<Program::Program>(graph.getEnvironment(), true);
                 Mutator::ProgramMutator::initRandomProgram(*prog, params, rng);
                 actions.push_back(&(graph.addNewAction(actionID, actionClass, prog)));
             } else {
