@@ -145,6 +145,11 @@ bool Program::Program::isIntron(uint64_t index) const
         .second; // throws std::out_of_range on bad index.
 }
 
+bool Program::Program::isActionProgram() const
+{
+    return actionProgram;
+}
+
 uint64_t Program::Program::identifyIntrons()
 {
     // Create fake registers to identify accessed addresses.
@@ -152,13 +157,20 @@ uint64_t Program::Program::identifyIntrons()
         this->environment.getFakeDataSources().at(0);
     // Set of useful register
     std::set<uint64_t> usefulRegisters;
+    
     // Start with only register 0
     usefulRegisters.insert(0);
 
-    for(auto i=0; i<this->environment.getNbContinuousActions(); i++){
-        usefulRegisters.insert(i+1);
+    if(actionProgram){
+        for(auto i=0; i<this->environment.getNbContinuousActions(); i++){
+            usefulRegisters.insert(i);
+        }
     }
-    bool needReset = environment.isMemoryRegisters();
+
+    bool needReset = false;
+    if(environment.isMemoryRegisters()){
+        needReset = true;
+    }
 
     for(auto &line: this->lines){
         line.second = true;

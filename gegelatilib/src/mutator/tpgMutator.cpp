@@ -179,12 +179,15 @@ void Mutator::TPGMutator::initRandomTPG(
                     ? randomProgIndex[1]
                     : randomProgIndex[0];
 
+            // Copy the program
+            programs.emplace_back(new Program::Program(*programs.at(selectedProgramIndex).get()));
+
             // Add the connection
             graph.addNewEdge(*team,
                              *actions.at(((selectedProgramIndex / 2) +
                                           (selectedProgramIndex % 2)) %
                                          nbActions),
-                             programs.at(selectedProgramIndex));
+                             programs.back());
         }
     }
 }

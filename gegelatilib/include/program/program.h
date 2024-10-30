@@ -55,6 +55,9 @@ namespace Program {
         /// Environment within which the Program will be executed.
         const Environment& environment;
 
+        /// Boolean indicating if true that the program is an action program, if false that it is a context program
+        bool actionProgram;
+
         /**
          * \brief Lines of the program and intron property.
          *
@@ -89,10 +92,11 @@ namespace Program {
          * \brief Main constructor of the Program.
          *
          * \param[in] e the reference to the Environment that will be referenced
+         * \param[in] actProg Boolean indicating if true that the program is an action program, if false that it is a context program
          * in the Program attributes.
          */
-        Program(const Environment& e)
-            : environment{e}, constants{e.getNbConstant()}
+        Program(const Environment& e, bool actProg = false)
+            : environment{e}, constants{e.getNbConstant()}, actionProgram{actProg}
         {
             constants.resetData(); // force all constant to 0 at first.
         };
@@ -107,7 +111,7 @@ namespace Program {
          */
         Program(const Program& other)
             : environment{other.environment}, lines{other.lines},
-              constants{other.constants}, nbConstants{other.nbConstants}
+              constants{other.constants}, nbConstants{other.nbConstants}, actionProgram{other.actionProgram}
         {
             // Replace lines with their copy
             // Keep intro info
@@ -242,6 +246,11 @@ namespace Program {
          * \throw std::out_of_range if the index is too large.
          */
         bool isIntron(uint64_t index) const;
+
+        /**
+         * \brief Return wether the current program is or not an action program.
+         */
+        bool isActionProgram() const;
 
         /**
          * \brief Scan the Line of the Program to identify introns.
