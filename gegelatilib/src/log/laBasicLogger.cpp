@@ -64,7 +64,7 @@ void Log::LABasicLogger::logHeader()
 {
     // First line of header
     //*this << std::left;
-    *this << std::setw(2 * colWidth) << " " << std::setw(colWidth) << "Train";
+    *this << std::setw(2 * colWidth) << " " << std::setw(colWidth) << " " << std::setw(colWidth) << "Train";
     if (doValidation) {
         *this << std::setw(2 * colWidth) << " " << std::setw(1 * colWidth)
               << "Valid";
@@ -73,7 +73,7 @@ void Log::LABasicLogger::logHeader()
 
     // Second line of header
     //*this << std::right;
-    *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "NbVert"
+    *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "NbAct" << std::setw(colWidth) << "NbTeam"
           << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
           << std::setw(colWidth) << "Max";
     if (doValidation) {
@@ -99,8 +99,17 @@ void Log::LABasicLogger::logAfterPopulateTPG()
 {
     this->mutationTime = getDurationFrom(*checkpoint);
 
-    *this << std::setw(colWidth)
-          << this->learningAgent.getTPGGraph()->getNbVertices();
+    auto vertex = this->learningAgent.getTPGGraph()->getVertices();
+
+    uint64_t nbTeams = std::count_if(vertex.begin(), vertex.end(),
+        [](const TPG::TPGVertex* vertex) {
+            return dynamic_cast<const TPG::TPGTeam*>(vertex) != nullptr;
+        });
+
+    uint64_t nbActions = this->learningAgent.getTPGGraph()->getNbVertices() - nbTeams;
+
+    *this << std::setw(colWidth) << nbActions 
+          << std::setw(colWidth) << nbTeams ;
 
     chronoFromNow();
 }
