@@ -420,7 +420,7 @@ void Mutator::TPGMutator::mutateProgramBehaviorAgainstArchive(
 
         // If the result is not unique, do another mutation.
         allUnique = archive.areProgramResultsUnique(hashesAndResults);
-    } while (!allUnique);
+    } while (!allUnique && !newProg->isActionProgram());
 }
 
 void Mutator::TPGMutator::mutateNewProgramBehaviors(
