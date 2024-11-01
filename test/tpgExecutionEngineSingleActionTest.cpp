@@ -269,7 +269,7 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRoot)
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
 {
-    e = new Environment(set, vect, 8, 1, false, 1, "none");
+    e = new Environment(set, vect, 8, 1, false, 1, 8, "none");
     TPG::TPGExecutionEngine tpee(*e, &a);
 
     std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
@@ -301,7 +301,7 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuousSigmoid)
 {
-    e = new Environment(set, vect, 8, 1, false, 2, "sigmoid");
+    e = new Environment(set, vect, 8, 1, false, 2, 8, "sigmoid");
     TPG::TPGExecutionEngine tpee(*e, &a);
 
     std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;

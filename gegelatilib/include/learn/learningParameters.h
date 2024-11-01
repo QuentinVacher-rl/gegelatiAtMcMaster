@@ -156,11 +156,18 @@ namespace Learn {
         size_t nbIterationsPerJob = 1;
 
         /// JSon comment
-        inline static const std::string nbRegistersComment =
-            "// Number of registers for the Program execution.\n"
-            "// \"nbRegisters\" : 8, // Default value";
+        inline static const std::string nbRegistersContProgComment =
+            "// Number of registers for the Context Program execution.\n"
+            "// \"nbRegistersContProg\" : 8, // Default value";
         /// Number of registers for the Program execution
-        size_t nbRegisters = 8;
+        size_t nbRegistersContProg = 8;
+
+        /// JSon comment
+        inline static const std::string nbRegistersActProgComment =
+            "// Number of registers for the Action Program execution.\n"
+            "// \"nbRegistersActProg\" : 8, // Default value";
+        /// Number of registers for the Program execution
+        size_t nbRegistersActProg = 8;
 
         /// JSon comment
         inline static const std::string nbProgramConstantComment =

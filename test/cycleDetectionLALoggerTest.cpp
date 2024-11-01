@@ -59,7 +59,7 @@ class CycleDetectionLoggerTest : public ::testing::Test
     {
         // Proba as in Kelly's paper
         params.mutation.tpg.maxInitOutgoingEdges = 3;
-        params.mutation.prog.maxProgramSize = 96;
+        params.mutation.contProg.maxProgramSize = 96;
         params.mutation.tpg.nbRoots = 15;
         params.mutation.tpg.pEdgeDeletion = 0.7;
         params.mutation.tpg.pEdgeAddition = 0.7;
@@ -67,12 +67,12 @@ class CycleDetectionLoggerTest : public ::testing::Test
         params.mutation.tpg.pEdgeDestinationChange = 0.1;
         params.mutation.tpg.pEdgeDestinationIsAction = 0.5;
         params.mutation.tpg.maxOutgoingEdges = 4;
-        params.mutation.prog.pAdd = 0.5;
-        params.mutation.prog.pDelete = 0.5;
-        params.mutation.prog.pMutate = 1.0;
-        params.mutation.prog.pSwap = 1.0;
-        params.mutation.prog.minConstValue = 0;
-        params.mutation.prog.maxConstValue = 3;
+        params.mutation.contProg.pAdd = 0.5;
+        params.mutation.contProg.pDelete = 0.5;
+        params.mutation.contProg.pMutate = 1.0;
+        params.mutation.contProg.pSwap = 1.0;
+        params.mutation.contProg.minConstValue = 0;
+        params.mutation.contProg.maxConstValue = 3;
         params.nbProgramConstant = 0;
 
         params.archiveSize = 50;

@@ -452,10 +452,10 @@ TEST_F(MutatorTest, ProgramMutatorInitProgram)
     rng.setSeed(0);
 
     Mutator::MutationParameters params;
-    params.prog.maxProgramSize = 96;
-    params.prog.initProgramSize = 96;
-    params.prog.maxConstValue = 10;
-    params.prog.minConstValue = 0;
+    params.contProg.maxProgramSize = 96;
+    params.contProg.initProgramSize = 96;
+    params.contProg.maxConstValue = 10;
+    params.contProg.minConstValue = 0;
 
     ASSERT_NO_THROW(Mutator::ProgramMutator::initRandomProgram(*p, params, rng))
         << "Empty Program Random init failed";
@@ -505,14 +505,14 @@ TEST_F(MutatorTest, ProgramMutatorMutateBehavior)
     Mutator::LineMutator::initRandomCorrectLine(l3, rng);
 
     Mutator::MutationParameters params;
-    params.prog.maxProgramSize = 15;
-    params.prog.pDelete = 0.5;
-    params.prog.pAdd = 0.0;
-    params.prog.pMutate = 0.0;
-    params.prog.pSwap = 0.0;
-    params.prog.maxConstValue = 1;
-    params.prog.minConstValue = 0;
-    params.prog.pConstantMutation = 0.2;
+    params.contProg.maxProgramSize = 15;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pAdd = 0.0;
+    params.contProg.pMutate = 0.0;
+    params.contProg.pSwap = 0.0;
+    params.contProg.maxConstValue = 1;
+    params.contProg.minConstValue = 0;
+    params.contProg.pConstantMutation = 0.2;
 
     rng.setSeed(0);
     ASSERT_TRUE(Mutator::ProgramMutator::mutateProgram(p2, params, rng))
@@ -520,29 +520,29 @@ TEST_F(MutatorTest, ProgramMutatorMutateBehavior)
     ASSERT_EQ(p2.getNbLines(), 2)
         << "Wrong program mutation occured. Expected: Line deletion.";
 
-    params.prog.pDelete = 0.0;
-    params.prog.pAdd = 0.5;
+    params.contProg.pDelete = 0.0;
+    params.contProg.pAdd = 0.5;
     rng.setSeed(1);
     ASSERT_TRUE(Mutator::ProgramMutator::mutateProgram(p2, params, rng))
         << "Mutation did not occur with known seed.";
     ASSERT_EQ(p2.getNbLines(), 3)
         << "Wrong program mutation occured. Expected: Line insertion.";
 
-    params.prog.pAdd = 0.0;
-    params.prog.pMutate = 0.01;
+    params.contProg.pAdd = 0.0;
+    params.contProg.pMutate = 0.01;
     rng.setSeed(86);
     ASSERT_TRUE(Mutator::ProgramMutator::mutateProgram(p2, params, rng))
         << "Mutation did not occur with known seed.";
 
-    params.prog.pMutate = 0.00;
-    params.prog.pSwap = 0.1;
+    params.contProg.pMutate = 0.00;
+    params.contProg.pSwap = 0.1;
     rng.setSeed(1);
     ASSERT_TRUE(Mutator::ProgramMutator::mutateProgram(p2, params, rng))
         << "Mutation did not occur with known seed.";
 
     // mutate other instructions
-    params.prog.pSwap = 0.0;
-    params.prog.pMutate = 1;
+    params.contProg.pSwap = 0.0;
+    params.contProg.pMutate = 1;
     rng.setSeed(114);
     ASSERT_TRUE(Mutator::ProgramMutator::mutateProgram(p2, params, rng))
         << "Mutation did not occur with known seed.";
@@ -563,10 +563,10 @@ TEST_F(MutatorTest, TPGMutatorInitRandomTPG)
 
     params.tpg.initNbRoots = 20;
     params.tpg.maxInitOutgoingEdges = 4;
-    params.prog.maxProgramSize = 96;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 1;
+    params.contProg.maxProgramSize = 96;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 1;
 
     ASSERT_NO_THROW(
         Mutator::TPGMutator::initRandomTPG(tpg, params, rng, vectActions))
@@ -765,18 +765,18 @@ TEST_F(MutatorTest, TPGMutatorMutateOutgoingEdge)
     Mutator::MutationParameters params;
     Archive arch;
     TPG::TPGExecutionEngine tee(*e, &arch);
-    params.prog.maxProgramSize = 96;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 1;
+    params.contProg.maxProgramSize = 96;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 1;
     Mutator::ProgramMutator::initRandomProgram(*progPointer, params, rng);
     tee.executeFromRoot(vertex0, {0}, 1);
 
     // Mutate (params selected for code coverage)
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
     params.tpg.pEdgeDestinationChange = 1.0;
 
     std::list<std::shared_ptr<Program::Program>> newPrograms;
@@ -809,19 +809,19 @@ TEST_F(MutatorTest, TPGMutatorMutateTeam)
     const TPG::TPGEdge& edge3 = tpg.addNewEdge(vertex0, vertex3, progPointer);
 
     Mutator::MutationParameters params;
-    params.prog.maxProgramSize = 96;
+    params.contProg.maxProgramSize = 96;
     params.tpg.pEdgeDeletion = 0.7;
     params.tpg.pEdgeAddition = 0.7;
     params.tpg.pProgramMutation = 0.2;
     params.tpg.pEdgeDestinationChange = 0.1;
     params.tpg.pEdgeDestinationIsAction = 0.5;
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 1;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 1;
 
     // Init its program and fill the archive
     Archive arch;
@@ -859,19 +859,19 @@ TEST_F(MutatorTest, TPGMutatorMutateProgramBehaviorAgainstArchive)
     Mutator::MutationParameters params;
     Archive arch;
     TPG::TPGExecutionEngine tee(*e, &arch);
-    params.prog.maxProgramSize = 96;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 1;
+    params.contProg.maxProgramSize = 96;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 1;
 
     Mutator::ProgramMutator::initRandomProgram(*progPointer, params, rng);
     tee.executeFromRoot(vertex0, {0}, 1);
 
     // Mutate (params selected for code coverage)
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
     params.tpg.pEdgeDestinationChange = 1.0;
 
     std::list<std::shared_ptr<Program::Program>> newPrograms;
@@ -897,11 +897,11 @@ TEST_F(MutatorTest, TPGMutatorMutateProgramBehaviorAgainstArchive)
     Mutator::ProgramMutator::initRandomProgram(*progPointer, params, rng);
 
     // Mutate (params selected for code coverage)
-    params.prog.pNewProgram = 1;
-    params.prog.pAdd = 0;
-    params.prog.pDelete = 0;
-    params.prog.pMutate = 0;
-    params.prog.pSwap = 0;
+    params.contProg.pNewProgram = 1;
+    params.contProg.pAdd = 0;
+    params.contProg.pDelete = 0;
+    params.contProg.pMutate = 0;
+    params.contProg.pSwap = 0;
     params.tpg.pEdgeDestinationChange = 0;
 
     newPrograms.clear();
@@ -936,7 +936,7 @@ TEST_F(MutatorTest, TPGMutatorMutateNewProgramBehaviorsSequential)
     std::vector<uint64_t> vectActions(1, 4);
     params.tpg.initNbRoots = 4;
     params.tpg.maxInitOutgoingEdges = 3;
-    params.prog.maxProgramSize = 96;
+    params.contProg.maxProgramSize = 96;
     params.tpg.nbRoots = 7;
     // Proba as in Kelly's paper
     params.tpg.pEdgeDeletion = 0.7;
@@ -944,13 +944,13 @@ TEST_F(MutatorTest, TPGMutatorMutateNewProgramBehaviorsSequential)
     params.tpg.pProgramMutation = 0.2;
     params.tpg.pEdgeDestinationChange = 0.1;
     params.tpg.pEdgeDestinationIsAction = 0.5;
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 10;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 10;
     Archive arch;
 
     Mutator::TPGMutator::initRandomTPG(tpg, params, rng, vectActions);
@@ -984,7 +984,7 @@ TEST_F(MutatorTest, TPGMutatorMutateNewProgramBehaviorsParallel)
     std::vector<uint64_t> vectActions(1, 4);
     params.tpg.initNbRoots = 4;
     params.tpg.maxInitOutgoingEdges = 3;
-    params.prog.maxProgramSize = 96;
+    params.contProg.maxProgramSize = 96;
     params.tpg.nbRoots = 7;
     // Proba as in Kelly's paper
     params.tpg.pEdgeDeletion = 0.7;
@@ -992,13 +992,13 @@ TEST_F(MutatorTest, TPGMutatorMutateNewProgramBehaviorsParallel)
     params.tpg.pProgramMutation = 0.2;
     params.tpg.pEdgeDestinationChange = 0.1;
     params.tpg.pEdgeDestinationIsAction = 0.5;
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 10;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 10;
     Archive arch;
 
     Mutator::TPGMutator::initRandomTPG(tpg, params, rng, vectActions);
@@ -1031,7 +1031,7 @@ TEST_F(MutatorTest, TPGMutatorMutateNewProgramBehaviorsDeterminism)
     std::vector<uint64_t> vectActions(1, 4);
     params.tpg.initNbRoots = 4;
     params.tpg.maxInitOutgoingEdges = 3;
-    params.prog.maxProgramSize = 96;
+    params.contProg.maxProgramSize = 96;
     params.tpg.nbRoots = 7;
     // Proba as in Kelly's paper
     params.tpg.pEdgeDeletion = 0.7;
@@ -1039,13 +1039,13 @@ TEST_F(MutatorTest, TPGMutatorMutateNewProgramBehaviorsDeterminism)
     params.tpg.pProgramMutation = 0.2;
     params.tpg.pEdgeDestinationChange = 0.1;
     params.tpg.pEdgeDestinationIsAction = 0.5;
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 10;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 10;
     Archive arch;
 
     Mutator::TPGMutator::initRandomTPG(tpg, params, rng, vectActions);
@@ -1094,7 +1094,7 @@ TEST_F(MutatorTest, TPGMutatorPopulate)
     std::vector<uint64_t> vectActions(1, 4);
     params.tpg.initNbRoots = 4;
     params.tpg.maxInitOutgoingEdges = 3;
-    params.prog.maxProgramSize = 96;
+    params.contProg.maxProgramSize = 96;
     params.tpg.nbRoots = 7;
     // Proba as in Kelly's paper
     params.tpg.pEdgeDeletion = 0.7;
@@ -1102,13 +1102,13 @@ TEST_F(MutatorTest, TPGMutatorPopulate)
     params.tpg.pProgramMutation = 0.2;
     params.tpg.pEdgeDestinationChange = 0.1;
     params.tpg.pEdgeDestinationIsAction = 0.5;
-    params.prog.pAdd = 0.5;
-    params.prog.pDelete = 0.5;
-    params.prog.pMutate = 1.0;
-    params.prog.pSwap = 1.0;
-    params.prog.pConstantMutation = 0.5;
-    params.prog.minConstValue = 0;
-    params.prog.maxConstValue = 10;
+    params.contProg.pAdd = 0.5;
+    params.contProg.pDelete = 0.5;
+    params.contProg.pMutate = 1.0;
+    params.contProg.pSwap = 1.0;
+    params.contProg.pConstantMutation = 0.5;
+    params.contProg.minConstValue = 0;
+    params.contProg.maxConstValue = 10;
     Archive arch;
 
     Mutator::TPGMutator::initRandomTPG(tpg, params, rng, vectActions);

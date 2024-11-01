@@ -90,7 +90,10 @@ class Environment
     const std::vector<std::reference_wrapper<const Data::DataHandler>>
         dataSources;
 
-    /// Number of registers
+    /// Number of registers for the action program
+    const size_t nbRegistersActProg;
+
+    /// Number of registers for the context program
     const size_t nbRegisters;
 
     /// True if the memory is used, else false
@@ -203,6 +206,7 @@ class Environment
      * \param[in] nbConst the number of program's constants in this Environment.
      * \param[in] useMemoryRegs the boolean indicating if the memory registers
      * \param[in] nbContinuousAct the number of continuous actions
+     * \param[in] nbRegsActProg the number of double registers in this Environment for action program.
      * are used or not is this Environment.
      * \param[in] activationFunction the activation function used for continuous actions
      */
@@ -211,7 +215,7 @@ class Environment
         const std::vector<std::reference_wrapper<const Data::DataHandler>>&
             dHandlers,
         const size_t nbRegs, const size_t nbConst = 0,
-        bool useMemoryRegs = false, size_t nbContinuousAct = 0,
+        bool useMemoryRegs = false, size_t nbContinuousAct = 0, size_t nbRegsActProg = 0,
         std::string activationFunction = "none")
         : instructionSet{filterInstructionSet(iSet, nbRegs, nbConst,
                                               dHandlers)},
@@ -220,7 +224,7 @@ class Environment
           fakeRegisters(nbRegs), fakeConstants(nbConst),
           nbInstructions{instructionSet.getNbInstructions()},
           maxNbOperands{instructionSet.getMaxNbOperands()},
-          nbContinuousActions{nbContinuousAct},
+          nbContinuousActions{nbContinuousAct}, nbRegistersActProg{nbRegsActProg},
           activationFunction{activationFunction},
           nbDataSources{
               dHandlers.size() +
@@ -228,7 +232,7 @@ class Environment
                            : 1)}, // if Constants are used, we need an extra
                                   // datasource to store them in the environment
           largestAddressSpace{
-              computeLargestAddressSpace(nbRegs, nbConst, dHandlers)},
+              computeLargestAddressSpace(std::max(nbRegs, nbRegsActProg), nbConst, dHandlers)},
           lineSize{computeLineSize(*this)}
     {
         this->fakeDataSources.push_back(
@@ -249,6 +253,13 @@ class Environment
      * \return the value of the nbRegisters attribute.
      */
     size_t getNbRegisters() const;
+
+    /**
+     * \brief Get the size of the number of registers of this Environment for action program.
+     *
+     * \return the value of the nbRegisters attribute.
+     */
+    size_t getNbRegistersActProg() const;
 
     /**
      * \brief Get the number of constants used by programs.

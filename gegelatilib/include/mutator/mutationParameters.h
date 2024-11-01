@@ -230,7 +230,9 @@ namespace Mutator {
         /// Parameters for TPGMutator
         TPGParameters tpg;
         /// Parameters for ProgramMutator
-        ProgramParameters prog;
+        ProgramParameters contProg;
+        /// Parameters for ProgramMutator
+        ProgramParameters actProg;
     } MutationParameters;
 } // namespace Mutator
 

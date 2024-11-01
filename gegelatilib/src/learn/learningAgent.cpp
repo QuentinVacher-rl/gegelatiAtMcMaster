@@ -79,6 +79,7 @@ void Learn::LearningAgent::setParams(LearningParameters& newParams)
 
 void Learn::LearningAgent::init(uint64_t seed)
 {
+
     // Initialize Randomness
     this->rng.setSeed(seed);
 

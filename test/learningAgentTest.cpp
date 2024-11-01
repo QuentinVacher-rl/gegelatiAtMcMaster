@@ -78,8 +78,8 @@ class LearningAgentTest : public ::testing::Test
 
         // Proba as in Kelly's paper
         params.mutation.tpg.maxInitOutgoingEdges = 3;
-        params.mutation.prog.maxProgramSize = 96;
-        params.mutation.prog.initProgramSize = 96;
+        params.mutation.contProg.maxProgramSize = 96;
+        params.mutation.contProg.initProgramSize = 96;
         params.mutation.tpg.nbRoots = 15;
         params.mutation.tpg.pEdgeDeletion = 0.7;
         params.mutation.tpg.pEdgeAddition = 0.7;
@@ -87,13 +87,13 @@ class LearningAgentTest : public ::testing::Test
         params.mutation.tpg.pEdgeDestinationChange = 0.1;
         params.mutation.tpg.pEdgeDestinationIsAction = 0.5;
         params.mutation.tpg.maxOutgoingEdges = 4;
-        params.mutation.prog.pAdd = 0.5;
-        params.mutation.prog.pDelete = 0.5;
-        params.mutation.prog.pMutate = 1.0;
-        params.mutation.prog.pSwap = 1.0;
-        params.mutation.prog.pConstantMutation = 0.5;
-        params.mutation.prog.minConstValue = 0;
-        params.mutation.prog.maxConstValue = 1;
+        params.mutation.contProg.pAdd = 0.5;
+        params.mutation.contProg.pDelete = 0.5;
+        params.mutation.contProg.pMutate = 1.0;
+        params.mutation.contProg.pSwap = 1.0;
+        params.mutation.contProg.pConstantMutation = 0.5;
+        params.mutation.contProg.minConstValue = 0;
+        params.mutation.contProg.maxConstValue = 1;
     }
 
     virtual void TearDown()
@@ -444,7 +444,7 @@ TEST_F(LearningAgentTest, forgetPreviousResults)
     params.mutation.tpg.maxInitOutgoingEdges = 2;
     params.ratioDeletedRoots = 0.50;
     params.mutation.tpg.nbRoots = 10;
-    params.nbRegisters = 4;
+    params.nbRegistersContProg = 4;
 
     Learn::LearningAgent la(le, set, params);
     la.init();
@@ -498,7 +498,7 @@ TEST_F(LearningAgentTest, DecimateWorstRoots)
     params.ratioDeletedRoots = 0.50;
     params.mutation.tpg.nbRoots =
         le.getNbActions() - 1; // Param used in decimation
-    params.nbRegisters = 4;
+    params.nbRegistersContProg = 4;
 
     Learn::LearningAgent la(le, set, params);
 

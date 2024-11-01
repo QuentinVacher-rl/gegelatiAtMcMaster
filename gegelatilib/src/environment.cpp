@@ -169,6 +169,11 @@ size_t Environment::getNbRegisters() const
     return this->nbRegisters;
 }
 
+size_t Environment::getNbRegistersActProg() const
+{
+    return this->nbRegistersActProg;
+}
+
 bool Environment::isMemoryRegisters() const
 {
     return this->useMemoryRegisters;

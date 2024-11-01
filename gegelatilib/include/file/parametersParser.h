@@ -91,10 +91,11 @@ namespace File {
          * \param[out] params the learning parameters we are going to set.
          * \param[in] param the name of the LearningParameters being updated.
          * \param[in] value the value we want to set the parameter to.
+         * \param[in] paramClass class of the param, for action and context program
          */
         void setParameterFromString(Learn::LearningParameters& params,
                                     const std::string& param,
-                                    Json::Value const& value);
+                                    Json::Value const& value, const std::string& paramClass = std::string(""));
 
         /**
          * \brief Puts the parameters described in the derivative tree root in

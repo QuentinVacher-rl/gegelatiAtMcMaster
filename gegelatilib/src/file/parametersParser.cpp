@@ -77,12 +77,12 @@ void File::ParametersParser::setAllParamsFrom(const Json::Value& root,
                     }
                 }
                 else {
-                    if (key2 == "prog") {
-                        // we're on a mutation.prog.xxx parameter
+                    if (key2 == "contProg" || key2 == "actProg") {
+                        // we're on a mutation.contProg.xxx or mutation.actProg.xxx parameter
                         for (std::string const& key3 :
                              root[key][key2].getMemberNames()) {
                             Json::Value value = root[key][key2][key3];
-                            setParameterFromString(params, key3, value);
+                            setParameterFromString(params, key3, value, key2);
                         }
                     }
                 }
@@ -99,7 +99,7 @@ void File::ParametersParser::setAllParamsFrom(const Json::Value& root,
 
 void File::ParametersParser::setParameterFromString(
     Learn::LearningParameters& params, const std::string& param,
-    Json::Value const& value)
+    Json::Value const& value, const std::string& paramClass)
 {
     if (param == "nbRoots") {
         params.mutation.tpg.nbRoots = (size_t)value.asUInt();
@@ -151,50 +151,94 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.pEdgeDestinationIsAction = value.asDouble();
         return;
     }
-    if (param == "maxProgramSize") {
-        params.mutation.prog.maxProgramSize = (size_t)value.asUInt();
-        return;
-    }
-    if (param == "initProgramSize") {
-        params.mutation.prog.initProgramSize = (size_t)value.asUInt();
-        return;
-    }
-    if (param == "pDelete") {
-        params.mutation.prog.pDelete = value.asDouble();
-        return;
-    }
-    if (param == "pAdd") {
-        params.mutation.prog.pAdd = value.asDouble();
-        return;
-    }
-    if (param == "pMutate") {
-        params.mutation.prog.pMutate = value.asDouble();
-        return;
-    }
-    if (param == "pSwap") {
-        params.mutation.prog.pSwap = value.asDouble();
-        return;
-    }
     if (param == "nbProgramConstant") {
         params.nbProgramConstant = (size_t)value.asUInt();
         return;
     }
-    if (param == "pConstantMutation") {
-        params.mutation.prog.pConstantMutation = value.asDouble();
-        return;
+    if(paramClass == "actProg"){
+        if (param == "maxProgramSize") {
+            params.mutation.actProg.maxProgramSize = (size_t)value.asUInt();
+            return;
+        }
+        if (param == "initProgramSize") {
+            params.mutation.actProg.initProgramSize = (size_t)value.asUInt();
+            return;
+        }
+        if (param == "pDelete") {
+            params.mutation.actProg.pDelete = value.asDouble();
+            return;
+        }
+        if (param == "pAdd") {
+            params.mutation.actProg.pAdd = value.asDouble();
+            return;
+        }
+        if (param == "pMutate") {
+            params.mutation.actProg.pMutate = value.asDouble();
+            return;
+        }
+        if (param == "pSwap") {
+            params.mutation.actProg.pSwap = value.asDouble();
+            return;
+        }
+        if (param == "pConstantMutation") {
+            params.mutation.actProg.pConstantMutation = value.asDouble();
+            return;
+        }
+        if (param == "pNewProgram") {
+            params.mutation.actProg.pNewProgram = value.asDouble();
+            return;
+        }
+        if (param == "minConstValue") {
+            params.mutation.actProg.minConstValue = value.asDouble();
+            return;
+        }
+        if (param == "maxConstValue") {
+            params.mutation.actProg.maxConstValue = value.asDouble();
+            return;
+        }
+    } else if (paramClass == "contProg"){
+        if (param == "maxProgramSize") {
+            params.mutation.contProg.maxProgramSize = (size_t)value.asUInt();
+            return;
+        }
+        if (param == "initProgramSize") {
+            params.mutation.contProg.initProgramSize = (size_t)value.asUInt();
+            return;
+        }
+        if (param == "pDelete") {
+            params.mutation.contProg.pDelete = value.asDouble();
+            return;
+        }
+        if (param == "pAdd") {
+            params.mutation.contProg.pAdd = value.asDouble();
+            return;
+        }
+        if (param == "pMutate") {
+            params.mutation.contProg.pMutate = value.asDouble();
+            return;
+        }
+        if (param == "pSwap") {
+            params.mutation.contProg.pSwap = value.asDouble();
+            return;
+        }
+        if (param == "pConstantMutation") {
+            params.mutation.contProg.pConstantMutation = value.asDouble();
+            return;
+        }
+        if (param == "pNewProgram") {
+            params.mutation.contProg.pNewProgram = value.asDouble();
+            return;
+        }
+        if (param == "minConstValue") {
+            params.mutation.contProg.minConstValue = value.asDouble();
+            return;
+        }
+        if (param == "maxConstValue") {
+            params.mutation.contProg.maxConstValue = value.asDouble();
+            return;
+        }
     }
-    if (param == "pNewProgram") {
-        params.mutation.prog.pNewProgram = value.asDouble();
-        return;
-    }
-    if (param == "minConstValue") {
-        params.mutation.prog.minConstValue = value.asDouble();
-        return;
-    }
-    if (param == "maxConstValue") {
-        params.mutation.prog.maxConstValue = value.asDouble();
-        return;
-    }
+
     if (param == "archiveSize") {
         params.archiveSize = (size_t)value.asUInt();
         return;
@@ -227,8 +271,12 @@ void File::ParametersParser::setParameterFromString(
         params.maxNbEvaluationPerPolicy = (size_t)value.asUInt();
         return;
     }
-    if (param == "nbRegisters") {
-        params.nbRegisters = (size_t)value.asUInt();
+    if (param == "nbRegistersActProg") {
+        params.nbRegistersActProg = (size_t)value.asUInt();
+        return;
+    }
+    if (param == "nbRegistersContProg") {
+        params.nbRegistersContProg = (size_t)value.asUInt();
         return;
     }
     if (param == "useMemoryRegisters") {
@@ -247,7 +295,10 @@ void File::ParametersParser::setParameterFromString(
         params.doValidation = value.asBool();
         return;
     }
+    
+    std::string a = value.asString();
     if (param == "activationFunction") {
+        params.activationFunction = "1"; // Crash without that ?
         params.activationFunction = value.asString();
         return;
     }
@@ -320,9 +371,12 @@ void File::ParametersParser::writeParametersToJson(
         Learn::LearningParameters::nbProgramConstantComment,
         Json::commentBefore);
 
-    root["nbRegisters"] = params.nbRegisters;
-    root["nbRegisters"].setComment(
-        Learn::LearningParameters::nbRegistersComment, Json::commentBefore);
+    root["nbRegistersContProg"] = params.nbRegistersContProg;
+    root["nbRegistersContProg"].setComment(
+        Learn::LearningParameters::nbRegistersContProgComment, Json::commentBefore);
+    root["nbRegistersActProg"] = params.nbRegistersActProg;
+    root["nbRegistersActProg"].setComment(
+        Learn::LearningParameters::nbRegistersActProgComment, Json::commentBefore);
 
     root["useMemoryRegisters"] = params.useMemoryRegisters;
     root["useMemoryRegisters"].setComment(
@@ -369,6 +423,14 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["initNbRoots"].setComment(
         Mutator::TPGParameters::initNbRootsComment, Json::commentBefore);
 
+
+    root["mutation"]["tpg"]["initNbActions"] = params.mutation.tpg.initNbActions;
+    root["mutation"]["tpg"]["initNbActions"].setComment(
+        Mutator::TPGParameters::initNbActionsComment, Json::commentBefore);
+    root["mutation"]["tpg"]["pCreateNewAction"] = params.mutation.tpg.pCreateNewAction;
+    root["mutation"]["tpg"]["pCreateNewAction"].setComment(
+        Mutator::TPGParameters::pCreateNewActionComment, Json::commentBefore);
+
     root["mutation"]["tpg"]["pEdgeAddition"] =
         params.mutation.tpg.pEdgeAddition;
     root["mutation"]["tpg"]["pEdgeAddition"].setComment(
@@ -396,51 +458,99 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["pProgramMutation"].setComment(
         Mutator::TPGParameters::pProgramMutationComment, Json::commentBefore);
 
-    // Mutation.program parameters
-    root["mutation"]["prog"]["maxConstValue"] =
-        params.mutation.prog.maxConstValue;
-    root["mutation"]["prog"]["maxConstValue"].setComment(
+    // Mutation.actionProgram parameters
+    root["mutation"]["actProg"]["maxConstValue"] =
+        params.mutation.actProg.maxConstValue;
+    root["mutation"]["actProg"]["maxConstValue"].setComment(
         Mutator::ProgramParameters::maxConstValueComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["maxProgramSize"] =
-        params.mutation.prog.maxProgramSize;
-    root["mutation"]["prog"]["maxProgramSize"].setComment(
+    root["mutation"]["actProg"]["maxProgramSize"] =
+        params.mutation.actProg.maxProgramSize;
+    root["mutation"]["actProg"]["maxProgramSize"].setComment(
         Mutator::ProgramParameters::maxProgramSizeComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["initProgramSize"] =
-        params.mutation.prog.initProgramSize;
-    root["mutation"]["prog"]["initProgramSize"].setComment(
+    root["mutation"]["actProg"]["initProgramSize"] =
+        params.mutation.actProg.initProgramSize;
+    root["mutation"]["actProg"]["initProgramSize"].setComment(
         Mutator::ProgramParameters::initProgramSizeComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["minConstValue"] =
-        params.mutation.prog.minConstValue;
-    root["mutation"]["prog"]["minConstValue"].setComment(
+    root["mutation"]["actProg"]["minConstValue"] =
+        params.mutation.actProg.minConstValue;
+    root["mutation"]["actProg"]["minConstValue"].setComment(
         Mutator::ProgramParameters::minConstValueComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["pAdd"] = params.mutation.prog.pAdd;
-    root["mutation"]["prog"]["pAdd"].setComment(
+    root["mutation"]["actProg"]["pAdd"] = params.mutation.actProg.pAdd;
+    root["mutation"]["actProg"]["pAdd"].setComment(
         Mutator::ProgramParameters::pAddComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["pConstantMutation"] =
-        params.mutation.prog.pConstantMutation;
-    root["mutation"]["prog"]["pConstantMutation"].setComment(
+    root["mutation"]["actProg"]["pConstantMutation"] =
+        params.mutation.actProg.pConstantMutation;
+    root["mutation"]["actProg"]["pConstantMutation"].setComment(
         Mutator::ProgramParameters::pConstantMutationComment,
         Json::commentBefore);
 
-    root["mutation"]["prog"]["pNewProgram"] = params.mutation.prog.pNewProgram;
-    root["mutation"]["prog"]["pNewProgram"].setComment(
+    root["mutation"]["actProg"]["pNewProgram"] = params.mutation.actProg.pNewProgram;
+    root["mutation"]["actProg"]["pNewProgram"].setComment(
         Mutator::ProgramParameters::pNewProgramComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["pDelete"] = params.mutation.prog.pDelete;
-    root["mutation"]["prog"]["pDelete"].setComment(
+    root["mutation"]["actProg"]["pDelete"] = params.mutation.actProg.pDelete;
+    root["mutation"]["actProg"]["pDelete"].setComment(
         Mutator::ProgramParameters::pDeleteComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["pMutate"] = params.mutation.prog.pMutate;
-    root["mutation"]["prog"]["pMutate"].setComment(
+    root["mutation"]["actProg"]["pMutate"] = params.mutation.actProg.pMutate;
+    root["mutation"]["actProg"]["pMutate"].setComment(
         Mutator::ProgramParameters::pMutateComment, Json::commentBefore);
 
-    root["mutation"]["prog"]["pSwap"] = params.mutation.prog.pSwap;
-    root["mutation"]["prog"]["pSwap"].setComment(
+    root["mutation"]["actProg"]["pSwap"] = params.mutation.actProg.pSwap;
+    root["mutation"]["actProg"]["pSwap"].setComment(
+        Mutator::ProgramParameters::pSwapComment, Json::commentBefore);
+
+
+    // mutation.contProgram parameters
+    root["mutation"]["contProg"]["maxConstValue"] =
+        params.mutation.contProg.maxConstValue;
+    root["mutation"]["contProg"]["maxConstValue"].setComment(
+        Mutator::ProgramParameters::maxConstValueComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["maxProgramSize"] =
+        params.mutation.contProg.maxProgramSize;
+    root["mutation"]["contProg"]["maxProgramSize"].setComment(
+        Mutator::ProgramParameters::maxProgramSizeComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["initProgramSize"] =
+        params.mutation.contProg.initProgramSize;
+    root["mutation"]["contProg"]["initProgramSize"].setComment(
+        Mutator::ProgramParameters::initProgramSizeComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["minConstValue"] =
+        params.mutation.contProg.minConstValue;
+    root["mutation"]["contProg"]["minConstValue"].setComment(
+        Mutator::ProgramParameters::minConstValueComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["pAdd"] = params.mutation.contProg.pAdd;
+    root["mutation"]["contProg"]["pAdd"].setComment(
+        Mutator::ProgramParameters::pAddComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["pConstantMutation"] =
+        params.mutation.contProg.pConstantMutation;
+    root["mutation"]["contProg"]["pConstantMutation"].setComment(
+        Mutator::ProgramParameters::pConstantMutationComment,
+        Json::commentBefore);
+
+    root["mutation"]["contProg"]["pNewProgram"] = params.mutation.contProg.pNewProgram;
+    root["mutation"]["contProg"]["pNewProgram"].setComment(
+        Mutator::ProgramParameters::pNewProgramComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["pDelete"] = params.mutation.contProg.pDelete;
+    root["mutation"]["contProg"]["pDelete"].setComment(
+        Mutator::ProgramParameters::pDeleteComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["pMutate"] = params.mutation.contProg.pMutate;
+    root["mutation"]["contProg"]["pMutate"].setComment(
+        Mutator::ProgramParameters::pMutateComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["pSwap"] = params.mutation.contProg.pSwap;
+    root["mutation"]["contProg"]["pSwap"].setComment(
         Mutator::ProgramParameters::pSwapComment, Json::commentBefore);
 
     // Write to the output stream

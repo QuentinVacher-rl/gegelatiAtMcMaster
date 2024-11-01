@@ -260,24 +260,26 @@ void Mutator::TPGMutator::mutateEdgeDestination(
     // as the presence of cycle in TPGs is not possible according to the current
     // mutation process.
     if (targetAction) {
-        target = preExistingActions.at(
-            rng.getUnsignedInt64(0, preExistingActions.size() - 1));
 
         bool createNewAction = rng.getDouble(0,1) < params.tpg.pCreateNewAction;
         if(createNewAction){
-            const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(*target);
+
+            
+
+            const TPG::TPGAction* actionCopied = preExistingActions.at(
+                rng.getUnsignedInt64(0, preExistingActions.size() - 1));
+
+            const TPG::TPGAction* newAction = &(const TPG::TPGAction&)graph.cloneVertex(*actionCopied);
 
 
-            Program::Program newProg(newAction.getProgram());
+            newPrograms.push_back(newAction->getPtrProgram());
 
-            std::shared_ptr<Program::Program> newPtrProg(
-                new Program::Program(newProg));
 
-            newPrograms.push_back(newPtrProg);
+            target = newAction;
+        } else {
 
-            newAction.setProgram(newPtrProg);
-
-            target = &newAction;
+            target = preExistingActions.at(
+                rng.getUnsignedInt64(0, preExistingActions.size() - 1));    
         }
     }
     else {
@@ -391,8 +393,10 @@ void Mutator::TPGMutator::mutateProgramBehaviorAgainstArchive(
     // Mutate behavior until it changes (against the archive).
     do {
 
+        const ProgramParameters& progParams = newProg->isActionProgram() ? params.actProg : params.contProg;
+
         // If a new program is created
-        if (rng.getDouble(0.0, 1.0) < params.prog.pNewProgram) {
+        if (rng.getDouble(0.0, 1.0) < progParams.pNewProgram) {
             Mutator::ProgramMutator::initRandomProgram(*newProg, params, rng);
         }
         else {
@@ -420,7 +424,7 @@ void Mutator::TPGMutator::mutateProgramBehaviorAgainstArchive(
 
         // If the result is not unique, do another mutation.
         allUnique = archive.areProgramResultsUnique(hashesAndResults);
-    } while (!allUnique && !newProg->isActionProgram());
+    } while (!allUnique);
 }
 
 void Mutator::TPGMutator::mutateNewProgramBehaviors(
@@ -447,6 +451,11 @@ void Mutator::TPGMutator::mutateNewProgramBehaviors(
         for (std::shared_ptr<Program::Program> newProg : newPrograms) {
             programsToMutate.push(
                 {newProg, rng.getUnsignedInt64(0, UINT64_MAX)});
+
+            /*if(newProg->isActionProgram()){
+                std::cout<<"EHHHY ";
+                std::cout<<newProg->getNbLines()<<std::endl;
+            }*/
         }
 
         std::mutex mutexMutation;
@@ -555,6 +564,13 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
     // Create an empty list to store Programs to mutate.
     std::list<std::shared_ptr<Program::Program>> newPrograms;
 
+    int nbActionsBefore = 0;
+    for(auto vertex: graph.getVertices()){
+        if (dynamic_cast<const TPG::TPGAction*>(vertex) != nullptr){
+            nbActionsBefore++;
+        }
+    }
+
     // While the target is not reached, add new teams
     uint64_t currentNumberOfRoot = rootVertices.size();
     while (params.tpg.nbRoots > currentNumberOfRoot) {
@@ -573,8 +589,15 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         currentNumberOfRoot = graph.getNbRootVertices();
     }
 
-    // Mutate the new Programs
+    int nbActionsafter = 0;
+    for(auto vertex: graph.getVertices()){
+        if (dynamic_cast<const TPG::TPGAction*>(vertex) != nullptr){
+            nbActionsafter++;
+        }
+    }
+
     mutateNewProgramBehaviors(maxNbThreads, newPrograms, rng, params, archive);
+
 }
 
 
@@ -597,6 +620,7 @@ std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateEr
 
         errorWeights.insert(std::make_pair(program, errorThisProgram));
     }
+
 
     return errorWeights;
 }

@@ -53,6 +53,11 @@ void TPG::PolicyStats::clear()
     this->nbUsePerProgram.clear();
     this->nbUsePerTPGTeam.clear();
     this->nbUsePerTPGAction.clear();
+    this->nbUsePerActionProgram.clear();
+    this->nbLinesPerActionProgram.clear();
+    this->nbIntronPerActionProgram.clear();
+    this->nbUsagePerInstructionActionProg.clear();
+    this->nbUsagePerDataLocationActionProg.clear();
 }
 
 void TPG::PolicyStats::setEnvironment(const Environment& env)
@@ -239,7 +244,7 @@ std::ostream& TPG::operator<<(std::ostream& os,
     os << "Teams:\t\t" << policyStats.nbDistinctTeams << std::endl;
     os << "Edges:\t\t" << sumVec(policyStats.nbOutgoingEdgesPerTeam)
        << std::endl;
-    os << "Actions:\t" << policyStats.nbUsagePerActionID.size() << std::endl;
+    os << "Actions:\t" << policyStats.nbUsePerTPGAction.size() << std::endl;
 
     os << "Stages\t\t" << policyStats.maxPolicyDepth << std::endl;
     os << "Vertex/stage:\t";
@@ -329,8 +334,9 @@ std::ostream& TPG::operator<<(std::ostream& os,
         // Assume that if no action program used, we are not using them
         if(policyStats.nbUsePerActionProgram.size() > 0)
         {
-            os << std::endl << "## Action Program info" << std::endl;
-            os << "Programs:\t" << policyStats.nbUsePerProgram.size() << std::endl;
+            os << std::endl  << std::endl 
+            << std::endl << "## Action Program info" << std::endl;
+            os << "Programs:\t" << policyStats.nbUsePerActionProgram.size() << std::endl;
             os << "Line/prog:\t" << averageVec(policyStats.nbLinesPerActionProgram)
             << std::endl;
             os << "Intr/prog:\t" << averageVec(policyStats.nbIntronPerActionProgram)
