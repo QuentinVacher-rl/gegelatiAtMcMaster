@@ -306,7 +306,7 @@ void Mutator::TPGMutator::mutateTPGAction(
         swapActionEdges(graph, action, rng);
 
         // Decrement the proba of swapping two edges
-        proba *= params.tpg.pEdgeDeletion;
+        proba *= params.tpg.pSwapActionProgram;
     }
 
     // 2. change randomly selected edge by another one. 
@@ -315,14 +315,30 @@ void Mutator::TPGMutator::mutateTPGAction(
         changeActionEdge(graph, action, preExistingActions, rng);
 
         // Decrement the proba of swapping two edges
-        proba *= params.tpg.pEdgeDeletion;
+        proba *= params.tpg.pChangeActionProgram;
     }
 
+
+    std::vector<uint64_t> indexUsed;
+    uint64_t index;
     // 3. mutate randomly selected program on action Edge. 
-    for(auto edge: action.getOutgoingEdges()) {
-        if(rng.getDouble(0.0, 1.0) > params.tpg.pMutateActionProgram)
+    proba = params.tpg.pMutateActionProgram;
+    while(proba > rng.getDouble(0.0, 1.0)){
+        
+        do {
+            index = rng.getUnsignedInt64(0, action.getOutgoingEdges().size()-1);
+        } while(std::find(indexUsed.begin(), indexUsed.end(), index) != indexUsed.end()) ;
+
+        indexUsed.push_back(index);
+  
+        std::list<TPG::TPGEdge *>::const_iterator iter = action.getOutgoingEdges().begin();
+        std::advance(iter, index);
+        TPG::TPGEdge* pickedEdge = *iter;
+    
         // copy program
-        newPrograms.push_back(edge->getProgramSharedPointer());
+        newPrograms.push_back(pickedEdge->getProgramSharedPointer());
+
+        proba *= params.tpg.pMutateActionProgram;
     }
 
 

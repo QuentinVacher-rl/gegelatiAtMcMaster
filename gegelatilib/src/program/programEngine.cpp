@@ -38,24 +38,41 @@
 #include "program/programEngine.h"
 #include "data/constantHandler.h"
 
-void Program::ProgramEngine::setProgram(const Program& prog)
+void Program::ProgramEngine::setProgram(const Program& prog, const Program* progRegistered)
 {
 
-    // Try to find the program in the map.
-    auto it = this->mapMemoryRegisters.find(&prog);
-    if (it != this->mapMemoryRegisters.end()) {
+    if(prog.getEnvironment().isMemoryRegisters()){
 
-        // If found, get the registers.
-        this->registers = it->second;
-    }
-    else {
+        if(progRegistered != nullptr){
+            // Try to find the program in the map.
+            auto it = this->mapMemoryRegisters.find(progRegistered);
+            if (it != this->mapMemoryRegisters.end()) {
 
-        // Else, create the registers and add them to the map.
-        this->mapMemoryRegisters[&prog] =
-            std::make_shared<Data::PrimitiveTypeArray<double>>(
-                prog.getEnvironment().getNbRegisters());
-        this->registers = this->mapMemoryRegisters[&prog];
+                // If found, get a copy of the registers. We don't want to save the memory
+                this->registers = std::make_shared<Data::PrimitiveTypeArray<double>>(*it->second);
+            }
+            else {
+                throw std::runtime_error("If a programRegistered was set, it should be in the map of memory registers");
+            }
+        } else {
+            // Try to find the program in the map.
+            auto it = this->mapMemoryRegisters.find(&prog);
+            if (it != this->mapMemoryRegisters.end()) {
+
+                // If found, get the registers.
+                this->registers = it->second;
+            } else{
+
+                // Else, create the registers and add them to the map.
+                this->mapMemoryRegisters[&prog] =
+                    std::make_shared<Data::PrimitiveTypeArray<double>>(
+                        prog.getEnvironment().getNbRegisters());
+                this->registers = this->mapMemoryRegisters[&prog];
+            }
+        }
+
     }
+
 
     // Set the registers.
     this->dataScsConstsAndRegs.front() = *this->registers;

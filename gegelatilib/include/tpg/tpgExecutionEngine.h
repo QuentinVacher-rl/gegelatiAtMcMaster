@@ -139,9 +139,10 @@ namespace TPG {
          *
          * \param[in] edge the const ref to the TPGEdge whose Program will be
          * evaluated.
+         * \param[in] programRegistered TODO
          * \return the double value returned by the Program of the TPGEdge.
          */
-        virtual double evaluateEdge(const TPGEdge& edge);
+        virtual double evaluateEdge(const TPGEdge& edge, const Program::Program* programRegistered = nullptr);
 
         /**
          * \brief Execute an action.
@@ -152,11 +153,12 @@ namespace TPG {
          *
          * \param[in] currentAction the TPGAction evaluated.
          * \param[in] actionsTaken vector of int64_t of actions taken.
+         * \param[in] edge TODO
          * 
          * \return true if the action changed
          */
         virtual bool executeAction(const TPG::TPGVertex* currentAction,
-                                   std::vector<double>* actionsTaken);
+                                   std::vector<double>* actionsTaken, TPG::TPGEdge* edge = nullptr);
 
         /**
          * \brief Execute all the Program of the outgoing TPGEdge of the

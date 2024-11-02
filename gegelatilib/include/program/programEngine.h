@@ -192,11 +192,13 @@ namespace Program {
          * ProgramExecutionEngin.
          *
          * \param[in] prog the const Program that will be executed by the
-         * ProgramExecutionEngine. \throws std::runtime_error if the Environment
+         * ProgramExecutionEngine. 
+         * \param[in] progRegistered TODO
+         * \throws std::runtime_error if the Environment
          * references by the Program is incompatible with the dataSources of the
          * ProgramExecutionEngine.
          */
-        void setProgram(const Program& prog);
+        void setProgram(const Program& prog, const Program* progRegistered = nullptr);
 
 
         /**

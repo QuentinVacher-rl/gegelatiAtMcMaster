@@ -91,13 +91,13 @@ void TPG::TPGExecutionEngine::resetAllMemoryRegisters()
     this->progExecutionEngine.resetAllMemoryRegisters();
 }
 
-double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
+double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge, const Program::Program* programRegistered)
 {
     // Get the program
     Program::Program& prog = edge.getProgram();
 
     // Set the progExecutionEngine to the program
-    this->progExecutionEngine.setProgram(prog);
+    this->progExecutionEngine.setProgram(prog, programRegistered);
 
     // Execute the program.
     double result = this->progExecutionEngine.executeProgram();
@@ -116,7 +116,7 @@ double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
 }
 
 bool TPG::TPGExecutionEngine::executeAction(
-    const TPGVertex* currentAction, std::vector<double>* actionsTaken)
+    const TPGVertex* currentAction, std::vector<double>* actionsTaken, TPG::TPGEdge* edge)
 {
 
     auto action = (const TPGAction*)(currentAction);
@@ -131,8 +131,14 @@ bool TPG::TPGExecutionEngine::executeAction(
         auto actionIt = actionsTaken->begin();
 
         while (actionIt != actionsTaken->end()) {
+
+            Program::Program* prog = nullptr;
+            if(edge != nullptr){
+                prog = &edge->getProgram();
+            }
+
             // Get the action value
-            *actionIt = this->evaluateEdge(**edgeIt);
+            *actionIt = this->evaluateEdge(**edgeIt, prog);
 
             // Increment iterators
             ++edgeIt;
@@ -191,7 +197,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
         // If edge destination is an action
         if (dynamic_cast<const TPGAction*>(destination)) {
-            executeAction(destination, actionsTaken);
+            executeAction(destination, actionsTaken, resultsBid[i].first);
 
 
             // Add the action the the visited vertices and the edge to the
