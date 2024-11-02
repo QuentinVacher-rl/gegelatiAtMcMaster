@@ -113,10 +113,23 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.initNbActions = (size_t)value.asUInt();
         return;
     }
-    if (param == "pCreateNewAction") {
-        params.mutation.tpg.pCreateNewAction = (double)value.asDouble();
+    if (param == "pMutateActionVertex") {
+        params.mutation.tpg.pMutateActionVertex = (double)value.asDouble();
         return;
     }
+    if (param == "pSwapActionProgram") {
+        params.mutation.tpg.pSwapActionProgram = (double)value.asDouble();
+        return;
+    }
+    if (param == "pChangeActionProgram") {
+        params.mutation.tpg.pChangeActionProgram = (double)value.asDouble();
+        return;
+    }
+    if (param == "pMutateActionProgram") {
+        params.mutation.tpg.pMutateActionProgram = (double)value.asDouble();
+        return;
+    }
+
 
     if (param == "maxInitOutgoingEdges") {
         params.mutation.tpg.maxInitOutgoingEdges = (size_t)value.asUInt();
@@ -427,9 +440,19 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["initNbActions"] = params.mutation.tpg.initNbActions;
     root["mutation"]["tpg"]["initNbActions"].setComment(
         Mutator::TPGParameters::initNbActionsComment, Json::commentBefore);
-    root["mutation"]["tpg"]["pCreateNewAction"] = params.mutation.tpg.pCreateNewAction;
-    root["mutation"]["tpg"]["pCreateNewAction"].setComment(
+
+    root["mutation"]["tpg"]["pMutateActionVertex"] = params.mutation.tpg.pMutateActionVertex;
+    root["mutation"]["tpg"]["pMutateActionVertex"].setComment(
         Mutator::TPGParameters::pCreateNewActionComment, Json::commentBefore);
+    root["mutation"]["tpg"]["pSwapActionProgram"] = params.mutation.tpg.pSwapActionProgram;
+    root["mutation"]["tpg"]["pSwapActionProgram"].setComment(
+        Mutator::TPGParameters::pSwapActionProgramComment, Json::commentBefore);
+    root["mutation"]["tpg"]["pChangeActionProgram"] = params.mutation.tpg.pChangeActionProgram;
+    root["mutation"]["tpg"]["pChangeActionProgram"].setComment(
+        Mutator::TPGParameters::pChangeActionProgramComment, Json::commentBefore);
+    root["mutation"]["tpg"]["pMutateActionProgram"] = params.mutation.tpg.pMutateActionProgram;
+    root["mutation"]["tpg"]["pMutateActionProgram"].setComment(
+        Mutator::TPGParameters::pMutateActionProgramComment, Json::commentBefore);
 
     root["mutation"]["tpg"]["pEdgeAddition"] =
         params.mutation.tpg.pEdgeAddition;

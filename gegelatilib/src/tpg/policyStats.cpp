@@ -217,8 +217,9 @@ void TPG::PolicyStats::analyzePolicy(const TPG::TPGVertex* root)
                 const TPG::TPGAction* action = (const TPG::TPGAction*)vertex;
                 this->analyzeTPGAction(action);
 
-                if(action->getPtrProgram() != nullptr){
-                    this->analyzeProgram(&action->getProgram());
+
+                for(auto edge: action->getOutgoingEdges()){
+                    this->analyzeProgram(&edge->getProgram());
                 }
             }
         }

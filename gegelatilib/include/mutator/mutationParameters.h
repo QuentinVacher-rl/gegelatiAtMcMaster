@@ -75,9 +75,30 @@ namespace Mutator {
         /// JSon comment
         inline static const std::string pCreateNewActionComment =
             "//  Probablity of creating a new action vertex, with a new action program\n"
-            "// \"pCreateNewAction\" : 0.1, // Default value";
+            "// \"pMutateActionVertex\" : 0.1, // Default value";
         ///  Probablity of creating a new action vertex, with a new action program
-        double pCreateNewAction = 0.1;
+        double pMutateActionVertex = 0.1;
+
+
+        /// JSon comment
+        inline static const std::string pSwapActionProgramComment =
+            "//  Probablity of swapping two action edge within the same action vertex\n"
+            "// \"pSwapActionProgram\" : 0.1, // Default value";
+        ///  Probablity of swapping two action edge within the same action vertex
+        double pSwapActionProgram = 0.1;
+
+        /// JSon comment
+        inline static const std::string pChangeActionProgramComment =
+            "//  Probablity of changing the action edge by any other action edge in the graph\n"
+            "// \"pChangeActionProgram\" : 0.1, // Default value";
+        ///  Probablity of changing the action edge by any other action edge in the graph
+        double pChangeActionProgram = 0.1;
+        /// JSon comment
+        inline static const std::string pMutateActionProgramComment =
+            "//  Probablity of mutation the program on the action edge\n"
+            "// \"pMutateActionProgram\" : 0.1, // Default value";
+        ///  Probablity of mutation the program on the action edge
+        double pMutateActionProgram = 0.1;
 
         /// JSon comment
         inline static const std::string maxInitOutgoingEdgesComment =

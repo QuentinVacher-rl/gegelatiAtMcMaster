@@ -161,11 +161,6 @@ uint64_t Program::Program::identifyIntrons()
     // Start with only register 0
     usefulRegisters.insert(0);
 
-    if(actionProgram){
-        for(auto i=0; i<this->environment.getNbContinuousActions(); i++){
-            usefulRegisters.insert(i);
-        }
-    }
 
     bool needReset = false;
     if(environment.isMemoryRegisters()){

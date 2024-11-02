@@ -50,8 +50,6 @@ namespace TPG {
     class TPGEdge
     {
       public:
-        /// Default virtual destructor (for polymorphism)
-        virtual ~TPGEdge() = default;
 
         /**
          * \brief Main constructor of the TPGEdge class.
@@ -116,7 +114,7 @@ namespace TPG {
          *
          * \return a const pointer to the destination TPGVertex.
          */
-        const TPGVertex* getDestination() const;
+        virtual const TPGVertex* getDestination() const;
 
         /**
          * \brief Set a new destination TPGVertex to the TPGEdge.
@@ -124,7 +122,7 @@ namespace TPG {
          * \param[in] newDestination the new TPGVertex to register as the
          * destination.
          */
-        void setDestination(TPGVertex* newDestination);
+        virtual void setDestination(TPGVertex* newDestination);
 
       protected:
         /// Pointer to the source TPGVertex of this TPGEdge

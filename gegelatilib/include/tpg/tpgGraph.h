@@ -42,6 +42,7 @@
 
 #include "environment.h"
 #include "tpg/tpgAction.h"
+#include "tpg/tpgActionEdge.h"
 #include "tpg/tpgEdge.h"
 #include "tpg/tpgFactory.h"
 #include "tpg/tpgTeam.h"
@@ -142,13 +143,11 @@ namespace TPG {
          *
          * \param[in] actionID the ID identifier to associate to the TPGAction.
          * \param[in] actionClass the Class identifier to associate to the
-         * \param[in] prog TODO
          * TPGAction. Default value set to 0 for single action cases; \return a
          * const reference to the newly created TPGAction.
          */
         const TPGAction& addNewAction(uint64_t actionID,
-                                      uint64_t actionClass = 0,
-                                      const std::shared_ptr<Program::Program> prog = nullptr);
+                                      uint64_t actionClass = 0);
 
         /**
          * \brief Get the number of TPGVertex contained in the TPGGraph.
@@ -248,10 +247,30 @@ namespace TPG {
          * \return a const reference to the created TPGEdge.
          * \throw std::runtime_error In case one of the TPGVertex does not
          *                           exist in the TPGGraph, or if the
-         *							destination is a TPGAction.
+         *							source is a TPGAction.
          */
         const TPGEdge& addNewEdge(const TPGVertex& src, const TPGVertex& dest,
                                   const std::shared_ptr<Program::Program> prog);
+
+        /**
+         * \brief Add a new TPGActionEdge to the TPGGraph.
+         *
+         * Add a new TPGActionEdge to the TPGGraph, between the give vertex is
+         * associated the given Program. The newly created TPGEdge is
+         * inserted in the outgoing edges list of the connected
+         * TPGVertex.
+         * The TPGEdge is created using the TPGFactory of the TPGGraph.
+         *
+         * \param[in] src the source TPGVertex of the newly created TPGEdge.
+         * \param[in] prog shared pointer to the Program associated to the newly
+         *                 created TPGEdge.
+         * \param[in] actionClass of the actionEdge
+         * \return a const reference to the created TPGEdge.
+         * \throw std::runtime_error In case the TPGVertex does not
+         *                           exist in the TPGGraph, or if the
+         *							source is a TPGTeam.
+         */
+        const TPGEdge& addNewActionEdge(const TPGVertex& src, const std::shared_ptr<Program::Program> prog, uint64_t actionClass);
 
         /**
          * \brief Get a const reference to the edges of the TPGGraph.
@@ -259,6 +278,13 @@ namespace TPG {
          * \return a const reference to the edges attribute.
          */
         const std::list<std::unique_ptr<TPGEdge>>& getEdges() const;
+
+        /**
+         * \brief Get a const reference to the action edges of the TPGGraph.
+         *
+         * \return a const reference to the action edges attribute.
+         */
+        const std::list<std::unique_ptr<TPGEdge>>& getActionEdges() const;
 
         /**
          * \brief Remove a TPGEdge from the TPGGraph.
@@ -272,6 +298,27 @@ namespace TPG {
          *                           exist in the TPGGraph.
          */
         void removeEdge(const TPGEdge& edge);
+
+        /**
+         * \brief Remove a TPGActionEdge from the TPGGraph.
+         *
+         * If the edge is connected to TPGVertex within the graph, they are
+         * updated.
+         *
+         * \param[in] edge a const reference to the TPGActionEdge to remove.
+         *
+         * \throw std::runtime_error In case one of the TPGEdges does not
+         *                           exist in the TPGGraph.
+         */
+        void removeActionEdge(const TPGEdge& edge);
+
+        /**
+         * \brief set a new action class to a TPGActionEdge
+         * 
+         * \param[in] edge TPGActionEdge changed
+         * \param[in] newActionClass new action class
+         */
+        void setActionClassEdge(const TPGEdge* edge, uint64_t newActionClass);
 
         /**
          * Duplicate a TPGEdge from the TPGGraph.
@@ -355,6 +402,12 @@ namespace TPG {
          */
         void browseGraphSetConstant(std::vector<const TPG::TPGVertex *> visitedVertices, std::vector<double>& constants);
 
+        /**
+         * Order the ActionEdge of the given action
+         * 
+         * \param[in] action TPGAction to order
+         */
+        void orderActionEdges(const TPG::TPGAction* action);
 
       protected:
         /// Environment of the TPGGraph
@@ -372,6 +425,11 @@ namespace TPG {
          * \brief Set of TPGEdge composing the TPGGraph.
          */
         std::list<std::unique_ptr<TPGEdge>> edges;
+
+        /**
+         * \brief Set of TPGActionEdge composing the TPGGraph.
+         */
+        std::list<std::unique_ptr<TPGEdge>> actionEdges;
 
         /**
          * \brief Number of edges Activable at each evaluation team.

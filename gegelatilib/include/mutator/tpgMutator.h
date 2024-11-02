@@ -113,6 +113,53 @@ namespace Mutator {
             Mutator::RNG& rng);
 
         /**
+         * \brief Change an edge of the TPGAction by another one from an other TPGAction.
+         *
+         * \param[in,out] graph the TPGGraph within which the team and edge are
+         *                stored.
+         * \param[in] action the TPGAction whose actionEdges will be altered.
+         * \param[in] preExistingActions the TPGAction candidates for destination.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        void changeActionEdge(            
+            TPG::TPGGraph& graph, const TPG::TPGAction& action,
+            const std::vector<const TPG::TPGAction*>& preExistingActions, Mutator::RNG& rng);
+
+        /**
+         * \brief Swap two edges of TPGAction.
+         *
+         * \param[in,out] graph the TPGGraph within which the team and edge are
+         *                stored.
+         * \param[in] action the TPGAction whose actionEdges will be altered.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        void swapActionEdges(            
+            TPG::TPGGraph& graph, const TPG::TPGAction& action, Mutator::RNG& rng);
+
+
+        /**
+         * \brief Copy and mutate a TPGAction vertex 
+         *
+         * This function take a TPGAction, copy it and mutate it.
+         * It can randomly change one of the ActionEdges by another ActionEdges of another TPGAction, however it must be the same index of actionEdges.
+         * If not, it can randomly swap two actionEdges.
+         * If not, it can mutate the program on the actionEdges.
+         *
+         * \param[in,out] graph the TPGGraph within which the team and edge are
+         *                stored.
+         * \param[in] action the TPGAction whose actionEdges will be altered.
+         * \param[in] preExistingActions the TPGAction candidates for
+         *            destination.
+         * \param[in] params Probability parameters for the mutation.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        void mutateTPGAction(
+            TPG::TPGGraph& graph, const TPG::TPGAction& action,
+            const std::vector<const TPG::TPGAction*>& preExistingActions,
+            std::list<std::shared_ptr<Program::Program>>& newPrograms,
+            const Mutator::MutationParameters& params, Mutator::RNG& rng);
+
+        /**
          * \brief Change the destination of a TPGEdge to an randomly chosen
          * target.
          *

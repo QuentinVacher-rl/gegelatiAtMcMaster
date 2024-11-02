@@ -126,18 +126,18 @@ bool TPG::TPGExecutionEngine::executeAction(
         (*actionsTaken)[action->getActionClass()] = (double)action->getActionID();
 
     } else {
+        // Initiate iterators
+        auto edgeIt = currentAction->getOutgoingEdges().begin();
+        auto actionIt = actionsTaken->begin();
 
-        // Set the progExecutionEngine to the program
-        this->progExecutionEngine.setProgram(action->getProgram());
+        while (actionIt != actionsTaken->end()) {
+            // Get the action value
+            *actionIt = this->evaluateEdge(**edgeIt);
 
-        // Execute the program.
-        this->progExecutionEngine.executeProgram();
-
-        auto result = this->progExecutionEngine.getRegisterValues(action->getPtrProgram(), this->getEnvironment().getNbContinuousActions());
-
-        actionsTaken->assign(result.begin(), result.end());
-
-
+            // Increment iterators
+            ++edgeIt;
+            ++actionIt;
+        }
     }
     return true;
 
@@ -232,7 +232,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
 
     // An action value must be positive, so -1 for an action mean that no action
     // value is choosen yet.
-    std::vector<double> actionsTaken(initActions.size(), -1);
+    std::vector<double> actionsTaken(env.getNbContinuousActions());
 
     // Execute the team only if it is really a team
     if (dynamic_cast<const TPGTeam*>(&root)) {
