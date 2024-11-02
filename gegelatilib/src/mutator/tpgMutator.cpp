@@ -376,19 +376,7 @@ void Mutator::TPGMutator::mutateOutgoingEdge(
     if (rng.getDouble(0.0, 1.0) < params.tpg.pEdgeDestinationChange) {
         mutateEdgeDestination(graph, edge, preExistingTeams, preExistingActions,
                               newPrograms, params, rng);
-    } else if (dynamic_cast<const TPG::TPGAction*>(edge->getDestination()) != nullptr &&
-               rng.getDouble(0.0, 1.0) < params.tpg.pMutateActionVertex){
-
-        // Clone the randomly selected action
-        const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(*edge->getDestination());
-
-        // Mutate the action
-        mutateTPGAction(graph, newAction, preExistingActions,
-                           newPrograms, params, rng);
-
-        // Set the action
-        graph.setEdgeDestination(*edge, newAction);
-    }
+    } 
 }
 
 void Mutator::TPGMutator::mutateTPGTeam(
@@ -451,6 +439,21 @@ void Mutator::TPGMutator::mutateTPGTeam(
                                        preExistingActions, newPrograms, params,
                                        rng);
                     anyMutationDone = true;
+
+                // We dont want to do context and action program mutation at the same time
+                } else if (dynamic_cast<const TPG::TPGAction*>(edge->getDestination()) != nullptr &&
+                    rng.getDouble(0.0, 1.0) < params.tpg.pMutateActionVertex){
+
+                    // Clone the randomly selected action
+                    const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(*edge->getDestination());
+
+                    // Mutate the action
+                    mutateTPGAction(graph, newAction, preExistingActions,
+                                    newPrograms, params, rng);
+
+                    // Set the action
+                    graph.setEdgeDestination(*edge, newAction);
+                    anyMutationDone = true; 
                 }
             }
         } while (!anyMutationDone);
