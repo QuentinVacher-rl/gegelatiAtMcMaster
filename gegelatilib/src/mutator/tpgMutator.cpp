@@ -323,7 +323,7 @@ void Mutator::TPGMutator::mutateTPGAction(
     uint64_t index;
     // 3. mutate randomly selected program on action Edge. 
     proba = params.tpg.pMutateActionProgram;
-    while(proba > rng.getDouble(0.0, 1.0)){
+    while(indexUsed.size() < action.getOutgoingEdges().size()  && proba > rng.getDouble(0.0, 1.0)){
         
         do {
             index = rng.getUnsignedInt64(0, action.getOutgoingEdges().size()-1);

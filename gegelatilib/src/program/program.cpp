@@ -159,7 +159,9 @@ uint64_t Program::Program::identifyIntrons()
     std::set<uint64_t> usefulRegisters;
     
     // Start with only register 0
-    for(int i = 0; i < environment.getNbRegisters(); i++){
+    usefulRegisters.insert(0);
+
+    for(int i = 0; !this->actionProgram && i < environment.getNbRegisters(); i++){
         usefulRegisters.insert(i);
 
     }
