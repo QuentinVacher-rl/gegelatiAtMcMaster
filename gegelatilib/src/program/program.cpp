@@ -161,15 +161,17 @@ uint64_t Program::Program::identifyIntrons()
     // Start with only register 0
     usefulRegisters.insert(0);
 
-    for(int i = 0; !this->actionProgram && i < environment.getNbRegisters(); i++){
-        usefulRegisters.insert(i);
 
-    }
 
 
     bool needReset = false;
-    if(environment.isMemoryRegisters() && !actionProgram){
+    if(environment.isMemoryRegisters()){
         needReset = true;
+
+        for(int i = 0; !this->actionProgram && i < environment.getNbRegisters(); i++){
+            usefulRegisters.insert(i);
+
+        }
     }
 
     for(auto &line: this->lines){

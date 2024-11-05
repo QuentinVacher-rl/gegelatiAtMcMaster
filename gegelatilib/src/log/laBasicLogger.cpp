@@ -49,6 +49,8 @@ void Log::LABasicLogger::logResults(
     double min = iter->first->getResult();
     std::advance(iter, results.size() - 1);
     double max = iter->first->getResult();
+    double nbActionMax = iter->first->getNbActionsUsed();
+
     double avg = std::accumulate(
         results.begin(), results.end(), 0.0,
         [](double acc,
@@ -57,7 +59,7 @@ void Log::LABasicLogger::logResults(
                pair) -> double { return acc + pair.first->getResult(); });
     avg /= (double)results.size();
     *this << std::setw(colWidth) << min << std::setw(colWidth) << avg
-          << std::setw(colWidth) << max;
+          << std::setw(colWidth) << max << std::setw(colWidth) << nbActionMax;
 }
 
 void Log::LABasicLogger::logHeader()
@@ -74,11 +76,12 @@ void Log::LABasicLogger::logHeader()
     // Second line of header
     //*this << std::right;
     *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "NbAct" << std::setw(colWidth) << "NbTeam"
+          << std::setw(colWidth) << "NbActR" << std::setw(colWidth) << "NbTeamR"
           << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
-          << std::setw(colWidth) << "Max";
+          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse";
     if (doValidation) {
         *this << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
-              << std::setw(colWidth) << "Max";
+              << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse";
     }
     *this << std::setw(colWidth) << "T_mutat" << std::setw(colWidth)
           << "T_eval";
@@ -108,8 +111,22 @@ void Log::LABasicLogger::logAfterPopulateTPG()
 
     uint64_t nbActions = this->learningAgent.getTPGGraph()->getNbVertices() - nbTeams;
 
+
+
+    auto roots = this->learningAgent.getTPGGraph()->getRootVertices();
+
+    uint64_t nbTeamsR = std::count_if(roots.begin(), roots.end(),
+        [](const TPG::TPGVertex* roots) {
+            return dynamic_cast<const TPG::TPGTeam*>(roots) != nullptr;
+        });
+
+    uint64_t nbActionsR = this->learningAgent.getTPGGraph()->getNbRootVertices() - nbTeams;
+
+
     *this << std::setw(colWidth) << nbActions 
-          << std::setw(colWidth) << nbTeams ;
+          << std::setw(colWidth) << nbTeams
+          << std::setw(colWidth) << nbActionsR
+          << std::setw(colWidth) << nbTeamsR ;
 
     chronoFromNow();
 }

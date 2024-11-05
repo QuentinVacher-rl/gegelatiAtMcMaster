@@ -41,6 +41,11 @@ double Learn::EvaluationResult::getResult() const
     return this->result;
 }
 
+double Learn::EvaluationResult::getNbActionsUsed() const
+{
+    return this->nbActionsUsed;
+}
+
 size_t Learn::EvaluationResult::getNbEvaluation() const
 {
     return this->nbEvaluation;
@@ -62,6 +67,10 @@ Learn::EvaluationResult& Learn::EvaluationResult::operator+=(
         this->result = this->result * (double)this->nbEvaluation +
                        other.result * (double)other.nbEvaluation;
         this->result /= (double)this->nbEvaluation + (double)other.nbEvaluation;
+
+        this->nbActionsUsed = this->nbActionsUsed * (double)this->nbEvaluation +
+                       other.nbActionsUsed * (double)other.nbEvaluation;
+        this->nbActionsUsed /= (double)this->nbEvaluation + (double)other.nbEvaluation;
 
         // Addition ot nbEvaluation
         this->nbEvaluation += other.nbEvaluation;

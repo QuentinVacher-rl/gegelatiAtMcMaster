@@ -111,7 +111,32 @@ namespace Program {
          */
         Program(const Program& other)
             : environment{other.environment}, lines{other.lines},
-              constants{other.constants}, nbConstants{other.nbConstants}, actionProgram{other.actionProgram}
+              constants{other.constants}, nbConstants{other.nbConstants}, 
+              actionProgram{other.actionProgram}
+        {
+            // Replace lines with their copy
+            // Keep intro info
+            std::transform(
+                lines.begin(), lines.end(), lines.begin(),
+                [](std::pair<Line*, bool>& otherLine)
+                    -> std::pair<Line*, bool> {
+                    return {new Line(*(otherLine.first)), otherLine.second};
+                });
+        };
+
+        /**
+         * \brief Copy constructor of the Program.
+         *
+         * This copy constructor realises a deep copy of the Line of the given
+         * Program, instead of the default shallow copy.
+         *
+         * \param[in] other a const reference the the copied Program.
+         * \param[in] isActProg to change if action prog or not
+         */
+        Program(const Program& other, bool isActProg)
+            : environment{other.environment}, lines{other.lines},
+              constants{other.constants}, nbConstants{other.nbConstants}, 
+              actionProgram{isActProg}
         {
             // Replace lines with their copy
             // Keep intro info

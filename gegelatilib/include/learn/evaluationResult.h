@@ -57,6 +57,9 @@ namespace Learn {
         /// Number of evaluation leading to this result.
         size_t nbEvaluation;
 
+        /// TODO
+        double nbActionsUsed;
+
       public:
         /**
          * \brief Deleted default constructor.
@@ -73,17 +76,24 @@ namespace Learn {
          *
          * \param[in] res the double value representing the result of an
          * evaluation.
+         * \param[in] nbActionsU Number of action != 0
          * \param[in] nbEval Integer value representing the number of
          * evaluation leading to the recorded score.
          */
-        EvaluationResult(const double& res, const size_t& nbEval)
-            : result{res}, nbEvaluation{nbEval} {};
+        EvaluationResult(const double& res, const size_t& nbEval, const double& nbActionsU=0.0)
+            : result{res}, nbEvaluation{nbEval}, nbActionsUsed{nbActionsU} {};
 
         /**
          * \brief Virtual method to get the default double equivalent of
          * the EvaluationResult.
          */
         virtual double getResult() const;
+
+        /**
+         * \brief Virtual method to get the default double equivalent of
+         * the EvaluationResult.
+         */
+        virtual double getNbActionsUsed() const;
 
         /**
          * \brief Virtual method to get the default number of evaluation of

@@ -38,6 +38,7 @@
 
 #include <inttypes.h>
 #include <queue>
+#include <iomanip>
 
 #include "data/hash.h"
 #include "learn/evaluationResult.h"
@@ -139,6 +140,8 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
     // Init results
     double result = 0.0;
 
+    double meanNbActionUsed = 0.0;
+
     // Evaluate nbIteration times
     for (auto iterationNumber = 0;
          iterationNumber < this->params.nbIterationsPerPolicyEvaluation;
@@ -153,6 +156,9 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
         // Reset the memory registers.
         tee.resetAllMemoryRegisters();
 
+        double nbActionUsed = 0;
+
+
         uint64_t nbActions = 0;
         while (!le.isTerminal() &&
                nbActions < this->params.maxNbActionsPerEval) {
@@ -162,20 +168,33 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
                                     this->params.nbEdgesActivable)
                     .second;
 
+            for(int i = 0; i<le.getNbContinuousAction(); i++){
+                if(actionsID[i] != 0.0){
+                    nbActionUsed++;
+                }
+            }
             // Do it
             le.doActions(actionsID);
             // Count actions
             nbActions++;
+
+
         }
+        nbActionUsed = nbActionUsed / nbActions;
+        meanNbActionUsed += nbActionUsed;
+
+
         // Update results
         result += le.getScore();
     }
+
+    meanNbActionUsed /= (double)params.nbIterationsPerPolicyEvaluation;
 
     // Create the EvaluationResult
     auto evaluationResult =
         std::shared_ptr<EvaluationResult>(new EvaluationResult(
             result / (double)params.nbIterationsPerPolicyEvaluation,
-            params.nbIterationsPerPolicyEvaluation));
+            params.nbIterationsPerPolicyEvaluation, meanNbActionUsed));
 
     // Combine it with previous one if any
     if (previousEval != nullptr) {
