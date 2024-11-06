@@ -50,29 +50,57 @@
 
 void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
 {
+
     // For now, the number of roots should be equal to one to use this class.
     if(tpg->getNbRootVertices() != 1){
         throw std::runtime_error("Evolution Strategies is only available for one root, for now.");
     }
+
+
+    for (auto logger : loggers) {
+        logger.get().logNewGeneration(generationNumber);
+    }
+
+
+    this->generateErrorWeights();
     
+    // Evaluate
+    auto results =
+        this->evaluateAllErrorWeights(generationNumber, LearningMode::TRAINING);
+
+    std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex *> fakeResultsForLogs;
+    for(auto r: results){
+        fakeResultsForLogs.insert(std::make_pair(r.first, this->tpg->getRootVertices().at(0)));
+    }
+    for (auto logger : loggers) {
+        logger.get().logAfterEvaluate(fakeResultsForLogs);
+    }
+
+    // Learn
+    this->doEvolutionStrategy(results);
+
+    // Does a validation or not according to the parameter doValidation
+    // We should always do one
+    if (params.doValidation) {
+        auto validationResults =
+            evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
+        for (auto logger : loggers) {
+            logger.get().logAfterValidate(validationResults);
+        }
+    }
+
+    for (auto logger : loggers) {
+        logger.get().logEndOfTraining();
+    }
+}
+
+void Learn::EvoStratLearningAgent::generateErrorWeights()
+{
+        
     errorWeightsPopulation.clear();
-    errorWeightsPopulation.push_back(Mutator::TPGMutator::generateErrorWeights(
-        *this->tpg, this->params.mutation, this->rng, 0, 0
-    ));
-
-
-
-    double newzScore =
-        this->evaluateAllRoots(0, LearningMode::TRAINING).begin()->first->getResult();
-
-    std::cout<<"Gen: "<<generationNumber-1<<" Score: "<<newzScore<<std::endl;
 
     uint64_t nbAgents = 100;
-    double lr = 1;
     bool twinError = true;
-
-    errorWeightsPopulation.clear();
-
     
     for (auto i = 0; i< nbAgents ; i++){
         errorWeightsPopulation.push_back(Mutator::TPGMutator::generateErrorWeights(
@@ -86,14 +114,17 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
             i++;
         }
     }
-    
-    // Evaluate
-    auto results =
-        this->evaluateAllErrorWeights(generationNumber, LearningMode::TRAINING);
+}
 
-    // TODO create Learn Function for that
-    // results.begin()->second lead to the programs
-    int ii = 0;
+
+void Learn::EvoStratLearningAgent::doEvolutionStrategy(
+    std::multimap<std::shared_ptr<EvaluationResult>, 
+                  std::map<Program::Program*, std::vector<double>>*> results)
+{
+
+    
+    double lr = 0.01;
+
     for (auto &programs : *results.begin()->second) {
         Program::Program *program = programs.first;
 
@@ -135,8 +166,6 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
 
         uint64_t j = 0;
         for (const auto &resultEntry : results) {
-            if(ii==-1)
-            std::cout<<resultEntry.first->getResult()<<" - "<<ranks[j]<<std::endl;
 
 
             // Get the score result
@@ -155,85 +184,34 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
 
             j++;
         }
-        ii++;
 
         for(size_t i = 0; i < program->getNbConstants(); i++){
-            double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) / (double)nbAgents;
+            double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) / (double)results.size();
             //std::cout<<lr <<"-"<< evaluationWeights.at(i) <<"-"<< nbAgents<<std::endl;
             program->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(newConstantsValue)});
 
         }
     }
-    
-    
-    errorWeightsPopulation.clear();
-    errorWeightsPopulation.push_back(Mutator::TPGMutator::generateErrorWeights(
-        *this->tpg, this->params.mutation, this->rng, 0, 0
-    ));
-
-
-
-    //double newScore =
-        this->evaluateAllRoots(0, LearningMode::TRAINING).begin()->first->getResult();
-
-    //std::cout<<"Gen: "<<generationNumber<<" Score: "<<newScore<<std::endl;
-
-    /*std::cout<<"Generation: "<<generationNumber<<std::endl;
-    auto vect = tpg->getConstantsOfRoots(tpg->getRootVertices().at(0));
-	std::cout<<"Number of constants: "<<vect.size()<<std::endl;
-	std::cout<<"List of constants"<<std::endl;
-	for(auto cont: vect){
-		std::cout<<double(*cont.get())<<std::endl;
-	}*/
-    //for (auto logger : loggers) {
-    //    logger.get().logAfterEvaluate(results);
-    //}
-
-    // Save the best score of this generation
-    //this->updateBestScoreLastGen(results);
-
-    // Update the best
-    //this->updateEvaluationRecords(results);
-
-
-
-
-
-
-
-    // Does a validation or not according to the parameter doValidation
-    /*if (params.doValidation) {
-        auto validationResults =
-            evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
-
-        for (auto logger : loggers) {
-            logger.get().logAfterValidate(validationResults);
-
-            
-        }
-    }
-
-    for (auto logger : loggers) {
-        logger.get().logEndOfTraining();
-    }*/
 }
-
 
 
 std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJob(
     TPG::TPGExecutionEngine& tee, const Job& job, uint64_t generationNumber,
     Learn::LearningMode mode, LearningEnvironment& le) const
 {
-    // Set the error weights.
+    // Create in every case 
     std::map<const Program::Program *, std::vector<double>> weightsWithConstProgPtr;
+    if(mode == Learn::LearningMode::TRAINING){
 
 
-    // Copier les éléments de originalMap vers constMap en convertissant les clés en const
-    for (const auto &entry : *job.getErrorWeights()) {
-        weightsWithConstProgPtr[entry.first] = entry.second;
+
+        // Copier les éléments de originalMap vers constMap en convertissant les clés en const
+        for (const auto &entry : *job.getErrorWeights()) {
+            weightsWithConstProgPtr[entry.first] = entry.second;
+        }
+
+        tee.setErrorWeights(&weightsWithConstProgPtr);
     }
-
-    tee.setErrorWeights(&weightsWithConstProgPtr);
 
 
     std::shared_ptr<Learn::EvaluationResult> evaluationResult = LearningAgent::evaluateJob(
@@ -285,10 +263,37 @@ std::shared_ptr<Learn::Job> Learn::EvoStratLearningAgent::makeJob(
         archiveSeed = this->rng.getUnsignedInt64(0, UINT64_MAX);
     }   
     if (tpgGraph->getNbRootVertices() > 0) {
-        return std::make_shared<Learn::Job>(
-            Learn::Job({vertex}, archiveSeed, idx, &errorWeightsPopulation.at(idx)));
+        if(mode == LearningMode::TRAINING){
+            return std::make_shared<Learn::Job>(
+                Learn::Job({vertex}, archiveSeed, idx, &errorWeightsPopulation.at(idx)));
+        }
+        if(mode == LearningMode::VALIDATION){
+            return std::make_shared<Learn::Job>(
+                Learn::Job({vertex}, archiveSeed, idx));
+        }
     }
 
     return nullptr;
 }
 
+bool Learn::EvoStratLearningAgent::isRootEvalSkipped(
+    const TPG::TPGVertex& root,
+    std::shared_ptr<Learn::EvaluationResult>& previousResult) const
+{
+    // Never skip a root evaluation during evo strat
+    return false;
+}
+
+void Learn::EvoStratLearningAgent::decimateWorstRoots(
+    std::multimap<std::shared_ptr<EvaluationResult>,
+                    const TPG::TPGVertex*>& results) 
+{
+    std::cout<<"We should not be decimating roots in evoStrat Learning Agent"<<std::endl;
+    return;
+}
+void Learn::EvoStratLearningAgent::updateEvaluationRecords(
+    const std::multimap<std::shared_ptr<EvaluationResult>,
+                        const TPG::TPGVertex*>& results)
+{
+    return;
+}

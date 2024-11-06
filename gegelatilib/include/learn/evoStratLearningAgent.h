@@ -40,6 +40,7 @@
 #define EVO_STRAT_LEARNING_AGENT_H
 
 #include "learn/parallelLearningAgent.h"
+#include "log/esBasicLogger.h"
 
 namespace Learn {
 
@@ -124,6 +125,17 @@ namespace Learn {
         virtual std::multimap<std::shared_ptr<EvaluationResult>, std::map<Program::Program*, std::vector<double>>*>
         evaluateAllErrorWeights(uint64_t generationNumber, LearningMode mode);
 
+        /**
+         * \brief TODO
+         */
+        virtual void generateErrorWeights();
+
+        /**
+         * \brief Do the evolution strategy depending on the results 
+         * 
+         * \param[in] results TODO
+        */ 
+        virtual void doEvolutionStrategy(std::multimap<std::shared_ptr<EvaluationResult>, std::map<Program::Program*, std::vector<double>>*> results);
 
         /**
          * \brief Takes a given TPGVertex and creates a job containing it.
@@ -143,6 +155,28 @@ namespace Learn {
         virtual std::shared_ptr<Learn::Job> makeJob(
             const TPG::TPGVertex* vertex, Learn::LearningMode mode, int idx = 0,
             TPG::TPGGraph* tpgGraph = nullptr);
+
+
+        /**
+         * \brief Override to disable the method
+         */
+        virtual bool isRootEvalSkipped(
+            const TPG::TPGVertex& root,
+            std::shared_ptr<Learn::EvaluationResult>& previousResult) const override;
+
+        /**
+         * \brief Override to disable the method
+         */
+        virtual void decimateWorstRoots(
+            std::multimap<std::shared_ptr<EvaluationResult>,
+                          const TPG::TPGVertex*>& results) override;
+        /**
+         * \brief Override to disable the method
+         */
+        virtual void updateEvaluationRecords(
+            const std::multimap<std::shared_ptr<EvaluationResult>,
+                                const TPG::TPGVertex*>& results) override;
+
 
     };
 }; // namespace Learn

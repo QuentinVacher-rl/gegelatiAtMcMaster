@@ -176,7 +176,6 @@ namespace Learn {
             params(other.params),
             tpg(other.tpg),
             rng(other.rng),
-            loggers(other.loggers),
             archive(other.params.archiveSize, other.params.archivingProbability) {}
 
         /**
@@ -281,7 +280,7 @@ namespace Learn {
          * \return true if the root has been evaluated enough times, false
          * otherwise.
          */
-        bool isRootEvalSkipped(
+        virtual bool isRootEvalSkipped(
             const TPG::TPGVertex& root,
             std::shared_ptr<Learn::EvaluationResult>& previousResult) const;
 
@@ -368,6 +367,7 @@ namespace Learn {
          */
         uint64_t train(volatile bool& altTraining, bool printProgressBar);
 
+
         /**
          * \brief Update the bestRoot and resultsPerRoot attributes.
          *
@@ -388,7 +388,7 @@ namespace Learn {
          *
          * \param[in] results Map from the evaluateAllRoots method.
          */
-        void updateEvaluationRecords(
+        virtual void updateEvaluationRecords(
             const std::multimap<std::shared_ptr<EvaluationResult>,
                                 const TPG::TPGVertex*>& results);
 

@@ -449,19 +449,12 @@ void Mutator::TPGMutator::mutateTPGTeam(
             // And possibly modify their target
             for (TPG::TPGEdge* edge : team.getOutgoingEdges()) {
 
-                // copy program
-                std::shared_ptr<Program::Program> newProg(
-                    new Program::Program(edge->getProgram()));
-
-
-                // Set the mutated program to the edge
-                edge->setProgram(newProg);
 
                 // Edge->Program bid modification
                 if (rng.getDouble(0.0, 1.0) < params.tpg.pProgramMutation) {
                     // Mutate the edge
                     // Add it to the list of new Program to be mutated.
-                    newPrograms.push_back(newProg);
+                    newPrograms.push_back(edge->getProgramSharedPointer());
 
                     mutateOutgoingEdge(graph, edge, preExistingTeams,
                                        preExistingActions, newPrograms, params,
@@ -740,7 +733,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 // Pick random Action
                 const TPG::TPGAction& pickedAction = *preExistingActions.at(
                     rng.getUnsignedInt64(0, preExistingActions.size() - 1));
-       
 
                 // Add the team
                 graph.addNewEdge(
@@ -800,18 +792,24 @@ std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateEr
     // Initialise the map
     std::map<Program::Program*, std::vector<double>> errorWeights;
 
-    for(const std::unique_ptr<TPG::TPGEdge>& edge: graph.getEdges()){
-        Program::Program* program = &edge->getProgram();
+    std::vector<const std::list<std::unique_ptr<TPG::TPGEdge>>*> allEdges;
+    allEdges.push_back(&graph.getEdges());
+    allEdges.push_back(&graph.getActionEdges());
 
-        // Initialise the vector of errors of the program
-        std::vector<double> errorThisProgram(program->getNbConstants());
+    for (const auto* edgeList : allEdges) {
+        // Assurez-vous que edgeList est un pointeur vers une liste de unique_ptr
+        for (const auto& edge : *edgeList) {
+            Program::Program* program = &edge->getProgram();
 
-        std::generate(errorThisProgram.begin(), errorThisProgram.end(), [&rng, &xmin, xmax]() {
-            return rng.getDouble(xmin, xmax); // TODO NORMAL DISTRIBUTION
-        });
+            // Initialise the vector of errors of the program
+            std::vector<double> errorThisProgram(program->getNbConstants());
 
+            std::generate(errorThisProgram.begin(), errorThisProgram.end(), [&rng, &xmin, xmax]() {
+                return rng.getDouble(xmin, xmax); // TODO NORMAL DISTRIBUTION
+            });
 
-        errorWeights.insert(std::make_pair(program, errorThisProgram));
+            errorWeights.insert(std::make_pair(program, errorThisProgram));
+        }  
     }
 
 
