@@ -107,6 +107,14 @@ namespace Learn {
         */ 
         virtual void doEvolutionStrategy(std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*> results);
 
+
+        /**
+         * Override of the learningAgent method
+         */
+        virtual std::queue<std::shared_ptr<Learn::Job>> makeJobs(
+            Learn::LearningMode mode, TPG::TPGGraph* tpgGraph = nullptr) override;
+
+
         /**
          * \brief Takes a given TPGVertex and creates a job containing it.
          * Useful for example in adversarial mode where a job could contain a
@@ -126,6 +134,13 @@ namespace Learn {
             const TPG::TPGVertex* vertex, Learn::LearningMode mode, int idx = 0,
             TPG::TPGGraph* tpgGraph = nullptr);
 
+        /**
+         * Override of the original method
+         */
+        virtual std::shared_ptr<EvaluationResult> evaluateJob(
+            TPG::TPGExecutionEngine& tee, const Job& job,
+            uint64_t generationNumber, LearningMode mode,
+            LearningEnvironment& le) const override;
 
         /**
          * \brief Override to disable the method

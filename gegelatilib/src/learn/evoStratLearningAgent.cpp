@@ -99,7 +99,7 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
         
     errorWeightsPopulation.clear();
 
-    uint64_t nbAgents = 100;
+    uint64_t nbAgents = 1000;
     bool twinError = true;
     
     for (auto i = 0; i< nbAgents ; i++){
@@ -123,7 +123,7 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
 {
 
     
-    double lr = 0.01;
+    double lr = 1;
 
     for (auto &programs : *results.begin()->second) {
         Program::Program *program = programs.first;
@@ -195,6 +195,23 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
 }
 
 
+std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJob(
+    TPG::TPGExecutionEngine& tee, const Job& job, uint64_t generationNumber,
+    Learn::LearningMode mode, LearningEnvironment& le) const
+{
+
+    if(mode == Learn::LearningMode::TRAINING){
+        tee.setErrorWeights(job.getErrorWeights());
+    }
+
+    std::shared_ptr<Learn::EvaluationResult> evaluationResult = LearningAgent::evaluateJob(
+        tee, job, generationNumber, mode, le
+    );
+
+
+    return evaluationResult;
+}
+
 std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
 Learn::EvoStratLearningAgent::evaluateAllErrorWeights(uint64_t generationNumber,
                                        Learn::LearningMode mode)
@@ -221,6 +238,23 @@ Learn::EvoStratLearningAgent::evaluateAllErrorWeights(uint64_t generationNumber,
 
     return result;
 }
+
+
+std::queue<std::shared_ptr<Learn::Job>> Learn::EvoStratLearningAgent::makeJobs(
+    Learn::LearningMode mode, TPG::TPGGraph* tpgGraph)
+{
+    // sets the tpg to the Learning Agent's one if no one was specified
+    tpgGraph = tpgGraph == nullptr ? tpg.get() : tpgGraph;
+
+    std::queue<std::shared_ptr<Learn::Job>> jobs;
+    auto roots = tpgGraph->getRootVertices();
+    for (int i = 0; i < errorWeightsPopulation.size(); i++) {
+        auto job = makeJob(roots.at(0), mode, i);
+        jobs.push(job);
+    }
+    return jobs;
+}
+
 
 std::shared_ptr<Learn::Job> Learn::EvoStratLearningAgent::makeJob(
     const TPG::TPGVertex* vertex, Learn::LearningMode mode, int idx,

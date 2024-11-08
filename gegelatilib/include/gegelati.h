@@ -86,6 +86,7 @@
 #include <learn/classificationLearningEnvironment.h>
 
 #include <learn/evoStratLearningAgent.h>
+#include <learn/parallelEvoStratLearningAgent.h>
 
 #include <log/cycleDetectionLALogger.h>
 #include <log/laBasicLogger.h>
