@@ -101,6 +101,7 @@ void File::ParametersParser::setParameterFromString(
     Learn::LearningParameters& params, const std::string& param,
     Json::Value const& value, const std::string& paramClass)
 {
+    //std::cout<<param<<std::endl;
     if (param == "nbRoots") {
         params.mutation.tpg.nbRoots = (size_t)value.asUInt();
         return;
@@ -158,6 +159,11 @@ void File::ParametersParser::setParameterFromString(
     }
     if (param == "pEdgeDestinationChange") {
         params.mutation.tpg.pEdgeDestinationChange = value.asDouble();
+        return;
+    }
+
+    if (param == "pCreateNewRootTeam") {
+        params.mutation.tpg.pCreateNewRootTeam = value.asDouble();
         return;
     }
     if (param == "pEdgeDestinationIsAction") {

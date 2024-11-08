@@ -100,6 +100,14 @@ namespace Mutator {
         ///  Probablity of mutation the program on the action edge
         double pMutateActionProgram = 0.1;
 
+
+        /// JSon comment
+        inline static const std::string pCreateNewRootTeamComment =
+            "//  Comment\n"
+            "// \"pCreateNewRootTeam\" : 0.1, // Default value";
+        ///  Probablity of Creation a new root team
+        double pCreateNewRootTeam = 0.1;
+
         /// JSon comment
         inline static const std::string maxInitOutgoingEdgesComment =
             "// Maximum number of TPGEdge connected to each TPGTeam of the "

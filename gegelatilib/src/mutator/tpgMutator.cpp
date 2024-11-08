@@ -690,8 +690,8 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         }
     }
 
-    double probaCreateAction = params.actProg.pConstantMutation;
-    double probaCreateTeam = params.actProg.pConstantMutation;  
+    double probaCreateAction = params.tpg.pCreateNewRootTeam;
+    double probaCreateTeam = params.tpg.pCreateNewRootTeam;
 
     probaCreateAction *= std::max(-0.0001, -2.0 * ((double)preExistingActions.size() / (double)rootVertices.size()) + 1.0); 
     probaCreateTeam *= std::max(-0.0001, -2.0 * ((double)preExistingTeams.size() / (double)rootVertices.size()) + 1.0); 
