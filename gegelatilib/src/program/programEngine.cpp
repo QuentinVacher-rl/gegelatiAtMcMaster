@@ -91,7 +91,10 @@ void Program::ProgramEngine::setProgram(const Program& prog, const Program* prog
             const Program* progPtr = &prog;
 
             // Find it in the map
-            auto it = errorWeights->find(progPtr);
+            //auto it = errorWeights->find(progPtr);
+            auto it  = std::find_if(errorWeights->begin(), errorWeights->end(), [progPtr](
+                std::pair<Program *, std::vector<double>>pair){return pair.first == progPtr;}
+            );
             if (it != errorWeights->end()) {
 
                 // Get the weights
@@ -158,7 +161,7 @@ void Program::ProgramEngine::setProgram(const Program& prog, const Program* prog
 
 }
 
-void Program::ProgramEngine::setErrorWeights(const std::map<const Program*, std::vector<double>>* newErrorWeights)
+void Program::ProgramEngine::setErrorWeights(const std::map<Program*, std::vector<double>>* newErrorWeights)
 {
     this->errorWeights = newErrorWeights;
 }

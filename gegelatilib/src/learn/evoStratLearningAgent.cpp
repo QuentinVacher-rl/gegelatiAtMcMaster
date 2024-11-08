@@ -61,7 +61,7 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
         logger.get().logNewGeneration(generationNumber);
     }
 
-
+    // Generate some weights
     this->generateErrorWeights();
     
     // Evaluate
@@ -119,7 +119,7 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
 
 void Learn::EvoStratLearningAgent::doEvolutionStrategy(
     std::multimap<std::shared_ptr<EvaluationResult>, 
-                  std::map<Program::Program*, std::vector<double>>*> results)
+                  const std::map<Program::Program*, std::vector<double>>*> results)
 {
 
     
@@ -195,38 +195,11 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
 }
 
 
-std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJob(
-    TPG::TPGExecutionEngine& tee, const Job& job, uint64_t generationNumber,
-    Learn::LearningMode mode, LearningEnvironment& le) const
-{
-    // Create in every case 
-    std::map<const Program::Program *, std::vector<double>> weightsWithConstProgPtr;
-    if(mode == Learn::LearningMode::TRAINING){
-
-
-
-        // Copier les éléments de originalMap vers constMap en convertissant les clés en const
-        for (const auto &entry : *job.getErrorWeights()) {
-            weightsWithConstProgPtr[entry.first] = entry.second;
-        }
-
-        tee.setErrorWeights(&weightsWithConstProgPtr);
-    }
-
-
-    std::shared_ptr<Learn::EvaluationResult> evaluationResult = LearningAgent::evaluateJob(
-        tee, job, generationNumber, mode, le
-    );
-
-
-    return evaluationResult;
-}
-
-std::multimap<std::shared_ptr<Learn::EvaluationResult>, std::map<Program::Program*, std::vector<double>>*>
+std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
 Learn::EvoStratLearningAgent::evaluateAllErrorWeights(uint64_t generationNumber,
                                        Learn::LearningMode mode)
 {
-    std::multimap<std::shared_ptr<EvaluationResult>, std::map<Program::Program*, std::vector<double>>*>
+    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
         result;
 
     // Create the TPGExecutionEngine for this evaluation.

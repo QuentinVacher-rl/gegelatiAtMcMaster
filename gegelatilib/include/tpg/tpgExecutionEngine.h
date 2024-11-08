@@ -102,7 +102,7 @@ namespace TPG {
          * 
          * \param[in] newErrorWeights A pointer to the error weights
          */
-        void setErrorWeights(const std::map<const Program::Program*, std::vector<double>>* newErrorWeights);
+        void setErrorWeights(const std::map<Program::Program*, std::vector<double>>* newErrorWeights);
 
         /**
          * \brief get the environment used

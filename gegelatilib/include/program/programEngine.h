@@ -89,7 +89,7 @@ namespace Program {
         uint64_t programCounter;
 
         /// Pointer (possibly null) to the error weights.
-        const std::map<const Program*, std::vector<double>>* errorWeights = nullptr;
+        const std::map<Program*, std::vector<double>>* errorWeights = nullptr;
 
 
       protected:
@@ -206,7 +206,7 @@ namespace Program {
          * 
          * \param[in] newErrorWeights A pointer to the error weights
          */
-        void setErrorWeights(const std::map<const Program*, std::vector<double>>* newErrorWeights);
+        void setErrorWeights(const std::map<Program*, std::vector<double>>* newErrorWeights);
 
         /**
          * \brief Method for changing the dataSources on which the Program will
