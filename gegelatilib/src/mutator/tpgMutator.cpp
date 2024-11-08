@@ -690,10 +690,9 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         }
     }
 
-    double probaCreateAction = params.tpg.pCreateNewRootTeam;
+    int nbActionsWanted = params.tpg.proportionActionRoots * params.tpg.nbRoots;
     double probaCreateTeam = params.tpg.pCreateNewRootTeam;
 
-    probaCreateAction *= std::max(-0.0001, -2.0 * ((double)preExistingActions.size() / (double)rootVertices.size()) + 1.0); 
     probaCreateTeam *= std::max(-0.0001, -2.0 * ((double)preExistingTeams.size() / (double)rootVertices.size()) + 1.0); 
 
     // While the target is not reached, add new teams
@@ -704,7 +703,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
 
 
-        if(probaCreateAction > rng.getDouble(0, 1)){
+        if(currentNumberOfRoot < nbActionsWanted){
 
             // Select a random existing root
             uint64_t clonedRootIndex =

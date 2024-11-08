@@ -113,6 +113,11 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.initNbActions = (size_t)value.asUInt();
         return;
     }
+    if (param == "proportionActionRoots") {
+        params.mutation.tpg.proportionActionRoots = (double)value.asDouble();
+        return;
+    }
+    
     if (param == "pMutateActionVertex") {
         params.mutation.tpg.pMutateActionVertex = (double)value.asDouble();
         return;
@@ -443,6 +448,12 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["initNbActions"] = params.mutation.tpg.initNbActions;
     root["mutation"]["tpg"]["initNbActions"].setComment(
         Mutator::TPGParameters::initNbActionsComment, Json::commentBefore);
+
+
+    root["mutation"]["tpg"]["proportionActionRoots"] = params.mutation.tpg.proportionActionRoots;
+    root["mutation"]["tpg"]["proportionActionRoots"].setComment(
+        Mutator::TPGParameters::proportionActionRootsComment, Json::commentBefore);
+
 
     root["mutation"]["tpg"]["pMutateActionVertex"] = params.mutation.tpg.pMutateActionVertex;
     root["mutation"]["tpg"]["pMutateActionVertex"].setComment(

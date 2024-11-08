@@ -79,6 +79,13 @@ namespace Mutator {
         ///  Probablity of creating a new action vertex, with a new action program
         double pMutateActionVertex = 0.1;
 
+        /// JSon comment
+        inline static const std::string proportionActionRootsComment = 
+            "// Minimum proportion of action roots we have at each generation\n"
+            "// \"proportionActionROots\" : 0.0, // Default value";
+        /// Minimum proportion of action roots we have at each generation
+        double proportionActionRoots = 0.0;
+
 
         /// JSon comment
         inline static const std::string pSwapActionProgramComment =
