@@ -109,7 +109,10 @@ void Log::LABasicLogger::logAfterPopulateTPG()
             return dynamic_cast<const TPG::TPGTeam*>(vertex) != nullptr;
         });
 
-    uint64_t nbActions = this->learningAgent.getTPGGraph()->getNbVertices() - nbTeams;
+    uint64_t nbActions = std::count_if(vertex.begin(), vertex.end(),
+        [](const TPG::TPGVertex* vertex) {
+            return dynamic_cast<const TPG::TPGAction*>(vertex) != nullptr;
+        });
 
 
 
@@ -120,7 +123,10 @@ void Log::LABasicLogger::logAfterPopulateTPG()
             return dynamic_cast<const TPG::TPGTeam*>(roots) != nullptr;
         });
 
-    uint64_t nbActionsR = this->learningAgent.getTPGGraph()->getNbRootVertices() - nbTeams;
+    uint64_t nbActionsR = std::count_if(roots.begin(), roots.end(),
+        [](const TPG::TPGVertex* roots) {
+            return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
+        });
 
 
     *this << std::setw(colWidth) << nbActions 

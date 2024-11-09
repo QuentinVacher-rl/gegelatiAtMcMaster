@@ -695,15 +695,24 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
     probaCreateTeam *= std::max(-0.0001, -2.0 * ((double)preExistingTeams.size() / (double)rootVertices.size()) + 1.0); 
 
+
     // While the target is not reached, add new teams
     uint64_t currentNumberOfRoot = rootVertices.size();
+
+    auto roots = graph.getRootVertices();
+    uint64_t currentNumberOfActionRoot = std::count_if(roots.begin(), roots.end(),
+        [](const TPG::TPGVertex* roots) {
+            return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
+        });
+
+    std::cout<<"\n"<<currentNumberOfRoot<<"-"<<nbActionsWanted<<"-"<<probaCreateTeam<<std::endl;
     while (params.tpg.nbRoots > currentNumberOfRoot) {
 
 
 
 
 
-        if(currentNumberOfRoot < nbActionsWanted){
+        if(currentNumberOfActionRoot < nbActionsWanted){
 
             // Select a random existing root
             uint64_t clonedRootIndex =
@@ -720,14 +729,25 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
             const TPG::TPGTeam& newTeam = graph.addNewTeam();
 
-            for(size_t index = 0; index < 2; index++){
+            // Nb of edges of the new team
+            uint64_t nbEdges = rng.getInt32(2, params.tpg.maxInitOutgoingEdges);
+            for(size_t index = 0; index < nbEdges; index++){
 
-                // Pick random edge
-                std::list<const TPG::TPGEdge*>::iterator iter = preExistingAllEdges.begin();
+                std::shared_ptr<Program::Program> prog = std::make_shared<Program::Program>(graph.getEnvironment(), false);
+                if(params.tpg.pNewRootTeamScratch > rng.getDouble(0, 1)){
+                    Mutator::ProgramMutator::initRandomProgram(*prog, params, rng);
+                } else {
 
-                std::advance(iter, rng.getUnsignedInt64(0, preExistingAllEdges.size() - 1));
+                    // Pick random edge
+                    std::list<const TPG::TPGEdge*>::iterator iter = preExistingAllEdges.begin();
+                    std::advance(iter, rng.getUnsignedInt64(0, preExistingAllEdges.size() - 1));
 
-                const TPG::TPGEdge* pickedEdge = *iter;
+                    const TPG::TPGEdge* pickedEdge = *iter;
+
+                    prog = std::make_shared<Program::Program>(pickedEdge->getProgram(), false);
+
+                    newPrograms.push_back(prog);
+                }
 
                 // Pick random Action
                 const TPG::TPGAction& pickedAction = *preExistingActions.at(
@@ -736,12 +756,13 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 // Add the team
                 graph.addNewEdge(
                     newTeam, pickedAction,
-                    std::make_shared<Program::Program>(pickedEdge->getProgram(), false)
+                    prog
                 );
 
 
             }    
 
+        // Classic creation
         } else {
 
             // Select a random existing root
@@ -771,6 +792,11 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         // Check the new number of roots
         // Needed since preExisting root may be subsumed by new ones.
         currentNumberOfRoot = graph.getNbRootVertices();
+        roots = graph.getRootVertices();
+        currentNumberOfActionRoot = std::count_if(roots.begin(), roots.end(),
+            [](const TPG::TPGVertex* roots) {
+                return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
+            });
     }
 
     int nbActionsafter = 0;

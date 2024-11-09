@@ -170,6 +170,13 @@ namespace Learn {
         size_t nbRegistersActProg = 8;
 
         /// JSon comment
+        inline static const std::string nbSharedRegistersComment =
+            "// Number of registers shared among programs.\n"
+            "// \"nbSharedRegisters\" : 8, // Default value";
+        /// Number of registers for the Program execution
+        size_t nbSharedRegisters = 8;
+
+        /// JSon comment
         inline static const std::string nbProgramConstantComment =
             "// Number of Constant available in each Program.\n"
             "// \"nbProgramConstant\" : 0, // Default value";

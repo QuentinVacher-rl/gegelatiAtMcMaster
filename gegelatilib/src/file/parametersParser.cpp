@@ -117,7 +117,13 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.proportionActionRoots = (double)value.asDouble();
         return;
     }
+    if (param == "pNewRootTeamScratch") {
+        params.mutation.tpg.pNewRootTeamScratch = (double)value.asDouble();
+        return;
+    }
     
+
+
     if (param == "pMutateActionVertex") {
         params.mutation.tpg.pMutateActionVertex = (double)value.asDouble();
         return;
@@ -302,6 +308,12 @@ void File::ParametersParser::setParameterFromString(
         params.nbRegistersContProg = (size_t)value.asUInt();
         return;
     }
+    if (param == "nbRegistersShared") {
+        params.nbSharedRegisters = (size_t)value.asUInt();
+        return;
+    }
+
+    
     if (param == "useMemoryRegisters") {
         params.useMemoryRegisters = value.asBool();
         return;
@@ -398,6 +410,9 @@ void File::ParametersParser::writeParametersToJson(
     root["nbRegistersActProg"] = params.nbRegistersActProg;
     root["nbRegistersActProg"].setComment(
         Learn::LearningParameters::nbRegistersActProgComment, Json::commentBefore);
+    root["nbSharedRegisters"] = params.nbSharedRegisters;
+    root["nbSharedRegisters"].setComment(
+        Learn::LearningParameters::nbSharedRegistersComment, Json::commentBefore);
 
     root["useMemoryRegisters"] = params.useMemoryRegisters;
     root["useMemoryRegisters"].setComment(
@@ -454,6 +469,9 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["proportionActionRoots"].setComment(
         Mutator::TPGParameters::proportionActionRootsComment, Json::commentBefore);
 
+    root["mutation"]["tpg"]["pNewRootTeamScratch"] = params.mutation.tpg.pNewRootTeamScratch;
+    root["mutation"]["tpg"]["pNewRootTeamScratch"].setComment(
+        Mutator::TPGParameters::pNewRootTeamScratchComment, Json::commentBefore);
 
     root["mutation"]["tpg"]["pMutateActionVertex"] = params.mutation.tpg.pMutateActionVertex;
     root["mutation"]["tpg"]["pMutateActionVertex"].setComment(

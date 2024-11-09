@@ -110,10 +110,17 @@ namespace Mutator {
 
         /// JSon comment
         inline static const std::string pCreateNewRootTeamComment =
-            "//  Comment\n"
+            "//  Probablity of Creation a new root team\n"
             "// \"pCreateNewRootTeam\" : 0.1, // Default value";
         ///  Probablity of Creation a new root team
         double pCreateNewRootTeam = 0.1;
+
+        /// JSon comment
+        inline static const std::string pNewRootTeamScratchComment =
+            "//  Probablity of initialisation a new root team creation with scratch programs\n"
+            "// \"pNewRootTeamScratch\" : 0.0, // Default value";
+        ///  Probablity of initialisation a new root team creation with scratch programs
+        double pNewRootTeamScratch = 0.0;
 
         /// JSon comment
         inline static const std::string maxInitOutgoingEdgesComment =
