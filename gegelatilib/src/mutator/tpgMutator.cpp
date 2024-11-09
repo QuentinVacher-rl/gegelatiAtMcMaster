@@ -418,8 +418,8 @@ void Mutator::TPGMutator::mutateTPGTeam(
     // 1. Remove randomly selected edges
     {
         // Keep at least two edges (otherwise the team is useless)
-        double proba = 1.0;
-        while (team.getOutgoingEdges().size() > 2 &&
+        double proba = params.tpg.pEdgeDeletion;
+        while (team.getOutgoingEdges().size() > 1 &&
                proba > rng.getDouble(0.0, 1.0)) {
             removeRandomEdge(graph, team, rng);
 
@@ -430,7 +430,7 @@ void Mutator::TPGMutator::mutateTPGTeam(
 
     // 2. Add random duplicated edge with the team as its source
     {
-        double proba = 1.0;
+        double proba = params.tpg.pEdgeAddition;
         while (team.getOutgoingEdges().size() < params.tpg.maxOutgoingEdges &&
                proba > rng.getDouble(0.0, 1.0)) {
             // Add an edge (by duplication of an existing one)
@@ -690,10 +690,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         }
     }
 
-    int nbActionsWanted = params.tpg.proportionActionRoots * params.tpg.nbRoots;
-    double probaCreateTeam = params.tpg.pCreateNewRootTeam;
-
-    probaCreateTeam *= std::max(-0.0001, -2.0 * ((double)preExistingTeams.size() / (double)rootVertices.size()) + 1.0); 
 
 
     // While the target is not reached, add new teams
@@ -704,6 +700,18 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         [](const TPG::TPGVertex* roots) {
             return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
         });
+    uint64_t currentNumberOfTeamRoot = std::count_if(roots.begin(), roots.end(),
+        [](const TPG::TPGVertex* roots) {
+            return dynamic_cast<const TPG::TPGTeam*>(roots) != nullptr;
+        });
+
+
+
+    int nbActionsWanted = params.tpg.proportionActionRoots * params.tpg.nbRoots;
+    double probaCreateTeam = params.tpg.pCreateNewRootTeam;
+    probaCreateTeam *= std::max(-0.0001,
+         ((double)currentNumberOfTeamRoot / ((double)params.tpg.nbRoots * (params.tpg.proportionActionRoots - 1))) + 1.0
+    );
 
     while (params.tpg.nbRoots > currentNumberOfRoot) {
 
@@ -729,7 +737,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
             const TPG::TPGTeam& newTeam = graph.addNewTeam();
 
             // Nb of edges of the new team
-            uint64_t nbEdges = rng.getInt32(2, params.tpg.maxInitOutgoingEdges);
+            uint64_t nbEdges = rng.getInt32(1, params.tpg.maxInitOutgoingEdges);
             for(size_t index = 0; index < nbEdges; index++){
 
                 std::shared_ptr<Program::Program> prog = std::make_shared<Program::Program>(graph.getEnvironment(), false);
