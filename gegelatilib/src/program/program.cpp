@@ -168,8 +168,15 @@ uint64_t Program::Program::identifyIntrons()
     if(environment.isMemoryRegisters()){
         needReset = true;
 
-        for(int i = 0; !this->actionProgram && i < environment.getNbRegisters(); i++){
+        uint64_t nbRegs = environment.getNbRegisters() - environment.getNbSharedRegisters();
+        for(int i = 0; i < nbRegs; i++){
             usefulRegisters.insert(i);
+        }
+    }
+    if(environment.getNbSharedRegisters() > 0 && !this->actionProgram){
+        needReset = true;
+        for(int i = 0; i < environment.getNbSharedRegisters(); i++){
+            usefulRegisters.insert(i + environment.getNbRegisters() - environment.getNbSharedRegisters());
 
         }
     }

@@ -71,11 +71,11 @@ TEST(LearningParametersTest, readConfigFile)
 TEST(LearningParametersTest, setParameterFromString)
 {
     Learn::LearningParameters params;
-    ASSERT_EQ(params.nbRegistersContProg, 8);
+    ASSERT_EQ(params.nbRegisters, 8);
     std::string key = "nbRegisters";
     Json::Value v(5);
     File::ParametersParser::setParameterFromString(params, key, v);
-    ASSERT_EQ(params.nbRegistersContProg, 5);
+    ASSERT_EQ(params.nbRegisters, 5);
 }
 
 TEST(LearningParametersTest, setAllParamsFrom)
@@ -94,7 +94,7 @@ TEST(LearningParametersTest, setAllParamsFrom)
     ASSERT_EQ(0.85, params.ratioDeletedRoots);
     ASSERT_EQ(100, params.maxNbEvaluationPerPolicy);
     ASSERT_EQ("none", params.activationFunction);
-    ASSERT_EQ(3.0, params.nbRegistersContProg);
+    ASSERT_EQ(3.0, params.nbRegisters);
     ASSERT_EQ(false, params.useMemoryRegisters);
     ASSERT_EQ(5, params.nbProgramConstant);
     ASSERT_EQ(0, params.nbEdgesActivable);
@@ -136,7 +136,6 @@ TEST(LearningParametersTest, setAllParamsFrom)
         << "A default nbThreads value should be set when no one is specified";
     ASSERT_EQ(params2.doValidation, false)
         << "Default validation should be false";
-    ASSERT_EQ(params2.nbRegistersActProg, 8) << "Bad parameter should be ignored";
     ASSERT_EQ(params2.nbIterationsPerJob, 1)
         << "Default nbIterationsPerJob should be 1";
 }
@@ -147,7 +146,7 @@ TEST(LearningParametersTest, loadParametersFromJson)
     ASSERT_NO_THROW(File::ParametersParser::loadParametersFromJson(
         TESTS_DAT_PATH "params.json", params));
     // only testing 1 parameter as readConfigFile was already tested
-    ASSERT_EQ(params.nbRegistersContProg, 3.0)
+    ASSERT_EQ(params.nbRegisters, 3.0)
         << "There should be 3 registers according to the params file";
 }
 
@@ -181,7 +180,7 @@ TEST(LearningParametersTest, writeParametersToJson)
     ASSERT_EQ(params.nbIterationsPerPolicyEvaluation,
               params2.nbIterationsPerPolicyEvaluation);
     ASSERT_EQ(params.nbProgramConstant, params2.nbProgramConstant);
-    ASSERT_EQ(params.nbRegistersContProg, params2.nbRegistersContProg);
+    ASSERT_EQ(params.nbRegisters, params2.nbRegisters);
     ASSERT_EQ(params.useMemoryRegisters, params2.useMemoryRegisters);
     ASSERT_EQ(params.nbEdgesActivable, params2.nbEdgesActivable);
     ASSERT_EQ(params.nbThreads, params2.nbThreads);

@@ -300,15 +300,11 @@ void File::ParametersParser::setParameterFromString(
         params.maxNbEvaluationPerPolicy = (size_t)value.asUInt();
         return;
     }
-    if (param == "nbRegistersActProg") {
-        params.nbRegistersActProg = (size_t)value.asUInt();
+    if (param == "nbRegisters") {
+        params.nbRegisters = (size_t)value.asUInt();
         return;
     }
-    if (param == "nbRegistersContProg") {
-        params.nbRegistersContProg = (size_t)value.asUInt();
-        return;
-    }
-    if (param == "nbRegistersShared") {
+    if (param == "nbSharedRegisters") {
         params.nbSharedRegisters = (size_t)value.asUInt();
         return;
     }
@@ -404,12 +400,11 @@ void File::ParametersParser::writeParametersToJson(
         Learn::LearningParameters::nbProgramConstantComment,
         Json::commentBefore);
 
-    root["nbRegistersContProg"] = params.nbRegistersContProg;
-    root["nbRegistersContProg"].setComment(
-        Learn::LearningParameters::nbRegistersContProgComment, Json::commentBefore);
-    root["nbRegistersActProg"] = params.nbRegistersActProg;
-    root["nbRegistersActProg"].setComment(
-        Learn::LearningParameters::nbRegistersActProgComment, Json::commentBefore);
+    root["nbRegisters"] = params.nbRegisters;
+    root["nbRegisters"].setComment(
+        Learn::LearningParameters::nbRegistersComment, Json::commentBefore);
+
+
     root["nbSharedRegisters"] = params.nbSharedRegisters;
     root["nbSharedRegisters"].setComment(
         Learn::LearningParameters::nbSharedRegistersComment, Json::commentBefore);
@@ -469,7 +464,7 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["proportionActionRoots"].setComment(
         Mutator::TPGParameters::proportionActionRootsComment, Json::commentBefore);
 
-    root["mutation"]["tpg"]["pNewRootTeamScratch"] = params.mutation.tpg.pNewRootTeamScratch;
+    root["mutation"]["tpg"]["pNewRootTeamScratch"] = params.mutation.tpg.proportionActionRoots;
     root["mutation"]["tpg"]["pNewRootTeamScratch"].setComment(
         Mutator::TPGParameters::pNewRootTeamScratchComment, Json::commentBefore);
 

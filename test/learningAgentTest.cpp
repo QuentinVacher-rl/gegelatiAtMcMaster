@@ -444,7 +444,7 @@ TEST_F(LearningAgentTest, forgetPreviousResults)
     params.mutation.tpg.maxInitOutgoingEdges = 2;
     params.ratioDeletedRoots = 0.50;
     params.mutation.tpg.nbRoots = 10;
-    params.nbRegistersContProg = 4;
+    params.nbRegisters = 4;
 
     Learn::LearningAgent la(le, set, params);
     la.init();
@@ -498,7 +498,7 @@ TEST_F(LearningAgentTest, DecimateWorstRoots)
     params.ratioDeletedRoots = 0.50;
     params.mutation.tpg.nbRoots =
         le.getNbActions() - 1; // Param used in decimation
-    params.nbRegistersContProg = 4;
+    params.nbRegisters = 4;
 
     Learn::LearningAgent la(le, set, params);
 

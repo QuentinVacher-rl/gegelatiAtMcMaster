@@ -90,8 +90,9 @@ class Environment
     const std::vector<std::reference_wrapper<const Data::DataHandler>>
         dataSources;
 
-    /// Number of registers for the action program
-    const size_t nbRegistersActProg;
+
+    /// Number of shared registers
+    const size_t nbSharedRegisters;
 
     /// Number of registers for the context program
     const size_t nbRegisters;
@@ -215,8 +216,8 @@ class Environment
         const std::vector<std::reference_wrapper<const Data::DataHandler>>&
             dHandlers,
         const size_t nbRegs, const size_t nbConst = 0,
-        bool useMemoryRegs = false, size_t nbContinuousAct = 0, size_t nbRegsActProg = 0,
-        std::string activationFunction = "none")
+        bool useMemoryRegs = false, size_t nbContinuousAct = 0,
+        std::string activationFunction = "none", size_t nbSharedRegs = 0)
         : instructionSet{filterInstructionSet(iSet, nbRegs, nbConst,
                                               dHandlers)},
           dataSources{dHandlers}, nbRegisters{nbRegs},
@@ -224,15 +225,15 @@ class Environment
           fakeRegisters(nbRegs), fakeConstants(nbConst),
           nbInstructions{instructionSet.getNbInstructions()},
           maxNbOperands{instructionSet.getMaxNbOperands()},
-          nbContinuousActions{nbContinuousAct}, nbRegistersActProg{nbRegsActProg},
-          activationFunction{activationFunction},
+          nbContinuousActions{nbContinuousAct},
+          activationFunction{activationFunction}, nbSharedRegisters{nbSharedRegs},
           nbDataSources{
               dHandlers.size() +
               (nbConst > 0 ? 2
                            : 1)}, // if Constants are used, we need an extra
                                   // datasource to store them in the environment
           largestAddressSpace{
-              computeLargestAddressSpace(std::max(nbRegs, nbRegsActProg), nbConst, dHandlers)},
+              computeLargestAddressSpace(nbRegs + nbSharedRegs, nbConst, dHandlers)},
           lineSize{computeLineSize(*this)}
     {
         this->fakeDataSources.push_back(
@@ -254,12 +255,13 @@ class Environment
      */
     size_t getNbRegisters() const;
 
+
     /**
-     * \brief Get the size of the number of registers of this Environment for action program.
+     * \brief Get the size of the number of shared registers of this Environment.
      *
-     * \return the value of the nbRegisters attribute.
+     * \return the value of the nbSharedRegisters attribute.
      */
-    size_t getNbRegistersActProg() const;
+    size_t getNbSharedRegisters() const;
 
     /**
      * \brief Get the number of constants used by programs.

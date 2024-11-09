@@ -38,39 +38,37 @@
 #include "program/programEngine.h"
 #include "data/constantHandler.h"
 
-void Program::ProgramEngine::setProgram(const Program& prog, const Program* progRegistered)
+void Program::ProgramEngine::setProgram(const Program& prog)
 {
 
-    if(prog.getEnvironment().isMemoryRegisters()){
 
-        if(progRegistered != nullptr){
-            // Try to find the program in the map.
-            auto it = this->mapMemoryRegisters.find(progRegistered);
-            if (it != this->mapMemoryRegisters.end()) {
+    // Try to find the program in the map.
+    auto it = this->mapMemoryRegisters.find(&prog);
+    if (it != this->mapMemoryRegisters.end()) {
 
-                // If found, get a copy of the registers. We don't want to save the memory
-                this->registers = std::make_shared<Data::PrimitiveTypeArray<double>>(*it->second);
-            }
-            else {
-                throw std::runtime_error("If a programRegistered was set, it should be in the map of memory registers");
-            }
-        } else {
-            // Try to find the program in the map.
-            auto it = this->mapMemoryRegisters.find(&prog);
-            if (it != this->mapMemoryRegisters.end()) {
+        // If found, get the registers.
+        this->registers = it->second;
+    } else{
 
-                // If found, get the registers.
-                this->registers = it->second;
-            } else{
+        uint64_t nbRegs = prog.getEnvironment().getNbRegisters();
 
-                // Else, create the registers and add them to the map.
-                this->mapMemoryRegisters[&prog] =
-                    std::make_shared<Data::PrimitiveTypeArray<double>>(
-                        prog.getEnvironment().getNbRegisters());
-                this->registers = this->mapMemoryRegisters[&prog];
-            }
-        }
+        // Else, create the registers and add them to the map.
+        this->mapMemoryRegisters[&prog] =
+            std::make_shared<Data::PrimitiveTypeArray<double>>(nbRegs);
+        this->registers = this->mapMemoryRegisters[&prog];
+    }
 
+    if (!prog.getEnvironment().isMemoryRegisters()) {
+        this->registers->resetData();
+    }
+
+    uint64_t nbSharedRegs = prog.getEnvironment().getNbSharedRegisters();
+    for(uint64_t i = 0; i < nbSharedRegs; i++){
+        //std::cout<<"val"<<*(sharedRegisterValues->getDataAt(typeid(double), i).getSharedPointer<const double>())<<std::endl;
+        this->registers->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
+            prog.getEnvironment().getNbRegisters() - nbSharedRegs + i,
+            *(sharedRegisterValues->getDataAt(typeid(double), i).getSharedPointer<const double>())
+        );
     }
 
 
@@ -152,9 +150,6 @@ void Program::ProgramEngine::setProgram(const Program& prog, const Program* prog
     // set the program
     this->program = &prog;
 
-    if (!prog.getEnvironment().isMemoryRegisters()) {
-        this->registers->resetData();
-    }
 
     // Reset the counters
     this->programCounter = 0;
@@ -272,6 +267,11 @@ void Program::ProgramEngine::resetAllMemoryRegisters()
     }
 }
 
+void Program::ProgramEngine::resetSharedRegisters()
+{
+    sharedRegisterValues->resetData();
+}
+
 const std::unordered_map<const Program::Program*,
                          std::shared_ptr<Data::PrimitiveTypeArray<double>>>&
 Program::ProgramEngine::getMapMemoryRegisters()
@@ -290,12 +290,7 @@ std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Pr
         this->registers = it->second;
     }
     else {
-
-        // Else, create the registers and add them to the map.
-        this->mapMemoryRegisters[prog.get()] =
-            std::make_shared<Data::PrimitiveTypeArray<double>>(
-                prog->getEnvironment().getNbRegisters());
-        this->registers = this->mapMemoryRegisters[prog.get()];
+        throw std::runtime_error("Should not search for registers value of an unfounded program");
     }
 
     std::vector<double> registerValues;
@@ -306,4 +301,33 @@ std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Pr
     }
 
     return registerValues;
+}
+
+
+void Program::ProgramEngine::setSharedRegisterValues(const Program& prog)
+{
+    // Try to find the program in the map.
+    auto it = this->mapMemoryRegisters.find(&prog);
+    if (it != this->mapMemoryRegisters.end()) {
+
+        // If found, get the registers.
+        auto regs = it->second;
+
+        uint64_t nbSharedRegs = prog.getEnvironment().getNbSharedRegisters();
+        for(uint64_t i = 0; i < nbSharedRegs; i++){
+            this->sharedRegisterValues->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
+                i, *(
+                    regs->getDataAt(typeid(double), 
+                    prog.getEnvironment().getNbRegisters() - nbSharedRegs + i
+                ).getSharedPointer<const double>())
+            );
+        }
+    } else{
+
+        throw std::runtime_error("Register should have been found");
+    }
+
+
+
+
 }

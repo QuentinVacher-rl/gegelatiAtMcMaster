@@ -135,8 +135,8 @@ void Learn::ParallelEvoStratLearningAgent::slaveEvalJobThread(
                            this->env.getNbConstant(),
                            this->env.isMemoryRegisters(),
                            this->env.getNbContinuousActions(),
-                           this->env.getNbRegistersActProg(),
-                           this->env.getActivationFunction());
+                           this->env.getActivationFunction(),
+                           this->env.getNbSharedRegisters());
     std::unique_ptr<TPG::TPGExecutionEngine> tee =
         this->tpg->getFactory().createTPGExecutionEngine(privateEnv, NULL);
 

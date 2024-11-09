@@ -57,6 +57,7 @@ void Program::ProgramExecutionEngine::executeCurrentLine()
 double Program::ProgramExecutionEngine::executeProgram(
     const bool ignoreException)
 {
+    
 
     iterateThroughtProgram(ignoreException);
 

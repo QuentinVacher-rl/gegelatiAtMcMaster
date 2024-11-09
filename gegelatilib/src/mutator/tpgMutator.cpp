@@ -705,7 +705,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
             return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
         });
 
-    std::cout<<"\n"<<currentNumberOfRoot<<"-"<<nbActionsWanted<<"-"<<probaCreateTeam<<std::endl;
     while (params.tpg.nbRoots > currentNumberOfRoot) {
 
 

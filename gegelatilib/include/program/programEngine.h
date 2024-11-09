@@ -85,6 +85,8 @@ namespace Program {
         std::vector<std::reference_wrapper<const Data::DataHandler>>
             dataScsConstsAndRegs;
 
+        std::shared_ptr<Data::PrimitiveTypeArray<double>> sharedRegisterValues;
+
         /// Program counter of the execution engine.
         uint64_t programCounter;
 
@@ -105,6 +107,10 @@ namespace Program {
             : programCounter{0},
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   env.getNbRegisters())},
+              sharedRegisterValues{
+                std::make_shared<Data::PrimitiveTypeArray<double>>(
+                  env.getNbSharedRegisters())
+              },
               constants{env.getNbConstant()},
               program{NULL}, dataSources{env.getDataSources()}
         {
@@ -143,6 +149,10 @@ namespace Program {
             : programCounter{0},
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   prog.getEnvironment().getNbRegisters())},
+              sharedRegisterValues{
+                std::make_shared<Data::PrimitiveTypeArray<double>>(
+                  prog.getEnvironment().getNbSharedRegisters())
+              },
               constants{prog.getEnvironment().getNbConstant()},
               program{NULL}
         {
@@ -198,7 +208,7 @@ namespace Program {
          * references by the Program is incompatible with the dataSources of the
          * ProgramExecutionEngine.
          */
-        void setProgram(const Program& prog, const Program* progRegistered = nullptr);
+        void setProgram(const Program& prog);
 
 
         /**
@@ -318,6 +328,11 @@ namespace Program {
         virtual void resetAllMemoryRegisters();
 
         /**
+         * \brief Function that reset the shared registers
+         */
+        virtual void resetSharedRegisters();
+
+        /**
          * \brief Getter that return the a const reference of the map of memory
          * registers.
          *
@@ -336,6 +351,13 @@ namespace Program {
          * \return a vector containing the different value of the registers.
          */
         virtual std::vector<double> getRegisterValues(std::shared_ptr<Program> prog, uint64_t nbRegisters);
+
+        /**
+         * \brief set the new shared registers values
+         * 
+         * \param prog program from whom the shared values are taken
+         */
+        virtual void setSharedRegisterValues(const Program& prog);
     };
 
     template <class T>

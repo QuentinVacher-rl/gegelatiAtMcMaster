@@ -169,9 +169,9 @@ size_t Environment::getNbRegisters() const
     return this->nbRegisters;
 }
 
-size_t Environment::getNbRegistersActProg() const
+size_t Environment::getNbSharedRegisters() const
 {
-    return this->nbRegistersActProg;
+    return this->nbSharedRegisters;
 }
 
 bool Environment::isMemoryRegisters() const

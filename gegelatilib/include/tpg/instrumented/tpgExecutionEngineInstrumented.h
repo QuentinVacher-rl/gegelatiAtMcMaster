@@ -79,7 +79,7 @@ namespace TPG {
          * TPGExecutionEngine, this specialization increments the number of
          * visits of the evaluated TPGEdge.
          */
-        double evaluateEdge(const TPGEdge& edge, const Program::Program* programRegistered = nullptr) override;
+        double evaluateEdge(const TPGEdge& edge) override;
 
         /**
          * \brief Specialization of the executeTeam function.

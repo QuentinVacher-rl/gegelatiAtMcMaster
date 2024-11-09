@@ -39,10 +39,10 @@
 #include "tpg/instrumented/tpgEdgeInstrumented.h"
 #include "tpg/instrumented/tpgTeamInstrumented.h"
 
-double TPG::TPGExecutionEngineInstrumented::evaluateEdge(const TPGEdge& edge, const Program::Program* programRegistered)
+double TPG::TPGExecutionEngineInstrumented::evaluateEdge(const TPGEdge& edge)
 {
     dynamic_cast<const TPGEdgeInstrumented&>(edge).incrementNbVisits();
-    return TPGExecutionEngine::evaluateEdge(edge, programRegistered);
+    return TPGExecutionEngine::evaluateEdge(edge);
 }
 
 std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngineInstrumented::
