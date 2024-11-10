@@ -136,6 +136,10 @@ bool TPG::TPGExecutionEngine::executeAction(
             // Get the action value
             *actionIt = this->evaluateEdge(**edgeIt);
 
+            if(env.isActionSharedMem() && env.getNbSharedRegisters() > 0){
+                progExecutionEngine.setSharedRegisterValues((*edgeIt)->getProgram());
+            }
+
             // Increment iterators
             ++edgeIt;
             ++actionIt;

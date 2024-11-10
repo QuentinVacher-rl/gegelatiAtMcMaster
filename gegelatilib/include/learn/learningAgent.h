@@ -134,7 +134,7 @@ namespace Learn {
                       const TPG::TPGFactory& factory = TPG::TPGFactory())
             : learningEnvironment{le},
               env(iSet, le.getDataSources(), p.nbRegisters, p.nbProgramConstant,
-                  p.useMemoryRegisters, le.getNbContinuousAction(), p.activationFunction, p.nbSharedRegisters),
+                  p.useMemoryRegisters, le.getNbContinuousAction(), p.activationFunction, p.nbSharedRegisters, p.isActionSharedMem),
               tpg(factory.createTPGGraph(env)), params{p},
               archive(p.archiveSize, p.archivingProbability)
         {
@@ -142,12 +142,12 @@ namespace Learn {
             // override the number of initial roots if set to 0
             // Number of initial roots is set to the max between the number of
             // surviving roots and the number of actions.
-            if (this->params.mutation.tpg.initNbRoots == 0) {
+            /*if (this->params.mutation.tpg.initNbRoots == 0) {
                 this->params.mutation.tpg.initNbRoots = std::max(
                     (size_t)floor((1 - this->params.ratioDeletedRoots) *
                                   (double)params.mutation.tpg.nbRoots),
                     (size_t)this->learningEnvironment.getNbActions());
-            }
+            }*/
 
             // Override the number of edges available if set to 0
             // Number of edges available is set to 1 for a single action

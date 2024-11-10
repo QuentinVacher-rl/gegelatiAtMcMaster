@@ -57,9 +57,16 @@ void Program::ProgramExecutionEngine::executeCurrentLine()
 double Program::ProgramExecutionEngine::executeProgram(
     const bool ignoreException)
 {
-    
+    /*std::cout<<"Before execution :";
+    for(int i = 0; i < 8; i++){
+        std::cout<<*this->registers->getDataAt(typeid(double), i).getSharedPointer<const double>()<<"-";
+    }std::cout<<"--- After execution ";*/
 
     iterateThroughtProgram(ignoreException);
+
+    /*for(int i = 0; i < 8; i++){
+        std::cout<<*this->registers->getDataAt(typeid(double), i).getSharedPointer<const double>()<<"-";
+    }std::cout<<std::endl;;*/
 
     // Returns the 0-indexed register.
     // cast to primitiveType<double> to enable cast to double.

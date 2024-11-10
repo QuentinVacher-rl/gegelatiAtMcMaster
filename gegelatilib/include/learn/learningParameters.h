@@ -186,6 +186,16 @@ namespace Learn {
         bool useMemoryRegisters = false;
 
         /// JSon comment
+        inline static const std::string isActionSharedMemComment =
+            "// Boolean indicating if the action programs changed the shared memory"
+            ".\n"
+            "// \"isActionSharedMem\" : false, // Default value";
+        /// Boolean indicating if the action programs changed the shared memory
+        bool isActionSharedMem = false;
+
+
+
+        /// JSon comment
         inline static const std::string nbEdgesActivableComment =
             "// Number of edges that can be activated during a team "
             "evaluation.\n"

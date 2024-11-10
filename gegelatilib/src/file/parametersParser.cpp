@@ -304,6 +304,12 @@ void File::ParametersParser::setParameterFromString(
         params.useMemoryRegisters = value.asBool();
         return;
     }
+    if (param == "isActionSharedMem") {
+        params.isActionSharedMem = value.asBool();
+        return;
+    }
+
+
     if (param == "nbEdgesActivable") {
         params.nbEdgesActivable = (size_t)value.asUInt();
         return;
@@ -402,6 +408,11 @@ void File::ParametersParser::writeParametersToJson(
     root["useMemoryRegisters"] = params.useMemoryRegisters;
     root["useMemoryRegisters"].setComment(
         Learn::LearningParameters::useMemoryRegistersComment,
+        Json::commentBefore);
+
+    root["isActionSharedMem"] = params.isActionSharedMem;
+    root["isActionSharedMem"].setComment(
+        Learn::LearningParameters::isActionSharedMemComment,
         Json::commentBefore);
 
     root["nbEdgesActivable"] = params.nbEdgesActivable;

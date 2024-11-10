@@ -100,6 +100,9 @@ class Environment
     /// True if the memory is used, else false
     const bool useMemoryRegisters;
 
+    /// True if action programs change shared memory
+    const bool useActionSharedMemory;
+
     /// Number of constants
     const size_t nbConstants;
 
@@ -217,7 +220,7 @@ class Environment
             dHandlers,
         const size_t nbRegs, const size_t nbConst = 0,
         bool useMemoryRegs = false, size_t nbContinuousAct = 0,
-        std::string activationFunction = "none", size_t nbSharedRegs = 0)
+        std::string activationFunction = "none", size_t nbSharedRegs = 0, bool useActSharedMem = false)
         : instructionSet{filterInstructionSet(iSet, nbRegs, nbConst,
                                               dHandlers)},
           dataSources{dHandlers}, nbRegisters{nbRegs},
@@ -227,6 +230,7 @@ class Environment
           maxNbOperands{instructionSet.getMaxNbOperands()},
           nbContinuousActions{nbContinuousAct},
           activationFunction{activationFunction}, nbSharedRegisters{nbSharedRegs},
+          useActionSharedMemory{useActSharedMem},
           nbDataSources{
               dHandlers.size() +
               (nbConst > 0 ? 2
@@ -283,6 +287,13 @@ class Environment
      * \return the activation function attribute.
      */
     std::string getActivationFunction() const;
+
+    /**
+     * \brief Get the information if the action programs change the shared memory
+     *
+     * \return True if memory is used, else false.
+     */
+    bool isActionSharedMem() const;
 
     /**
      * \brief Get the information if the registers used memory or no.

@@ -174,6 +174,11 @@ size_t Environment::getNbSharedRegisters() const
     return this->nbSharedRegisters;
 }
 
+bool Environment::isActionSharedMem() const
+{
+    return this->useActionSharedMemory;
+}
+
 bool Environment::isMemoryRegisters() const
 {
     return this->useMemoryRegisters;

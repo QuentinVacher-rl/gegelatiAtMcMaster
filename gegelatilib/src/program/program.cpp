@@ -173,7 +173,7 @@ uint64_t Program::Program::identifyIntrons()
             usefulRegisters.insert(i);
         }
     }
-    if(environment.getNbSharedRegisters() > 0 && !this->actionProgram){
+    if(environment.getNbSharedRegisters() > 0 && (!this->actionProgram || environment.isActionSharedMem())){
         needReset = true;
         for(int i = 0; i < environment.getNbSharedRegisters(); i++){
             usefulRegisters.insert(i + environment.getNbRegisters() - environment.getNbSharedRegisters());
