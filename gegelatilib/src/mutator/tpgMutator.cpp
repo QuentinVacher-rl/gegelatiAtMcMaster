@@ -116,7 +116,7 @@ void Mutator::TPGMutator::initRandomTPG(
     // Programs have been initialized randomly.
     for (size_t i = 0; i < params.tpg.initNbRoots; i++) {
         graph.addNewEdge(*teams.at(i),
-                         *actions.at(i % nbActions),
+                         *actions.at(i  % nbActions),
                          programs.at(i));
     }
 
@@ -369,7 +369,13 @@ void Mutator::TPGMutator::mutateEdgeDestination(
     if (targetAction) {
 
         target = preExistingActions.at(
-            rng.getUnsignedInt64(0, preExistingActions.size() - 1));    
+            rng.getUnsignedInt64(0, preExistingActions.size() - 1)); 
+
+        // If target is an action root, duplicate it to avoid changing the action root population
+        if(target->getIncomingEdges().size() == 0){
+            target = &(const TPG::TPGVertex&)graph.cloneVertex(*target);
+        }
+
     } else {
         target = preExistingTeams.at(
             rng.getUnsignedInt64(0, preExistingTeams.size() - 1));
@@ -713,7 +719,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 // clone it (the vertex and all its outgoing edges)
                 const TPG::TPGTeam& newTeam = (const TPG::TPGTeam&)graph.cloneVertex(
                     *rootVertices.at(clonedRootIndex));
-
                 // Apply mutations to the root
                 mutateTPGTeam(graph, archive, newTeam, preExistingTeams,
                             preExistingActions, preExistingEdges, newPrograms, params,
