@@ -314,7 +314,7 @@ void Learn::LearningAgent::decimateWorstRoots(
     // results map they should be re-inserted to the list before leaving the
     // method.
     std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>
-        preservedActionRoots;
+        preservedVertex;
 
     // Determine the numbers of roots to delete
     int nbRootsToDelete =
@@ -323,29 +323,60 @@ void Learn::LearningAgent::decimateWorstRoots(
         (int)floor(this->params.ratioDeletedRoots *
                    (double)params.mutation.tpg.nbRoots);
 
+    auto roots = tpg->getRootVertices();
+    uint64_t currentNumberOfActionRoot = std::count_if(roots.begin(), roots.end(),
+        [](const TPG::TPGVertex* roots) {
+            return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
+        });
+    uint64_t currentNumberOfTeamRoot = std::count_if(roots.begin(), roots.end(),
+        [](const TPG::TPGVertex* roots) {
+            return dynamic_cast<const TPG::TPGTeam*>(roots) != nullptr;
+        });
+
+
+
+    uint64_t nbActionsMin = params.mutation.tpg.proportionActionRoots * params.mutation.tpg.nbRoots * params.ratioDeletedRoots;
+    uint64_t nbTeamMin = (1-params.mutation.tpg.proportionActionRoots) * params.mutation.tpg.nbRoots * params.ratioDeletedRoots;
+
     auto i = 0;
     while (i < nbRootsToDelete && results.size() > 0) {
         // If the root is an action, do not remove it!
         const TPG::TPGVertex* root = results.begin()->second;
 
         // Action can now be removed when continuous action are used
-        if (env.getNbContinuousActions() > 0 || dynamic_cast<const TPG::TPGAction*>(root) == nullptr) {
+        if (dynamic_cast<const TPG::TPGAction*>(root) != nullptr && currentNumberOfActionRoot > nbActionsMin) {
             tpg->removeVertex(*results.begin()->second);
             // Removed stored result (if any)
             this->resultsPerRoot.erase(results.begin()->second);
         }
-        else {
-            preservedActionRoots.insert(*results.begin());
+        else if (dynamic_cast<const TPG::TPGTeam*>(root) != nullptr && currentNumberOfTeamRoot > nbTeamMin){
+            tpg->removeVertex(*results.begin()->second);
+            // Removed stored result (if any)
+            this->resultsPerRoot.erase(results.begin()->second);
+        } else {
+            preservedVertex.insert(*results.begin());
             i--; // no vertex was actually removed
         }
         results.erase(results.begin());
 
         // Increment loop counter
         i++;
+
+
+        roots = tpg->getRootVertices();
+        currentNumberOfActionRoot = std::count_if(roots.begin(), roots.end(),
+            [](const TPG::TPGVertex* roots) {
+                return dynamic_cast<const TPG::TPGAction*>(roots) != nullptr;
+            });
+        currentNumberOfTeamRoot = std::count_if(roots.begin(), roots.end(),
+            [](const TPG::TPGVertex* roots) {
+                return dynamic_cast<const TPG::TPGTeam*>(roots) != nullptr;
+            });
+
     }
 
     // Restore root actions
-    results.insert(preservedActionRoots.begin(), preservedActionRoots.end());
+    results.insert(preservedVertex.begin(), preservedVertex.end());
 }
 
 uint64_t Learn::LearningAgent::train(volatile bool& altTraining,

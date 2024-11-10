@@ -117,11 +117,6 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.proportionActionRoots = (double)value.asDouble();
         return;
     }
-    if (param == "pNewRootTeamScratch") {
-        params.mutation.tpg.pNewRootTeamScratch = (double)value.asDouble();
-        return;
-    }
-    
 
 
     if (param == "pMutateActionVertex") {
@@ -169,11 +164,6 @@ void File::ParametersParser::setParameterFromString(
     }
     if (param == "pEdgeDestinationChange") {
         params.mutation.tpg.pEdgeDestinationChange = value.asDouble();
-        return;
-    }
-
-    if (param == "pCreateNewRootTeam") {
-        params.mutation.tpg.pCreateNewRootTeam = value.asDouble();
         return;
     }
     if (param == "pEdgeDestinationIsAction") {
@@ -463,10 +453,6 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["proportionActionRoots"] = params.mutation.tpg.proportionActionRoots;
     root["mutation"]["tpg"]["proportionActionRoots"].setComment(
         Mutator::TPGParameters::proportionActionRootsComment, Json::commentBefore);
-
-    root["mutation"]["tpg"]["pNewRootTeamScratch"] = params.mutation.tpg.proportionActionRoots;
-    root["mutation"]["tpg"]["pNewRootTeamScratch"].setComment(
-        Mutator::TPGParameters::pNewRootTeamScratchComment, Json::commentBefore);
 
     root["mutation"]["tpg"]["pMutateActionVertex"] = params.mutation.tpg.pMutateActionVertex;
     root["mutation"]["tpg"]["pMutateActionVertex"].setComment(
