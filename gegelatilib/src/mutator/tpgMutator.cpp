@@ -372,7 +372,7 @@ void Mutator::TPGMutator::mutateEdgeDestination(
             rng.getUnsignedInt64(0, preExistingActions.size() - 1)); 
 
         // If target is an action root, duplicate it to avoid changing the action root population
-        if(target->getIncomingEdges().size() == 0){
+        if(target->getIncomingEdges().size() == 0 && params.tpg.seperateTeamAndRoot){
             target = &(const TPG::TPGVertex&)graph.cloneVertex(*target);
         }
 
@@ -703,9 +703,13 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         });
 
 
+    if(params.tpg.proportionActionRoots + params.tpg.proportionTeamRoots > 1){
+        throw std::runtime_error("Too many proportion!");
+    }
+
 
     uint64_t nbActionsWanted = params.tpg.proportionActionRoots * (double)params.tpg.nbRoots;
-    uint64_t nbTeamWanted = params.tpg.nbRoots - nbActionsWanted;
+    uint64_t nbTeamWanted = params.tpg.proportionTeamRoots * (double)params.tpg.nbRoots;
 
     while (params.tpg.nbRoots > currentNumberOfRoot) {
 
@@ -715,7 +719,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
         if(dynamic_cast<const TPG::TPGTeam*>(rootVertices.at(clonedRootIndex)) != nullptr){
 
-            if(currentNumberOfTeamRoot < nbTeamWanted){
+            if(currentNumberOfTeamRoot < nbTeamWanted || currentNumberOfActionRoot > nbActionsWanted){
                 // clone it (the vertex and all its outgoing edges)
                 const TPG::TPGTeam& newTeam = (const TPG::TPGTeam&)graph.cloneVertex(
                     *rootVertices.at(clonedRootIndex));
@@ -728,7 +732,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
         } else {
 
-            if(currentNumberOfActionRoot < nbActionsWanted){
+            if(currentNumberOfActionRoot < nbActionsWanted ||currentNumberOfTeamRoot > nbTeamWanted){
 
                 // clone it (the vertex and all its outgoing edges)
                 const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(

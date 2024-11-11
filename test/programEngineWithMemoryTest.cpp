@@ -71,7 +71,9 @@ class ProgramEngineWithMemoryTest : public ::testing::Test
         set.add(*(new Instructions::LambdaInstruction<double, double>(
             [](double a, double b) -> double { return a - b; })));
 
-        e = new Environment(set, vect, 8, 0, true);
+        Learn::LearningParameters params;
+        params.useMemoryRegisters = true;
+        e = new Environment(set, params, vect);
         p = new Program::Program(*e);
 
         Program::Line& l0 = p->addNewLine();

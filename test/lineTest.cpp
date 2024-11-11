@@ -65,7 +65,8 @@ class LineTest : public ::testing::Test
         auto minus = [](double a, double b) -> double { return a - b; };
         set.add(*(new Instructions::LambdaInstruction<double, double>(minus)));
 
-        e = new Environment(set, vect, 8);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, vect);
     }
 
     virtual void TearDown()

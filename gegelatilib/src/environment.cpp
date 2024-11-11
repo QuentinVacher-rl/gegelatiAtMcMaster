@@ -169,33 +169,21 @@ size_t Environment::getNbRegisters() const
     return this->nbRegisters;
 }
 
-size_t Environment::getNbSharedRegisters() const
-{
-    return this->nbSharedRegisters;
-}
-
-bool Environment::isActionSharedMem() const
-{
-    return this->useActionSharedMemory;
-}
-
-bool Environment::isMemoryRegisters() const
-{
-    return this->useMemoryRegisters;
-}
-
 size_t Environment::getNbConstant() const
 {
     return this->nbConstants;
 }
 
+
+
 size_t Environment::getNbContinuousActions() const{
     return nbContinuousActions;
 }
 
-std::string Environment::getActivationFunction() const{
-    return activationFunction;
+const Learn::LearningParameters& Environment::getParams() const{
+    return params;
 }
+
 
 size_t Environment::getNbInstructions() const
 {

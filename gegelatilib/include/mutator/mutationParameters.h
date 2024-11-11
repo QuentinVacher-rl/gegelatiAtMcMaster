@@ -81,10 +81,17 @@ namespace Mutator {
 
         /// JSon comment
         inline static const std::string proportionActionRootsComment = 
-            "// Minimum proportion of action roots we have at each generation\n"
+            "// Minimum proportion of action roots we have, and delete, at each generation\n"
             "// \"proportionActionROots\" : 0.0, // Default value";
         /// Minimum proportion of action roots we have at each generation
         double proportionActionRoots = 0.0;
+
+        /// JSon comment
+        inline static const std::string proportionTeamRootsComment = 
+            "// Minimum proportion of team roots we have, and delete, at each generation\n"
+            "// \"proportionTeamRoots\" : 0.0, // Default value";
+        /// Minimum proportion of action roots we have at each generation
+        double proportionTeamRoots = 0.0;
 
 
         /// JSon comment
@@ -158,6 +165,22 @@ namespace Mutator {
         /// the archive is used for this purpose, which is far from 100%
         /// accurate.)
         bool forceProgramBehaviorChangeOnMutation = false;
+
+        /// JSon comment
+        inline static const std::string multiActionProgComment =
+            "// Create multiple action program, instead of one outputting multiple action"
+            ".\n"
+            "// \"multiActionProg\" : false, // Default value";
+        /// Boolean indicating if the action programs changed the shared memory
+        bool multiActionProg = false;
+
+        /// JSon comment
+        inline static const std::string seperateTeamAndRootComment =
+            "// Seperate the training of team and roots, basically make dupplication of root action if team point toward it"
+            ".\n"
+            "// \"seperateTeamAndRoot\" : false, // Default value";
+        /// Boolean indicating if the action programs changed the shared memory
+        bool seperateTeamAndRoot = false;
 
         /// JSon comment
         inline static const std::string pEdgeDestinationChangeComment =

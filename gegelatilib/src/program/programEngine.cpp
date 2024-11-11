@@ -58,11 +58,11 @@ void Program::ProgramEngine::setProgram(const Program& prog)
         this->registers = this->mapMemoryRegisters[&prog];
     }
 
-    if (!prog.getEnvironment().isMemoryRegisters()) {
+    if (!prog.getEnvironment().getParams().useMemoryRegisters) {
         this->registers->resetData();
     }
 
-    uint64_t nbSharedRegs = prog.getEnvironment().getNbSharedRegisters();
+    uint64_t nbSharedRegs = prog.getEnvironment().getParams().nbSharedRegisters;
     for(uint64_t i = 0; i < nbSharedRegs; i++){
         //std::cout<<"val"<<*(sharedRegisterValues->getDataAt(typeid(double), i).getSharedPointer<const double>())<<std::endl;
         this->registers->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
@@ -313,7 +313,7 @@ void Program::ProgramEngine::setSharedRegisterValues(const Program& prog)
         // If found, get the registers.
         auto regs = it->second;
 
-        uint64_t nbSharedRegs = prog.getEnvironment().getNbSharedRegisters();
+        uint64_t nbSharedRegs = prog.getEnvironment().getParams().nbSharedRegisters;
         for(uint64_t i = 0; i < nbSharedRegs; i++){
             this->sharedRegisterValues->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
                 i, *(

@@ -70,14 +70,14 @@ void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<doubl
     }
 
     // Sigmoid function
-    if(env.getActivationFunction() == "sigmoid"){
+    if(env.getParams().activationFunction == "sigmoid"){
         for(size_t i=0; i<actionsTaken.size(); i++){
             actionsTaken[i] = 1.0 / (1.0 + std::exp(-actionsTaken[i]));
         }
-    } else if(env.getActivationFunction() == "tanh"){
+    } else if(env.getParams().activationFunction == "tanh"){
         std::transform(actionsTaken.begin(), actionsTaken.end(), actionsTaken.begin(), [](double x) { return std::tanh(x); });
 
-    } else if(env.getActivationFunction() == "none"){
+    } else if(env.getParams().activationFunction == "none"){
         for (double& actionTaken : actionsTaken) {
             actionTaken = std::clamp(actionTaken, -1.0, 1.0);
         }
@@ -136,7 +136,7 @@ bool TPG::TPGExecutionEngine::executeAction(
             // Get the action value
             *actionIt = this->evaluateEdge(**edgeIt);
 
-            if(env.isActionSharedMem() && env.getNbSharedRegisters() > 0){
+            if(env.getParams().isActionSharedMem && env.getParams().nbSharedRegisters > 0){
                 progExecutionEngine.setSharedRegisterValues((*edgeIt)->getProgram());
             }
 
@@ -195,7 +195,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
         // Get the pair with the edge and the bid.
         auto destination = resultsBid[i].first->getDestination();
 
-        if(env.getNbSharedRegisters() > 0){
+        if(env.getParams().nbSharedRegisters > 0){
             progExecutionEngine.setSharedRegisterValues(resultsBid[i].first->getProgram());
         }
 
@@ -239,7 +239,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
 {
 
     // Reset the shared memory
-    if(!env.isMemoryRegisters()){
+    if(!env.getParams().useMemoryRegisters){
         progExecutionEngine.resetSharedRegisters();
     }
 

@@ -109,7 +109,8 @@ class StickGameGenerationBestDotTest : public ::testing::Test
 
         le = new StickGameAdversarial();
         data = {le->getDataSources().at(0), le->getDataSources().at(1)};
-        e = new Environment(set, le->getDataSources(), 8);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, le->getDataSources());
         tpg = new TPG::TPGGraph(*e);
         tee = new TPG::TPGExecutionEngine(*e);
         dot = new File::TPGGraphDotImporter(

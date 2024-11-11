@@ -76,7 +76,8 @@ class PolicyStatsTest : public ::testing::Test
             *(new Data::PrimitiveTypeArray<double>((unsigned int)25)));
 
         // Environment
-        e = new Environment(set, vect, 8, 5);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, vect);
 
         // Create 8 programs
         for (int i = 0; i < 8; i++) {

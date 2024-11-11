@@ -105,7 +105,8 @@ class ProgramExecutionEngineTest : public ::testing::Test
                 return res / 4.0;
             }));
 
-        e = new Environment(set, vect, 8, 5);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, vect);
         p = new Program::Program(*e);
 
         Program::Line& l0 = p->addNewLine();

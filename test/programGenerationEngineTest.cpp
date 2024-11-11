@@ -78,12 +78,13 @@ class ProgramGenerationEngineTest : public ::testing::Test
             sub, "$0 = $1 - $2;")));
         set.add(*(new Instructions::AddPrimitiveType<double>()));
 
-        e = new Environment(set, vect, 8);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, vect);
 
         set.add(*(new Instructions::LambdaInstruction<Data::Constant, double>(
             addConstant, "$0 = (double)($1) - $2;")));
 
-        envWithConstant = new Environment(set, vect, 8, 5);
+        envWithConstant = new Environment(set, params, vect);
         p = new Program::Program(*e);
         p2 = new Program::Program(*e);
         p3 = new Program::Program(*envWithConstant);

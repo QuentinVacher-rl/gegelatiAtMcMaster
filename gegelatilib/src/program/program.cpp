@@ -165,18 +165,18 @@ uint64_t Program::Program::identifyIntrons()
 
 
     bool needReset = false;
-    if(environment.isMemoryRegisters()){
+    if(environment.getParams().useMemoryRegisters){
         needReset = true;
 
-        uint64_t nbRegs = environment.getNbRegisters() - environment.getNbSharedRegisters();
+        uint64_t nbRegs = environment.getNbRegisters() - environment.getParams().nbSharedRegisters;
         for(int i = 0; i < nbRegs; i++){
             usefulRegisters.insert(i);
         }
     }
-    if(environment.getNbSharedRegisters() > 0 && (!this->actionProgram || environment.isActionSharedMem())){
+    if(environment.getParams().nbSharedRegisters > 0 && (!this->actionProgram || environment.getParams().isActionSharedMem)){
         needReset = true;
-        for(int i = 0; i < environment.getNbSharedRegisters(); i++){
-            usefulRegisters.insert(i + environment.getNbRegisters() - environment.getNbSharedRegisters());
+        for(int i = 0; i < environment.getParams().nbSharedRegisters; i++){
+            usefulRegisters.insert(i + environment.getNbRegisters() - environment.getParams().nbSharedRegisters);
 
         }
     }
@@ -226,7 +226,7 @@ uint64_t Program::Program::identifyIntrons()
                         usefulRegisters.insert(accessedAddress);
                     }
 
-                    if(accessedAddresses.size() > 0 && environment.isMemoryRegisters()){
+                    if(accessedAddresses.size() > 0 && environment.getParams().useMemoryRegisters){
                         needReset = true;
                     }
                 }

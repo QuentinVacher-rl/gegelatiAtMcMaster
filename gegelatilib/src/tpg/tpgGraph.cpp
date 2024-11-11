@@ -296,7 +296,7 @@ void TPG::TPGGraph::removeEdge(const TPGEdge& edge)
         ->removeIncomingEdge(iterator->get());
 
     // Delete the destination if it was an action with no incoming edge anymore
-    if(dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination()) != nullptr){
+    if(env.getParams().mutation.tpg.seperateTeamAndRoot && dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination()) != nullptr){
         const TPG::TPGAction* action = dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination());
         if(action->getIncomingEdges().size() == 0){
             removeVertex(*action);

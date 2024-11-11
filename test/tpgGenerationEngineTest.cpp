@@ -85,7 +85,8 @@ class TPGGenerationEngineTest : public ::testing::Test
         set.add(*(new Instructions::LambdaInstruction<double, double>(
             sub, "$0 = $1 - $2;")));
 
-        e = new Environment(set, data, 8);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, data);
         tpg = new TPG::TPGGraph(*e);
 
         cmdCompile = TESTS_DAT_PATH "codeGen/";

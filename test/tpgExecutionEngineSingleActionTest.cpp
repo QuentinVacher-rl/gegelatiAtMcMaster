@@ -98,9 +98,10 @@ class TPGExecutionEngineTestSingleAction : public ::testing::Test
         ((Data::PrimitiveTypeArray<double>&)vect.at(0).get())
             .setDataAt(typeid(double), 0, 1.0);
 
+        Learn::LearningParameters params;
         set.add(*(new Instructions::AddPrimitiveType<double>()));
         set.add(*(new Instructions::MultByConstant<double>()));
-        e = new Environment(set, vect, 8, 1);
+        e = new Environment(set, params, vect);
         tpg = new TPG::TPGGraph(*e);
 
         // Create 9 programs
@@ -269,7 +270,8 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRoot)
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
 {
-    e = new Environment(set, vect, 8, 1, false, 1, "none");
+    Learn::LearningParameters params;
+    e = new Environment(set, params, vect, 1);
     TPG::TPGExecutionEngine tpee(*e, &a);
 
     std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;
@@ -301,7 +303,10 @@ TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuous)
 
 TEST_F(TPGExecutionEngineTestSingleAction, EvaluateFromRootContinuousSigmoid)
 {
-    e = new Environment(set, vect, 8, 1, false, 2, "sigmoid");
+    
+    Learn::LearningParameters params;
+    params.activationFunction = "sigmoid";
+    e = new Environment(set, params, vect, 2);
     TPG::TPGExecutionEngine tpee(*e, &a);
 
     std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> result;

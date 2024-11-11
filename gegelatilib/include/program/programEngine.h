@@ -109,7 +109,7 @@ namespace Program {
                   env.getNbRegisters())},
               sharedRegisterValues{
                 std::make_shared<Data::PrimitiveTypeArray<double>>(
-                  env.getNbSharedRegisters())
+                  env.getParams().nbSharedRegisters)
               },
               constants{env.getNbConstant()},
               program{NULL}, dataSources{env.getDataSources()}
@@ -151,7 +151,7 @@ namespace Program {
                   prog.getEnvironment().getNbRegisters())},
               sharedRegisterValues{
                 std::make_shared<Data::PrimitiveTypeArray<double>>(
-                  prog.getEnvironment().getNbSharedRegisters())
+                  prog.getEnvironment().getParams().nbSharedRegisters)
               },
               constants{prog.getEnvironment().getNbConstant()},
               program{NULL}

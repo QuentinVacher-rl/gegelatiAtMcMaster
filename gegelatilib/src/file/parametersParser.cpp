@@ -117,7 +117,18 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.proportionActionRoots = (double)value.asDouble();
         return;
     }
-
+    if (param == "proportionTeamRoots") {
+        params.mutation.tpg.proportionTeamRoots = (double)value.asDouble();
+        return;
+    }
+    if (param == "seperateTeamAndRoot") {
+        params.mutation.tpg.seperateTeamAndRoot = value.asBool();
+        return;
+    }
+    if (param == "multiActionProg") {
+        params.mutation.tpg.multiActionProg = value.asBool();
+        return;
+    }
 
     if (param == "pMutateActionVertex") {
         params.mutation.tpg.pMutateActionVertex = (double)value.asDouble();
@@ -310,6 +321,7 @@ void File::ParametersParser::setParameterFromString(
     }
 
 
+
     if (param == "nbEdgesActivable") {
         params.nbEdgesActivable = (size_t)value.asUInt();
         return;
@@ -415,6 +427,8 @@ void File::ParametersParser::writeParametersToJson(
         Learn::LearningParameters::isActionSharedMemComment,
         Json::commentBefore);
 
+
+
     root["nbEdgesActivable"] = params.nbEdgesActivable;
     root["nbEdgesActivable"].setComment(
         Learn::LearningParameters::nbEdgesActivableComment,
@@ -435,6 +449,16 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["forceProgramBehaviorChangeOnMutation"].setComment(
         Mutator::TPGParameters::forceProgramBehaviorChangeOnMutationComment,
         Json::commentBefore);
+
+    root["mutation"]["tpg"]["seperateTeamAndRoot"] = params.mutation.tpg.seperateTeamAndRoot;
+    root["mutation"]["tpg"]["seperateTeamAndRoot"].setComment(
+        Mutator::TPGParameters::seperateTeamAndRootComment,
+        Json::commentBefore);
+    root["mutation"]["tpg"]["multiActionProg"] = params.mutation.tpg.multiActionProg;
+    root["mutation"]["tpg"]["multiActionProg"].setComment(
+        Mutator::TPGParameters::multiActionProgComment,
+        Json::commentBefore);
+
 
     root["mutation"]["tpg"]["maxInitOutgoingEdges"] =
         params.mutation.tpg.maxInitOutgoingEdges;
@@ -464,6 +488,10 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["proportionActionRoots"] = params.mutation.tpg.proportionActionRoots;
     root["mutation"]["tpg"]["proportionActionRoots"].setComment(
         Mutator::TPGParameters::proportionActionRootsComment, Json::commentBefore);
+
+    root["mutation"]["tpg"]["proportionTeamRoots"] = params.mutation.tpg.proportionTeamRoots;
+    root["mutation"]["tpg"]["proportionTeamRoots"].setComment(
+        Mutator::TPGParameters::proportionTeamRootsComment, Json::commentBefore);
 
     root["mutation"]["tpg"]["pMutateActionVertex"] = params.mutation.tpg.pMutateActionVertex;
     root["mutation"]["tpg"]["pMutateActionVertex"].setComment(

@@ -45,6 +45,7 @@
 #include "data/primitiveTypeArray.h"
 #include "instructions/instruction.h"
 #include "instructions/set.h"
+#include "learn/learningParameters.h"
 
 /// LineSize structure to be used within the Environment.
 typedef struct LineSize
@@ -90,19 +91,10 @@ class Environment
     const std::vector<std::reference_wrapper<const Data::DataHandler>>
         dataSources;
 
-
-    /// Number of shared registers
-    const size_t nbSharedRegisters;
-
+    /// Parameters for the learning process
+    const Learn::LearningParameters& params;
     /// Number of registers for the context program
     const size_t nbRegisters;
-
-    /// True if the memory is used, else false
-    const bool useMemoryRegisters;
-
-    /// True if action programs change shared memory
-    const bool useActionSharedMemory;
-
     /// Number of constants
     const size_t nbConstants;
 
@@ -118,9 +110,6 @@ class Environment
 
     /// Number of continuous actions
     const size_t nbContinuousActions;
-
-    /// Activation function for continuous actions
-    const std::string activationFunction;
 
     /// Number of Instruction in the Instructions::Set.
     const size_t nbInstructions;
@@ -215,36 +204,30 @@ class Environment
      * \param[in] activationFunction the activation function used for continuous actions
      */
     Environment(
-        const Instructions::Set& iSet,
+        const Instructions::Set& iSet, const Learn::LearningParameters& p,
         const std::vector<std::reference_wrapper<const Data::DataHandler>>&
-            dHandlers,
-        const size_t nbRegs, const size_t nbConst = 0,
-        bool useMemoryRegs = false, size_t nbContinuousAct = 0,
-        std::string activationFunction = "none", size_t nbSharedRegs = 0, bool useActSharedMem = false)
-        : instructionSet{filterInstructionSet(iSet, nbRegs, nbConst,
+            dHandlers, size_t nbContinuousAct = 0)
+        : instructionSet{filterInstructionSet(iSet, p.nbRegisters, p.nbProgramConstant,
                                               dHandlers)},
-          dataSources{dHandlers}, nbRegisters{nbRegs},
-          useMemoryRegisters{useMemoryRegs}, nbConstants{nbConst},
-          fakeRegisters(nbRegs), fakeConstants(nbConst),
+          dataSources{dHandlers}, params{p}, nbRegisters{p.nbRegisters}, nbConstants{p.nbProgramConstant}, 
+          fakeRegisters(p.nbRegisters), fakeConstants(p.nbProgramConstant),
           nbInstructions{instructionSet.getNbInstructions()},
           maxNbOperands{instructionSet.getMaxNbOperands()},
           nbContinuousActions{nbContinuousAct},
-          activationFunction{activationFunction}, nbSharedRegisters{nbSharedRegs},
-          useActionSharedMemory{useActSharedMem},
           nbDataSources{
               dHandlers.size() +
-              (nbConst > 0 ? 2
+              (p.nbProgramConstant > 0 ? 2
                            : 1)}, // if Constants are used, we need an extra
                                   // datasource to store them in the environment
           largestAddressSpace{
-              computeLargestAddressSpace(nbRegs + nbSharedRegs, nbConst, dHandlers)},
+              computeLargestAddressSpace(p.nbRegisters, p.nbProgramConstant, dHandlers)},
           lineSize{computeLineSize(*this)}
     {
         this->fakeDataSources.push_back(
             (std::reference_wrapper<const Data::DataHandler>)this
                 ->fakeRegisters);
 
-        if (nbConst > 0) {
+        if (p.nbProgramConstant > 0) {
             this->fakeDataSources.push_back(this->fakeConstants);
         }
 
@@ -261,13 +244,6 @@ class Environment
 
 
     /**
-     * \brief Get the size of the number of shared registers of this Environment.
-     *
-     * \return the value of the nbSharedRegisters attribute.
-     */
-    size_t getNbSharedRegisters() const;
-
-    /**
      * \brief Get the number of constants used by programs.
      *
      * \return the value of the nbParameters attribute.
@@ -281,26 +257,12 @@ class Environment
      */
     size_t getNbContinuousActions() const;
 
-    /**
-     * \brief Get the activation function used for continuous actions.
-     *
-     * \return the activation function attribute.
-     */
-    std::string getActivationFunction() const;
 
     /**
-     * \brief Get the information if the action programs change the shared memory
-     *
-     * \return True if memory is used, else false.
+     * \brief Get the instance of parameters used
      */
-    bool isActionSharedMem() const;
+    const Learn::LearningParameters& getParams() const;
 
-    /**
-     * \brief Get the information if the registers used memory or no.
-     *
-     * \return True if memory is used, else false.
-     */
-    bool isMemoryRegisters() const;
 
     /**
      * \brief Get the size of the number of Instruction within the

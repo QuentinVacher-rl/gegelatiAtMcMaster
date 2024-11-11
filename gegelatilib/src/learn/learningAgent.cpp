@@ -334,9 +334,12 @@ void Learn::LearningAgent::decimateWorstRoots(
         });
 
 
+    if(params.mutation.tpg.proportionActionRoots + params.mutation.tpg.proportionTeamRoots > 1){
+        throw std::runtime_error("Too many proportion!");
+    }
 
     uint64_t nbActionsMin = params.mutation.tpg.proportionActionRoots * params.mutation.tpg.nbRoots * params.ratioDeletedRoots;
-    uint64_t nbTeamMin = (1-params.mutation.tpg.proportionActionRoots) * params.mutation.tpg.nbRoots * params.ratioDeletedRoots;
+    uint64_t nbTeamMin = params.mutation.tpg.proportionTeamRoots * params.mutation.tpg.nbRoots * params.ratioDeletedRoots;
 
     auto i = 0;
     while (i < nbRootsToDelete && results.size() > 0) {

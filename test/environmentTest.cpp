@@ -62,11 +62,12 @@ TEST(EnvironmentTest, Constructor)
     vect.push_back(d1);
     vect.push_back(d2);
 
-    ASSERT_NO_THROW({ Environment e(set, vect, 8, 5); });
+    Learn::LearningParameters params;
+    ASSERT_NO_THROW({ Environment e(set, params, vect); });
 
     ASSERT_THROW(
         // Empty dataHandlers
-        Environment e2(set, {}, 8, 0);, std::domain_error)
+        Environment e2(set, params, {});, std::domain_error)
         << "Something went unexpectedly right when constructing an Environment "
            "with an invalid Environment.";
 }
@@ -90,8 +91,9 @@ TEST(EnvironmentTest, ConstructorWithInvalidInstruction)
     // Add an invalid instruction to the set to test the filtering mechanism
     set.add(*(new Instructions::AddPrimitiveType<bool>()));
 
+    Learn::LearningParameters params;
     Environment* e3 = NULL;
-    ASSERT_NO_THROW(e3 = new Environment(set, vect, 8, 5))
+    ASSERT_NO_THROW(e3 = new Environment(set, params, vect))
         << "Constructing an Environemnt with an invalid Instruction should not "
            "throw an exception.";
     if (e3 != NULL) {
@@ -104,14 +106,13 @@ TEST(EnvironmentTest, ConstructorWithInvalidInstruction)
     delete &set.getInstruction(0);
     delete &set.getInstruction(1);
     delete &set.getInstruction(2);
-
     // Test with Constant
     Instructions::Set set2;
     set2.add(*(new Instructions::AddPrimitiveType<int>()));
     set2.add(*(new Instructions::AddPrimitiveType<double>()));
     set2.add(*(new Instructions::MultByConstant<int>()));
     Environment* e4 = NULL;
-    ASSERT_NO_THROW(e4 = new Environment(set2, vect, 8, 0))
+    ASSERT_NO_THROW(e4 = new Environment(set2, params, vect))
         << "Constructing an Environemnt with an invalid Instruction should not "
            "throw an exception.";
     if (e4 != NULL) {
@@ -133,6 +134,8 @@ TEST(EnvironmentTest, computeLineSize)
     std::vector<std::reference_wrapper<const Data::DataHandler>> vect;
     Instructions::Set set;
     Environment* e;
+    Learn::LearningParameters params;
+    params.nbProgramConstant = 5;
     vect.push_back(
         *(new Data::PrimitiveTypeArray<double>((unsigned int)size1)));
     vect.push_back(*(new Data::PrimitiveTypeArray<float>((unsigned int)size2)));
@@ -140,7 +143,7 @@ TEST(EnvironmentTest, computeLineSize)
     set.add(*(new Instructions::AddPrimitiveType<float>()));
     auto minus = [](double a, double b) -> double { return a - b; };
     set.add(*(new Instructions::LambdaInstruction<double, double>(minus)));
-    e = new Environment(set, vect, 8, 5);
+    e = new Environment(set, params, vect);
 
     // Expected answer:
     // n = 8
@@ -177,7 +180,9 @@ TEST(EnvironmentTest, Size_tAttributeAccessors)
     vect.push_back(d1);
     vect.push_back(d2);
 
-    Environment e(set, vect, 8, 5);
+    Learn::LearningParameters params;
+    params.nbProgramConstant = 5;
+    Environment e(set, params, vect);
 
     ASSERT_EQ(e.getNbRegisters(), 8)
         << "Number of registers of the Environment does not correspond to the "
@@ -218,7 +223,8 @@ TEST(EnvironmentTest, GetFakeRegisters)
     vect.push_back(d1);
     vect.push_back(d2);
 
-    Environment e(set, vect, 8, 5);
+    Learn::LearningParameters params;
+    Environment e(set, params, vect);
 
     ASSERT_NO_THROW(auto dataHandler = e.getFakeDataSources().at(0))
         << "Couldn't access the fake registers of the environment.";
@@ -250,7 +256,8 @@ TEST(EnvironmentTest, InstructionSetAccessor)
     vect.push_back(d1);
     vect.push_back(d2);
 
-    Environment e(set, vect, 8, 5);
+    Learn::LearningParameters params;
+    Environment e(set, params, vect);
 
     const Instructions::Set& setCpy = e.getInstructionSet();
     ASSERT_NE(&setCpy, &set)
@@ -284,8 +291,9 @@ TEST(EnvironmentTest, DataSourceAccessor)
 
     vect.push_back(d1);
     vect.push_back(d2);
+    Learn::LearningParameters params;
 
-    Environment e(set, vect, 8, 5);
+    Environment e(set, params, vect);
 
     auto& dataSourcesCpy = e.getDataSources();
     ASSERT_NE(&dataSourcesCpy, &vect)

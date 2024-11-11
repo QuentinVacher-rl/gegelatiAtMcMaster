@@ -87,7 +87,9 @@ class ExporterTest : public ::testing::Test
 
         size_t constant_size = 5;
 
-        e = new Environment(set, vect, 8, 5);
+        Learn::LearningParameters params;
+        params.nbProgramConstant = constant_size;
+        e = new Environment(set, params, vect);
         tpg = new TPG::TPGGraph(*e);
 
         // Create 10 programs

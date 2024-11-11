@@ -98,9 +98,10 @@ class TPGExecutionEngineTestMultiAction : public ::testing::Test
         ((Data::PrimitiveTypeArray<double>&)vect.at(0).get())
             .setDataAt(typeid(double), 0, 1.0);
 
+        Learn::LearningParameters params;
         set.add(*(new Instructions::AddPrimitiveType<double>()));
         set.add(*(new Instructions::MultByConstant<double>()));
-        e = new Environment(set, vect, 8, 1);
+        e = new Environment(set, params, vect);
         tpg = new TPG::TPGGraph(*e);
 
         // Create 9 programs

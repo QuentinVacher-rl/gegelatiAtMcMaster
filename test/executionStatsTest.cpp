@@ -91,8 +91,9 @@ class ExecutionStatsTest : public ::testing::Test
         data = new Data::PrimitiveTypeArray<double>((unsigned int)25);
         vect.emplace_back(*data);
 
+        Learn::LearningParameters params;
         // Environment
-        e = new Environment(set, vect, 8, 5);
+        e = new Environment(set, params, vect);
 
         // Setup execution engine
         execEngine = new TPG::TPGExecutionEngineInstrumented(*e);

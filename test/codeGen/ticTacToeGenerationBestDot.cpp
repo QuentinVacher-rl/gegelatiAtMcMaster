@@ -112,7 +112,8 @@ class TicTacToeGenerationBestDotTest : public ::testing::Test
 
         data.push_back(currentState);
 
-        e = new Environment(set, data, 8);
+        Learn::LearningParameters params;
+        e = new Environment(set, params, data);
         tpg = new TPG::TPGGraph(*e);
 
         cmdCompile = TESTS_DAT_PATH "codeGen/";
