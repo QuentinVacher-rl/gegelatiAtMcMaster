@@ -126,7 +126,7 @@ bool TPG::TPGExecutionEngine::executeAction(
     if(env.getNbContinuousActions() == 0){
         (*actionsTaken)[action->getActionClass()] = (double)action->getActionID();
 
-    } else {
+    } else if (env.getParams().mutation.tpg.multiActionProg) {
         // Initiate iterators
         auto edgeIt = currentAction->getOutgoingEdges().begin();
         auto actionIt = actionsTaken->begin();
@@ -144,6 +144,23 @@ bool TPG::TPGExecutionEngine::executeAction(
             ++edgeIt;
             ++actionIt;
         }
+    } else {
+
+        auto edge = *currentAction->getOutgoingEdges().begin();
+
+        this->evaluateEdge(*edge);
+
+
+
+        auto result = this->progExecutionEngine.getRegisterValues(edge->getProgramSharedPointer(), this->getEnvironment().getNbContinuousActions());
+
+        actionsTaken->assign(result.begin(), result.end());
+
+        if(env.getParams().isActionSharedMem && env.getParams().nbSharedRegisters > 0){
+            progExecutionEngine.setSharedRegisterValues(edge->getProgram());
+        }
+
+
     }
     return true;
 

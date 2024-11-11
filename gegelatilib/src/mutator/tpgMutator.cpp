@@ -93,7 +93,11 @@ void Mutator::TPGMutator::initRandomTPG(
             actions.push_back(&(graph.addNewAction(actionID, actionClass)));
 
 
-            for(size_t i = 0; i < graph.getEnvironment().getNbContinuousActions(); i++){
+            uint64_t nbActionEdges = 1;
+            if(params.tpg.multiActionProg){
+                nbActionEdges = graph.getEnvironment().getNbContinuousActions();
+            }
+            for(size_t i = 0; i < nbActionEdges; i++){
                 std::shared_ptr<Program::Program> prog = std::make_shared<Program::Program>(graph.getEnvironment(), true);
                 Mutator::ProgramMutator::initRandomProgram(*prog, params, rng);
                 graph.addNewActionEdge(*actions.back(), prog, i);
@@ -719,7 +723,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
         if(dynamic_cast<const TPG::TPGTeam*>(rootVertices.at(clonedRootIndex)) != nullptr){
 
-            if(currentNumberOfTeamRoot < nbTeamWanted || currentNumberOfActionRoot > nbActionsWanted){
+            if(currentNumberOfTeamRoot < nbTeamWanted || currentNumberOfActionRoot >= nbActionsWanted){
                 // clone it (the vertex and all its outgoing edges)
                 const TPG::TPGTeam& newTeam = (const TPG::TPGTeam&)graph.cloneVertex(
                     *rootVertices.at(clonedRootIndex));
@@ -732,7 +736,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
         } else {
 
-            if(currentNumberOfActionRoot < nbActionsWanted ||currentNumberOfTeamRoot > nbTeamWanted){
+            if(currentNumberOfActionRoot < nbActionsWanted || currentNumberOfTeamRoot >= nbTeamWanted){
 
                 // clone it (the vertex and all its outgoing edges)
                 const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(

@@ -179,6 +179,12 @@ uint64_t Program::Program::identifyIntrons()
             usefulRegisters.insert(i + environment.getNbRegisters() - environment.getParams().nbSharedRegisters);
 
         }
+    } 
+
+    if(actionProgram && !environment.getParams().mutation.tpg.multiActionProg){
+        for(int i = 0; i < environment.getNbContinuousActions(); i++){
+            usefulRegisters.insert(i);
+        }
     }
 
     for(auto &line: this->lines){
