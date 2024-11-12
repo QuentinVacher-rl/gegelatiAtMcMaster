@@ -291,6 +291,31 @@ namespace File {
         static const std::string linkProgramTeamRegex;
 
         /**
+         * \brief contains the regex to identify a Team -> Program -> Action
+         * Link
+         *
+         * this regex values
+         * "A([0-9]+)\\x20->\\x20P([0-9]+).*"
+         *
+         * Explanation :
+         *
+         * A[0-9]+       looks for a A followed by a number. the number will be
+         * stored in a group
+         * \\x20	        looks for a whitespace
+         * ->			looks for the sequence '->'
+         * \\x20	        looks for a whitespace
+         * P[0-9]+       looks for a P followed by a number. the number will be
+         * stored in a group
+         * .*			the following can be any sequence of character
+         *
+         * Example:
+         * A22 -> I22[style=invis]			Should not pass
+         * A0 -> P22					Should pass
+         */
+        static const std::string linkActionProgramRegex;
+
+
+        /**
          * \brief contains the regex to identify a Team -> Program Link
          * the outgoing program vertex must already have been linked
          *
@@ -354,6 +379,11 @@ namespace File {
          * \brief reads a link declaration and creates a team to action edge
          */
         void readLinkTeamProgramAction(std::smatch& matches);
+
+        /**
+         * \brief reads a link declaration and creates a action edge
+         */
+        void readLinkActionProgram(std::smatch& matches);
 
         /**
          * \brief reads a link declaration and creates a team to team edge

@@ -51,6 +51,8 @@ const std::string File::TPGGraphDotImporter::linkProgramActionRegex(
     "T([0-9]+)\\x20->\\x20P([0-9]+)\\x20->\\x20A([0-9]+).*");
 const std::string File::TPGGraphDotImporter::linkProgramTeamRegex(
     "T([0-9]+)\\x20->\\x20P([0-9]+)\\x20->\\x20T([0-9]+).*");
+const std::string File::TPGGraphDotImporter::linkActionProgramRegex(
+    "A([0-9]+)\\x20->\\x20P([0-9]+).*");
 const std::string File::TPGGraphDotImporter::addLinkProgramRegex(
     "T([0-9]+)\\x20->\\x20P([0-9]+)");
 
@@ -237,6 +239,29 @@ void File::TPGGraphDotImporter::readAction(std::smatch& matches)
     }
 }
 
+
+void File::TPGGraphDotImporter::readLinkActionProgram(std::smatch& matches)
+{
+    // Creating a edge from a team to an action
+    if (!this->lastLine.empty() && !matches.empty()) {
+        uint64_t act_in = std::stoi(matches[1]);
+        uint64_t program = std::stoi(matches[2]);
+
+        // get the action depending on its label
+        auto action_lab = this->actionLabel.find(act_in);
+        if (action_lab != this->actionLabel.end()) {
+            auto action_it = this->actionID.find(action_lab->second);
+            // find the program to add to the edge
+            auto p_it = programID.find(program);
+            if (action_it != this->actionID.end() && p_it != programID.end()) {
+                const TPG::TPGVertex* action = action_it->second;
+                std::shared_ptr<Program::Program> p = p_it->second;
+                this->tpg.addNewActionEdge(*action, p, action->getOutgoingEdges().size());
+            }
+        }
+    }
+}
+
 void File::TPGGraphDotImporter::readLinkTeamProgramAction(std::smatch& matches)
 {
     // Creating a edge from a team to an action
@@ -353,6 +378,7 @@ bool File::TPGGraphDotImporter::readLineFromFile()
     std::regex testInstructionDeclare(this->instructionRegex);
     std::regex testLinkPI(this->linkProgramInstructionRegex);
     std::regex testLinkTPA(this->linkProgramActionRegex);
+    std::regex testLinkAP(this->linkActionProgramRegex);
     std::regex testLinkTPT(this->linkProgramTeamRegex);
     std::regex testLinkTP(this->addLinkProgramRegex);
 
@@ -392,6 +418,9 @@ bool File::TPGGraphDotImporter::readLineFromFile()
     }
     else if (std::regex_search(this->lastLine, matches, testLinkTP)) {
         readLinkTeamProgram(matches);
+    }
+    else if (std::regex_search(this->lastLine, matches, testLinkAP)) {
+        readLinkActionProgram(matches);
     }
     else {
         return false;

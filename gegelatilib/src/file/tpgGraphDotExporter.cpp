@@ -59,12 +59,15 @@ void File::TPGGraphDotExporter::printTPGTeam(const TPG::TPGTeam& team)
 
 uint64_t File::TPGGraphDotExporter::printTPGAction(const TPG::TPGAction& action)
 {
+
+    uint64_t actionID = this->findVertexID(action);
     fprintf(pFile,
             "%sA%" PRIu64 " [fillcolor=\"#ff3366\" shape=box margin=0.03 "
             "width=0 height=0 label=\"%" PRIu64 "-%" PRIu64 "\"]\n",
-            this->offset.c_str(), nbActions++, action.getActionClass(),
-            action.getActionID());
-    return nbActions - 1;
+            this->offset.c_str(), actionID, action.getActionClass(),
+            actionID);
+    
+    return actionID;
 }
 
 void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
@@ -86,17 +89,25 @@ void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
         printProgram(p);
         fprintf(pFile, "%sP%" PRIu64 " -> I%" PRIu64 "[style=invis]\n",
                 this->offset.c_str(), progID, progID);
-        auto* dest = edge.getDestination();
-        if (dest && dynamic_cast<const TPG::TPGAction*>(dest) != nullptr) {
-            uint64_t actionID =
-                printTPGAction(*(const TPG::TPGAction*)edge.getDestination());
-            fprintf(pFile, "%sT%" PRIu64 " -> P%" PRIu64 " -> A%" PRIu64 "\n",
-                    this->offset.c_str(), srcID, progID, actionID);
-        }
-        else {
-            uint64_t destID = findVertexID(*edge.getDestination());
-            fprintf(pFile, "%sT%" PRIu64 " -> P%" PRIu64 " -> T%" PRIu64 "\n",
-                    this->offset.c_str(), srcID, progID, destID);
+        if(dynamic_cast<const TPG::TPGActionEdge*>(&edge) != nullptr){
+            fprintf(pFile, "%sA%" PRIu64 " -> P%" PRIu64 "\n",
+                    this->offset.c_str(), srcID, progID);
+
+        } else {
+                
+            auto* dest = edge.getDestination();
+            
+            if (dest && dynamic_cast<const TPG::TPGAction*>(dest) != nullptr) {
+                uint64_t actionID =
+                    printTPGAction(*(const TPG::TPGAction*)edge.getDestination());
+                fprintf(pFile, "%sT%" PRIu64 " -> P%" PRIu64 " -> A%" PRIu64 "\n",
+                        this->offset.c_str(), srcID, progID, actionID);
+            }
+            else {
+                uint64_t destID = findVertexID(*edge.getDestination());
+                fprintf(pFile, "%sT%" PRIu64 " -> P%" PRIu64 " -> T%" PRIu64 "\n",
+                        this->offset.c_str(), srcID, progID, destID);
+            }
         }
     }
     else {
@@ -169,6 +180,15 @@ void File::TPGGraphDotExporter::printTPGGraphFooter()
         }
     }
 
+    
+
+    // Print all edges
+    auto& actionEdges = this->tpg.getActionEdges();
+    for (const std::unique_ptr<TPG::TPGEdge>& edge : actionEdges) {
+        this->printTPGEdge(*edge.get());
+    }
+
+
     // Rank all the roots
     fprintf(pFile, "%s{ rank= same ", this->offset.c_str());
     // Team root ids
@@ -212,8 +232,11 @@ void File::TPGGraphDotExporter::print()
         this->printTPGEdge(*edge.get());
     }
 
+
     // Print footer
     this->printTPGGraphFooter();
+
+
 
     // flush file
     fflush(pFile);
