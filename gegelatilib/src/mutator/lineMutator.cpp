@@ -101,6 +101,7 @@ static bool initRandomCorrectLineOperand(
                                .at(operandDataSourceIndex)
                                .get()
                                .canHandle(operandType);
+
         }
     }
     else if (initOperandDataSource) {
@@ -136,13 +137,22 @@ static bool initRandomCorrectLineOperand(
 }
 
 void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
-                                                 Mutator::RNG& rng)
+                                                 Mutator::RNG& rng,
+                                                 bool actionProgram)
 {
     const Environment& env = line.getEnvironment();
 
     // Select and set a destinationIndex. (can not fail)
-    uint64_t destinationIndex =
-        rng.getUnsignedInt64(0, env.getNbRegisters() - 1);
+    uint64_t destinationIndex = 0;
+    if(actionProgram && !env.getParams().isActionSharedMem){
+        destinationIndex = rng.getUnsignedInt64(0, env.getNbRegisters() - env.getParams().nbSharedRegisters - 1);
+    } else {
+        destinationIndex = rng.getUnsignedInt64(0, env.getNbRegisters() - 1);
+    }
+
+
+    std::cout<<destinationIndex<<"-"<<std::endl;
+
     line.setDestinationIndex(
         destinationIndex); // Should never throw.. but I did not deactivate the
                            // check anyway.
@@ -161,7 +171,6 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
     // Select operands needed by the instruction
     uint64_t operandIdx = 0;
     for (; operandIdx < env.getMaxNbOperands(); operandIdx++) {
-
         // Check if all operands were tested (and none were valid)
         initRandomCorrectLineOperand(instruction, line, operandIdx, true, true,
                                      false, rng);
@@ -172,7 +181,8 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
 }
 
 void Mutator::LineMutator::alterCorrectLine(Program::Line& line,
-                                            Mutator::RNG& rng)
+                                            Mutator::RNG& rng,
+                                            bool actionProgram)
 {
     // Generate a random int to select the modified part of the line
     const LineSize lineSize = line.getEnvironment().getLineSize();
@@ -222,11 +232,20 @@ void Mutator::LineMutator::alterCorrectLine(Program::Line& line,
         // DestinationIndex
         // Select a random destination (different from the current one)
         const uint64_t currentDestinationIndex = line.getDestinationIndex();
-        uint64_t newDestinationIndex =
-            rng.getUnsignedInt64(0, line.getEnvironment().getNbRegisters() - 2);
+
+        // Select and set a destinationIndex. (can not fail)
+        uint64_t newDestinationIndex = 0;
+        if(actionProgram && !line.getEnvironment().getParams().isActionSharedMem){
+            newDestinationIndex = rng.getUnsignedInt64(0, line.getEnvironment().getNbRegisters() - line.getEnvironment().getParams().nbSharedRegisters - 2);
+        } else {
+            newDestinationIndex = rng.getUnsignedInt64(0, line.getEnvironment().getNbRegisters() - 2);
+        }
+
         newDestinationIndex +=
             (newDestinationIndex >= currentDestinationIndex) ? 1 : 0;
         line.setDestinationIndex(newDestinationIndex);
+
+        std::cout<<newDestinationIndex<<"-"<<std::endl;
     }
     else if (selectedBit < lineSize.nbInstructionBits +
                                lineSize.nbDestinationBits +

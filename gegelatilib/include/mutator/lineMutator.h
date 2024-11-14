@@ -63,11 +63,12 @@ namespace Mutator {
          * \param[in,out] line the Program::Line whose attributes are being
          * initialized.
          * \param[in] rng Random Number Generator used in the mutation process.
+         * \param[in] actionProgram is action program or not
          * \throw std::runtime_error if the provided Environment has no
          * dataSource that can successfully provide data for any of its
          * Instruction.
          */
-        void initRandomCorrectLine(Program::Line& line, Mutator::RNG& rng);
+        void initRandomCorrectLine(Program::Line& line, Mutator::RNG& rng, bool actionProgram=false);
 
         /**
          * \brief This function randomly modifies the behavior of a
@@ -93,8 +94,9 @@ namespace Mutator {
          * \param[in,out] line the Program::Line whose attributes are being
          * altered.
          * \param[in] rng Random Number Generator used in the mutation process.
+         * \param[in] actionProgram is action program or not
          */
-        void alterCorrectLine(Program::Line& line, Mutator::RNG& rng);
+        void alterCorrectLine(Program::Line& line, Mutator::RNG& rng, bool actionProgram=false);
     } // namespace LineMutator
 };    // namespace Mutator
 #endif

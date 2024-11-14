@@ -86,7 +86,7 @@ void Mutator::ProgramMutator::insertRandomLine(Program::Program& p,
 {
     uint64_t lineIndex = rng.getUnsignedInt64(0, p.getNbLines());
     Program::Line& line = p.addNewLine(lineIndex);
-    Mutator::LineMutator::initRandomCorrectLine(line, rng);
+    Mutator::LineMutator::initRandomCorrectLine(line, rng, p.isActionProgram());
 }
 
 bool Mutator::ProgramMutator::swapRandomLines(Program::Program& p,
@@ -113,7 +113,7 @@ bool Mutator::ProgramMutator::alterRandomLine(Program::Program& p,
     }
     // Select a random index.
     const uint64_t lineIndex = rng.getUnsignedInt64(0, p.getNbLines() - 1);
-    Mutator::LineMutator::alterCorrectLine(p.getLine(lineIndex), rng);
+    Mutator::LineMutator::alterCorrectLine(p.getLine(lineIndex), rng, p.isActionProgram());
     return true;
 }
 
