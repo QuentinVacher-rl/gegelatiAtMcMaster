@@ -151,7 +151,6 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
     }
 
 
-    std::cout<<destinationIndex<<"-"<<std::endl;
 
     line.setDestinationIndex(
         destinationIndex); // Should never throw.. but I did not deactivate the
@@ -245,7 +244,6 @@ void Mutator::LineMutator::alterCorrectLine(Program::Line& line,
             (newDestinationIndex >= currentDestinationIndex) ? 1 : 0;
         line.setDestinationIndex(newDestinationIndex);
 
-        std::cout<<newDestinationIndex<<"-"<<std::endl;
     }
     else if (selectedBit < lineSize.nbInstructionBits +
                                lineSize.nbDestinationBits +
