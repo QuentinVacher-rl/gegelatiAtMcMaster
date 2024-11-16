@@ -61,10 +61,11 @@ uint64_t File::TPGGraphDotExporter::printTPGAction(const TPG::TPGAction& action)
 {
 
     uint64_t actionID = this->findVertexID(action);
+    auto actionClass = (dynamic_cast<const TPG::TPGActionEdge*>(*action.getOutgoingEdges().begin()))->getActionClass();
     fprintf(pFile,
             "%sA%" PRIu64 " [fillcolor=\"#ff3366\" shape=box margin=0.03 "
             "width=0 height=0 label=\"%" PRIu64 "-%" PRIu64 "\"]\n",
-            this->offset.c_str(), actionID, action.getActionClass(),
+            this->offset.c_str(), actionID, actionClass,
             actionID);
     
     return actionID;
