@@ -121,6 +121,18 @@ bool Program::Line::operator==(const Line& other) const
         }
     }
 
+    // Compare number of constants
+    if(this->nbConstants != other.nbConstants){
+        return false;
+    }
+
+    // Compare constants
+    for(auto idx = 0; idx < this->nbConstants; idx++){
+        if(this->getConstantAt(idx) != other.getConstantAt(idx)){
+            return false;
+        }
+    }
+
     // No difference was found
     return true;
 }
@@ -128,4 +140,32 @@ bool Program::Line::operator==(const Line& other) const
 bool Program::Line::operator!=(const Line& other) const
 {
     return !(this->operator==(other));
+}
+
+
+uint64_t Program::Line::getNbConstants()
+{
+    return this->nbConstants;
+}
+
+void Program::Line::setNbConstants(uint64_t newNbConstants)
+{
+    this->nbConstants = newNbConstants;
+}
+const Data::ConstantHandler& Program::Line::cGetConstantHandler() const
+{
+    return this->constants;
+}
+
+Data::ConstantHandler& Program::Line::getConstantHandler()
+{
+    return this->constants;
+}
+
+const Data::Constant Program::Line::getConstantAt(size_t index) const
+{
+    std::shared_ptr<const Data::Constant> value =
+        this->constants.getDataAt(typeid(Data::Constant), index)
+            .getSharedPointer<const Data::Constant>();
+    return *value;
 }

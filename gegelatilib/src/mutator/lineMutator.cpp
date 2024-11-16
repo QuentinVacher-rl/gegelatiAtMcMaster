@@ -40,6 +40,26 @@
 #include "environment.h"
 #include "mutator/lineMutator.h"
 
+
+static void changeConstantAt(Program::Line& line, uint64_t index, Mutator::RNG& rng){
+    // Sample the new value
+    double newConstantValue = rng.getDouble(
+        line.getEnvironment().getParams().mutation.actProg.maxConstValue,
+        line.getEnvironment().getParams().mutation.actProg.minConstValue
+    );
+    // Set it
+    line.getConstantHandler().setDataAt(
+        typeid(Data::Constant), index,
+        {newConstantValue});
+}
+
+static void initRandomConstants(Program::Line& line, Mutator::RNG& rng){
+    for(auto idx = 0; idx < line.getNbConstants(); idx++){
+        changeConstantAt(line, idx, rng);
+    }
+}
+
+
 /**
  * \brief Function to initialize a single operand of a Program::Line.
  *
@@ -151,8 +171,6 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
     }
 
 
-    std::cout<<destinationIndex<<"-"<<std::endl;
-
     line.setDestinationIndex(
         destinationIndex); // Should never throw.. but I did not deactivate the
                            // check anyway.
@@ -167,10 +185,21 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
     line.setInstructionIndex(
         instructionIndex); // Should never throw.. but I did not deactivate the
                            // check anyway.
+    
+    // Get the number of constant in the instruction
+    line.setNbConstants(instruction.getNbConstants());
+    initRandomConstants(line, rng);
+
+    auto operandTypes = instruction.getOperandTypes();
 
     // Select operands needed by the instruction
     uint64_t operandIdx = 0;
     for (; operandIdx < env.getMaxNbOperands(); operandIdx++) {
+
+        if(operandIdx < operandTypes.size() &&  operandTypes[operandIdx].get() == typeid(Data::Constant)){
+            // Set the constant here
+        }
+
         // Check if all operands were tested (and none were valid)
         initRandomCorrectLineOperand(instruction, line, operandIdx, true, true,
                                      false, rng);
@@ -205,6 +234,8 @@ void Mutator::LineMutator::alterCorrectLine(Program::Line& line,
         const Instructions::Instruction& instruction =
             line.getEnvironment().getInstructionSet().getInstruction(
                 newInstructionIndex);
+
+
         for (uint64_t i = 0; i < instruction.getNbOperands(); i++) {
             const std::type_info& type =
                 instruction.getOperandTypes().at(i).get();
@@ -245,11 +276,13 @@ void Mutator::LineMutator::alterCorrectLine(Program::Line& line,
             (newDestinationIndex >= currentDestinationIndex) ? 1 : 0;
         line.setDestinationIndex(newDestinationIndex);
 
-        std::cout<<newDestinationIndex<<"-"<<std::endl;
     }
     else if (selectedBit < lineSize.nbInstructionBits +
                                lineSize.nbDestinationBits +
                                lineSize.nbOperandsBits) {
+
+        // Do not select the constants
+
         // Which operand is selected
         // Equal position of selectedBit within operand bits, divided by the
         // total number of bits per operand.
