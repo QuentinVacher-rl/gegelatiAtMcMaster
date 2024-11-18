@@ -54,7 +54,7 @@ static void changeConstantAt(Program::Line& line, uint64_t index, Mutator::RNG& 
 }
 
 static void initRandomConstants(Program::Line& line, Mutator::RNG& rng){
-    for(auto idx = 0; idx < line.getNbConstants(); idx++){
+    for(auto idx = 0; idx < line.getEnvironment().getInstructionSet().getMaxNbConstants(); idx++){
         changeConstantAt(line, idx, rng);
     }
 }
