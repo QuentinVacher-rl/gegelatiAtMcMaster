@@ -36,6 +36,11 @@
  */
 
 #include <inttypes.h>
+#include <cstdio>
+#include <string>
+#include <sstream>
+#include <iterator>
+#include <set>
 
 #include "data/constant.h"
 #include "file/tpgGraphDotExporter.h"
@@ -61,12 +66,30 @@ uint64_t File::TPGGraphDotExporter::printTPGAction(const TPG::TPGAction& action)
 {
 
     uint64_t actionID = this->findVertexID(action);
-    auto actionClass = (dynamic_cast<const TPG::TPGActionEdge*>(*action.getOutgoingEdges().begin()))->getActionClass();
+
+    
+    auto outgoingEdges = action.getOutgoingEdges();
+
+    // Create a string stream to build the label
+    std::ostringstream labelStream;
+
+    // Iterate through outgoingEdges and extract actionClass
+    for (auto it = outgoingEdges.begin(); it != outgoingEdges.end(); ++it) {
+        if (it != outgoingEdges.begin()) {
+            labelStream << "-"; // Add separator between actionClasses
+        }
+        auto actionClass = dynamic_cast<const TPG::TPGActionEdge*>(*it)->getActionClass();
+        labelStream << actionClass;
+    }
+
+    // Get the complete label as a string
+    std::string label = labelStream.str();
+
+    // Write the label into the file
     fprintf(pFile,
             "%sA%" PRIu64 " [fillcolor=\"#ff3366\" shape=box margin=0.03 "
-            "width=0 height=0 label=\"%" PRIu64 "-%" PRIu64 "\"]\n",
-            this->offset.c_str(), actionID, actionClass,
-            actionID);
+            "width=0 height=0 label=\"%s\"]\n",
+            offset.c_str(), actionID, label.c_str());
     
     return actionID;
 }

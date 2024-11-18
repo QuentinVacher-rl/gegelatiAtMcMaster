@@ -255,8 +255,9 @@ void File::TPGGraphDotImporter::readLinkActionProgram(std::smatch& matches)
             auto p_it = programID.find(program);
             if (action_it != this->actionID.end() && p_it != programID.end()) {
                 const TPG::TPGVertex* action = action_it->second;
+                uint64_t actionClass = dynamic_cast<const TPG::TPGAction*>(action)->getActionClass();
                 std::shared_ptr<Program::Program> p = p_it->second;
-                this->tpg.addNewActionEdge(*action, p, action->getOutgoingEdges().size());
+                this->tpg.addNewActionEdge(*action, p, actionClass);
             }
         }
     }

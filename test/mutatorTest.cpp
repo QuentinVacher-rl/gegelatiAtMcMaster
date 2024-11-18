@@ -705,7 +705,7 @@ TEST_F(MutatorTest, TPGMutatorAddRandomEdge)
     rng.setSeed(0);
     // Run the add
     ASSERT_NO_THROW(
-        Mutator::TPGMutator::addRandomEdge(tpg, vertex2, edges, rng, params))
+        Mutator::TPGMutator::addRandomEdge(tpg, vertex2, edges, rng))
         << "Adding an edge to the TPG should succeed.";
 
     // Check properties of the tpg
@@ -721,7 +721,7 @@ TEST_F(MutatorTest, TPGMutatorAddRandomEdge)
     // Force a failure
     TPG::TPGEdge newEdge(&vertex0, &vertex1, progPointer);
     ASSERT_THROW(
-        Mutator::TPGMutator::addRandomEdge(tpg, vertex2, {&newEdge}, rng, params),
+        Mutator::TPGMutator::addRandomEdge(tpg, vertex2, {&newEdge}, rng),
         std::runtime_error)
         << "Picking an edge not belonging to the graph should fail.";
 }
@@ -744,7 +744,7 @@ TEST_F(MutatorTest, TPGMutatorMutateEdgeDestination)
     Mutator::RNG rng;
     std::list<std::shared_ptr<Program::Program>> programs;
     rng.setSeed(2);
-    ASSERT_NO_THROW(Mutator::TPGMutator::mutateEdgeDestination(
+    ASSERT_NO_THROW(Mutator::TPGMutator::mutateOutgoingEdge(
         tpg, &edge1, vertex0, {&vertex3, &vertex4}, {&vertex1, &vertex2}, programs, params, rng));
     // Check properties of the tpg
     ASSERT_EQ(tpg.getEdges().size(), 2)
@@ -844,7 +844,7 @@ TEST_F(MutatorTest, TPGMutatorMutateTeam)
     // the mutation process.)
     ASSERT_NO_THROW(Mutator::TPGMutator::mutateTPGTeam(
         tpg, arch, vertex0, {&vertex0, &vertex4},
-        {&vertex1, &vertex2, &vertex3}, {&edge2}, newPrograms, params, rng))
+        {&vertex1, &vertex2, &vertex3}, {&edge2}, {},   newPrograms, params, rng))
         << "Mutate team should not fail in these conditions.";
 
     // No other check really needed since individual mutation functions are

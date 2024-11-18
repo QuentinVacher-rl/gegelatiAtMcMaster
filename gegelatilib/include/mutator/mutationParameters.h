@@ -64,8 +64,26 @@ namespace Mutator {
         /// Number of root TPGTeams at the initialisation of a TPGGraph
         /// If 0, if will be init to the number of surviving roots
         size_t initNbRoots = 0;
-    
+            /// JSon comment
+        inline static const std::string initNbActionsComment =
+            "//  Number of actions vertex at the initialisation of a TPGGraph\n"
+            "// \"initNbActions\" : 10, // Default value";
+        /// Number of actions vertex at the initialisation of a TPGGraph
+        size_t initNbActions = 10;
 
+        /// JSon comment
+        inline static const std::string proportionActionRootsComment = 
+            "// Minimum proportion of action roots we have, and delete, at each generation\n"
+            "// \"proportionActionROots\" : 0.0, // Default value";
+        /// Minimum proportion of action roots we have at each generation
+        double proportionActionRoots = 0.0;
+
+        /// JSon comment
+        inline static const std::string proportionTeamRootsComment = 
+            "// Minimum proportion of team roots we have, and delete, at each generation\n"
+            "// \"proportionTeamRoots\" : 0.0, // Default value";
+        /// Minimum proportion of action roots we have at each generation
+        double proportionTeamRoots = 0.0;
 
         /// JSon comment
         inline static const std::string pChangeActionClassComment =
@@ -92,6 +110,13 @@ namespace Mutator {
         size_t maxInitOutgoingEdges = 3;
 
         /// JSon comment
+        inline static const std::string nbActionEdgeInitComment =
+            "// Number of edge per action vertex at initialisation\n"
+            "// \"nbActionEdgeInit\" : 1, // Default value";
+        /// Init each team with one edge per action
+        size_t nbActionEdgeInit = 1;
+
+        /// JSon comment
         inline static const std::string maxOutgoingEdgesComment =
             "// Maximum number of outgoing edge during TPGGraph mutations.\n"
             "// \"maxOutgoingEdges\" : 5, // Default value";
@@ -111,6 +136,37 @@ namespace Mutator {
             "// \"pEdgeAddition\" : 0.7, // Default value";
         /// Probability of adding an outgoing TPGEdge to a TPGTeam.
         double pEdgeAddition = 0.7;
+
+
+        /// JSon comment
+        inline static const std::string pActionEdgeDeletionComment =
+            "// Probability of deleting an outgoing ActionEdge of a Action.\n"
+            "// \"pActionEdgeDeletion\" : 0.7, // Default value";
+        /// Probability of deleting an outgoing TPGEdge of a TPGTeam.
+        double pActionEdgeDeletion = 0.7;
+
+        /// JSon comment
+        inline static const std::string pActionEdgeAdditionComment =
+            "// Probability of adding an outgoing Action Edge to a Action.\n"
+            "// \"pActionEdgeAddition\" : 0.7, // Default value";
+        /// Probability of adding an outgoing TPGEdge to a TPGTeam.
+        double pActionEdgeAddition = 0.7;
+
+        /// JSon comment
+        inline static const std::string pMutateActionProgramComment =
+            "//  Probablity of mutation the program on the action edge\n"
+            "// \"pMutateActionProgram\" : 0.1, // Default value";
+        ///  Probablity of mutation the program on the action edge
+        double pMutateActionProgram = 0.1;
+
+        /// JSon comment
+        inline static const std::string pSwapActionProgramComment =
+            "//  Probablity of swapping two action edge within the same action vertex\n"
+            "// \"pSwapActionProgram\" : 0.1, // Default value";
+        ///  Probablity of swapping two action edge within the same action vertex
+        double pSwapActionProgram = 0.1;
+
+
 
         /// JSon comment
         inline static const std::string pProgramMutationComment =
@@ -140,13 +196,6 @@ namespace Mutator {
         /// Boolean indicating if the action programs changed the shared memory
         bool multiActionProg = false;
 
-        /// JSon comment
-        inline static const std::string allowSameActionInTeamComment =
-            "// Allow for a team, to have the same action assessed by different edges, selection will then be done with bid evaluation"
-            ".\n"
-            "// \"allowSameActionInTeam\" : false, // Default value";
-        /// Allow for a team, to have the same action assessed by different edges, selection will then be done with bid evaluation
-        bool allowSameActionInTeam = false;
 
         /// JSon comment
         inline static const std::string pEdgeDestinationChangeComment =

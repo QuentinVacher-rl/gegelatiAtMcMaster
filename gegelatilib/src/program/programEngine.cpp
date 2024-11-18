@@ -67,7 +67,7 @@ void Program::ProgramEngine::setProgram(const Program& prog)
         //std::cout<<"val"<<*(sharedRegisterValues->getDataAt(typeid(double), i).getSharedPointer<const double>())<<std::endl;
         this->registers->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
             prog.getEnvironment().getNbRegisters() - nbSharedRegs + i,
-            *(sharedRegisterValues->getDataAt(typeid(double), i).getSharedPointer<const double>())
+            *(sharedRegisterValues[actionClass]->getDataAt(typeid(double), i).getSharedPointer<const double>())
         );
     }
 
@@ -154,6 +154,11 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     // Reset the counters
     this->programCounter = 0;
 
+}
+
+void Program::ProgramEngine::setActionClass(uint64_t actionClass)
+{
+    this->actionClass = actionClass;
 }
 
 void Program::ProgramEngine::setErrorWeights(const std::map<Program*, std::vector<double>>* newErrorWeights)
@@ -269,7 +274,9 @@ void Program::ProgramEngine::resetAllMemoryRegisters()
 
 void Program::ProgramEngine::resetSharedRegisters()
 {
-    sharedRegisterValues->resetData();
+    for(auto sharedRegister: sharedRegisterValues){
+        sharedRegister->resetData();
+    }
 }
 
 const std::unordered_map<const Program::Program*,
@@ -304,7 +311,7 @@ std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Pr
 }
 
 
-void Program::ProgramEngine::setSharedRegisterValues(const Program& prog)
+void Program::ProgramEngine::setSharedRegisterValues(const Program& prog, uint64_t actionClass)
 {
     // Try to find the program in the map.
     auto it = this->mapMemoryRegisters.find(&prog);
@@ -315,7 +322,7 @@ void Program::ProgramEngine::setSharedRegisterValues(const Program& prog)
 
         uint64_t nbSharedRegs = prog.getEnvironment().getParams().nbSharedRegisters;
         for(uint64_t i = 0; i < nbSharedRegs; i++){
-            this->sharedRegisterValues->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
+            this->sharedRegisterValues[actionClass]->setDataAt(typeid(Data::PrimitiveTypeArray<double>), 
                 i, *(
                     regs->getDataAt(typeid(double), 
                     prog.getEnvironment().getNbRegisters() - nbSharedRegs + i

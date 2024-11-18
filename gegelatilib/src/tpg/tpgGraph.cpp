@@ -404,6 +404,7 @@ bool TPG::TPGGraph::setEdgeSource(const TPGEdge& edge, const TPGVertex& newSrc)
         return true;
     }
     else {
+        std::cout<<"Ahhhhhhh"<<std::endl;
         return false;
     }
 }
@@ -524,6 +525,20 @@ void TPG::TPGGraph::updateAllAssessedActions() {
         if(dynamic_cast<TPGAction*>(vertex) != nullptr){
             this->updateAssessedActions(vertex);
         }
+    }
+}
+
+
+void TPG::TPGGraph::orderActionEdges(const TPG::TPGAction* action)
+{
+    auto it = this->findVertex(action);
+
+    if (it != this->vertices.end()) {
+        // Found the vertex, modify it as needed
+        dynamic_cast<TPG::TPGAction*>(*it)->orderActionEdges();
+    } else {
+        throw std::runtime_error(
+            "Action to order not in the graph.");
     }
 }
 

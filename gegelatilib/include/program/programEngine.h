@@ -85,13 +85,16 @@ namespace Program {
         std::vector<std::reference_wrapper<const Data::DataHandler>>
             dataScsConstsAndRegs;
 
-        std::shared_ptr<Data::PrimitiveTypeArray<double>> sharedRegisterValues;
+        std::vector<std::shared_ptr<Data::PrimitiveTypeArray<double>>> sharedRegisterValues;
 
         /// Program counter of the execution engine.
         uint64_t programCounter;
 
         /// Pointer (possibly null) to the error weights.
         const std::map<Program*, std::vector<double>>* errorWeights = nullptr;
+
+        /// Current action class
+        uint64_t actionClass = 0;
 
 
       protected:
@@ -107,10 +110,6 @@ namespace Program {
             : programCounter{0},
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   env.getNbRegisters())},
-              sharedRegisterValues{
-                std::make_shared<Data::PrimitiveTypeArray<double>>(
-                  env.getParams().nbSharedRegisters)
-              },
               constants{env.getNbConstant()},
               program{NULL}, dataSources{env.getDataSources()}
         {
@@ -125,6 +124,13 @@ namespace Program {
             // requires constnessand dataSrc data are not const...
             for (auto data : env.getDataSources()) {
                 dataScsConstsAndRegs.push_back(data.get());
+            }
+
+            for (auto actionClass = 0; actionClass < env.getNbContinuousActions(); actionClass++){
+                sharedRegisterValues.push_back(
+                    std::make_shared<Data::PrimitiveTypeArray<double>>(
+                    env.getParams().nbSharedRegisters)
+                );
             }
         }
 
@@ -149,10 +155,7 @@ namespace Program {
             : programCounter{0},
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   prog.getEnvironment().getNbRegisters())},
-              sharedRegisterValues{
-                std::make_shared<Data::PrimitiveTypeArray<double>>(
-                  prog.getEnvironment().getParams().nbSharedRegisters)
-              },
+
               constants{prog.getEnvironment().getNbConstant()},
               program{NULL}
         {
@@ -172,6 +175,13 @@ namespace Program {
             for (std::reference_wrapper<T> data : dataSrc) {
                 this->dataScsConstsAndRegs.push_back(data.get());
                 this->dataSources.push_back(data.get());
+            }
+
+            for (auto actionClass = 0; actionClass < prog.getEnvironment().getNbContinuousActions(); actionClass++){
+                sharedRegisterValues.push_back(
+                    std::make_shared<Data::PrimitiveTypeArray<double>>(
+                    prog.getEnvironment().getParams().nbSharedRegisters)
+                );
             }
 
             // Set the Program
@@ -203,12 +213,17 @@ namespace Program {
          *
          * \param[in] prog the const Program that will be executed by the
          * ProgramExecutionEngine. 
-         * \param[in] progRegistered TODO
+         * \param[in] actionClass TODO
          * \throws std::runtime_error if the Environment
          * references by the Program is incompatible with the dataSources of the
          * ProgramExecutionEngine.
          */
         void setProgram(const Program& prog);
+
+        /**
+         * Set the new action class evaluate
+         */
+        void setActionClass(uint64_t actionClass);
 
 
         /**
@@ -356,8 +371,9 @@ namespace Program {
          * \brief set the new shared registers values
          * 
          * \param prog program from whom the shared values are taken
+         * \param actionClass index of the action the values are shared for
          */
-        virtual void setSharedRegisterValues(const Program& prog);
+        virtual void setSharedRegisterValues(const Program& prog, uint64_t actionClass);
     };
 
     template <class T>

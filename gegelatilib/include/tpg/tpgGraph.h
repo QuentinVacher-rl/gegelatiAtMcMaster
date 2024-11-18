@@ -417,6 +417,14 @@ namespace TPG {
          * This method basically execute "updateAssessedActions" for all the TPGActions in the graph
          */
         void updateAllAssessedActions();
+    
+
+        /**
+         * Order the ActionEdge of the given action
+         * 
+         * \param[in] action TPGAction to order
+         */
+        void orderActionEdges(const TPG::TPGAction* action);
 
       protected:
         /// Environment of the TPGGraph
