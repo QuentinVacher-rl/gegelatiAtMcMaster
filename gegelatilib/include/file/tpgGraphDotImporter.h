@@ -433,7 +433,7 @@ namespace File {
          * \brief Maximum number of characters that can be read in a single
          * line.
          */
-        static const unsigned int MAX_READ_SIZE = 4096;
+        static const unsigned int MAX_READ_SIZE = 131072;
 
         /**
          * Destructor for the importer.

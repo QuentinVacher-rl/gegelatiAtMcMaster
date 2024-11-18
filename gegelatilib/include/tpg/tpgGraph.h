@@ -403,6 +403,23 @@ namespace TPG {
         void browseGraphSetConstant(std::vector<const TPG::TPGVertex *> visitedVertices, std::vector<double>& constants);
 
         /**
+         * Update the assessed actions of the current vertex, and all the incomming edges
+         * 
+         * \param[in] action TPGAction to order
+         */
+        void updateAssessedActions(const TPG::TPGVertex* vertex);
+
+        /**
+         * Update the assessed actions of the all graph.
+         * 
+         * This is to be use only at the initialisation, the complexity could be really high after
+         * 
+         * This method basically execute "updateAssessedActions" for all the TPGActions in the graph
+         */
+        void updateAllAssessedActions();
+    
+
+        /**
          * Order the ActionEdge of the given action
          * 
          * \param[in] action TPGAction to order

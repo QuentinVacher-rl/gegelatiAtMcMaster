@@ -57,7 +57,8 @@ void Program::ProgramExecutionEngine::executeCurrentLine()
 double Program::ProgramExecutionEngine::executeProgram(
     const bool ignoreException)
 {
-    /*std::cout<<"Before execution :";
+    /*std::cout<<"Execution action program: "<<this->program->isActionProgram();
+    std::cout<<"  Before execution :";
     for(int i = 0; i < 8; i++){
         std::cout<<*this->registers->getDataAt(typeid(double), i).getSharedPointer<const double>()<<"-";
     }std::cout<<"--- After execution ";*/

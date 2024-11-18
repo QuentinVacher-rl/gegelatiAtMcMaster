@@ -127,23 +127,22 @@ bool TPG::TPGExecutionEngine::executeAction(
         (*actionsTaken)[action->getActionClass()] = (double)action->getActionID();
 
     } else if (env.getParams().mutation.tpg.multiActionProg) {
-        // Initiate iterators
-        auto edgeIt = currentAction->getOutgoingEdges().begin();
-        auto actionIt = actionsTaken->begin();
 
-        while (actionIt != actionsTaken->end()) {
+        for(auto edge: currentAction->getOutgoingEdges()){
+            auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
 
-            // Get the action value
-            *actionIt = this->evaluateEdge(**edgeIt);
+            // Set the current action class for shared registers
+            this->progExecutionEngine.setActionClass(actionEdge->getActionClass());
 
+            // Evaluate the edge and set the action value
+            (*actionsTaken)[actionEdge->getActionClass()] = this->evaluateEdge(*actionEdge);
+
+            // If activate, save the shared value
             if(env.getParams().isActionSharedMem && env.getParams().nbSharedRegisters > 0){
-                progExecutionEngine.setSharedRegisterValues((*edgeIt)->getProgram());
+                progExecutionEngine.setSharedRegisterValues(actionEdge->getProgram(), actionEdge->getActionClass());
             }
-
-            // Increment iterators
-            ++edgeIt;
-            ++actionIt;
         }
+
     } else {
 
         auto edge = *currentAction->getOutgoingEdges().begin();
@@ -151,13 +150,15 @@ bool TPG::TPGExecutionEngine::executeAction(
         this->evaluateEdge(*edge);
 
 
+        // Set the current action class for shared registers
+        this->progExecutionEngine.setActionClass(0);
 
         auto result = this->progExecutionEngine.getRegisterValues(edge->getProgramSharedPointer(), this->getEnvironment().getNbContinuousActions());
 
         actionsTaken->assign(result.begin(), result.end());
 
         if(env.getParams().isActionSharedMem && env.getParams().nbSharedRegisters > 0){
-            progExecutionEngine.setSharedRegisterValues(edge->getProgram());
+            progExecutionEngine.setSharedRegisterValues(edge->getProgram(), 0);
         }
 
 
@@ -175,6 +176,8 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
     std::vector<const TPGEdge*> traversedEdges;
 
+    std::set<uint64_t> actionAssessed;
+
     // Add current team to the visited vertices.
     visitedVertices.push_back(currentTeam);
 
@@ -182,12 +185,13 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
     const std::list<TPG::TPGEdge*>& outgoingEdges =
         currentTeam->getOutgoingEdges();
 
-    uint64_t nbTeamActivated = 0;
-    uint64_t nbEdgeActivated = 0;
 
     // Calcul the bids of all teams.
     std::vector<std::pair<TPG::TPGEdge*, double>> resultsBid;
     for (auto edge : outgoingEdges) {
+        
+        // Set the current action class for shared registers
+        this->progExecutionEngine.setActionClass(*edge->getDestination()->getAssessedActions().begin());
         // Calcul program bid.
         double bid = this->evaluateEdge(*edge);
         resultsBid.push_back(std::make_pair(edge, bid));
@@ -206,42 +210,64 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
     size_t i = 0;
     // For all TPGEdge evaluated.
-    while (i < resultsBid.size() && nbEdgeActivated < nbEdgesActivated) {
-        nbEdgeActivated++;
+    while (i < resultsBid.size() && actionAssessed.size() < actionsTaken->size()) {
 
         // Get the pair with the edge and the bid.
         auto destination = resultsBid[i].first->getDestination();
 
-        if(env.getParams().nbSharedRegisters > 0){
-            progExecutionEngine.setSharedRegisterValues(resultsBid[i].first->getProgram());
-        }
+        //std::cout<<"Team "<<currentTeam<<"  | Case "<<i<<"  | Bid "<<resultsBid[i].second<<"  | ";
 
-        // If edge destination is an action
-        if (dynamic_cast<const TPGAction*>(destination)) {
-            executeAction(destination, actionsTaken);
+        if(!destination->hasSameAssessedActions(actionAssessed)){
 
+            /*std::cout<<"Choose for actions :";
+            for(auto a: destination->getAssessedActions()){
+                std::cout<<a<<"-";
+            }std::cout<<std::endl;*/
 
-            // Add the action the the visited vertices and the edge to the
-            // traversed edges.
-            visitedVertices.push_back(destination);
-            traversedEdges.push_back(resultsBid[i].first);
-
-            // Else if the no team has been activated yet.
-        }
-        else if (nbTeamActivated < 1) {
-            nbTeamActivated++;
-
-            // Only if the team has not already been visited.
-            if (std::find(visitedVertices.begin(), visitedVertices.end(),
-                          destination) == visitedVertices.end()) {
-
-                // Add the edge to the traversed edges.
-                traversedEdges.push_back(resultsBid[i].first);
-                // If edge destination is a team, launch recursively the method.
-                executeTeam((const TPGTeam*)(destination), visitedVertices,
-                            actionsTaken, nbEdgesActivated);
+            if(env.getParams().nbSharedRegisters > 0){
+                for(auto actionClass: destination->getAssessedActions()){
+                    progExecutionEngine.setSharedRegisterValues(resultsBid[i].first->getProgram(), actionClass);
+                }
             }
+
+            // If edge destination is an action
+            if (dynamic_cast<const TPGAction*>(destination)) {
+                executeAction(destination, actionsTaken);
+
+
+                // Add the action the the visited vertices and the edge to the
+                // traversed edges.
+                visitedVertices.push_back(destination);
+                traversedEdges.push_back(resultsBid[i].first);
+
+            }
+            else {
+
+                // Only if the team has not already been visited.
+                if (std::find(visitedVertices.begin(), visitedVertices.end(),
+                            destination) == visitedVertices.end()) {
+
+                    // Add the edge to the traversed edges.
+                    traversedEdges.push_back(resultsBid[i].first);
+                    // If edge destination is a team, launch recursively the method.
+
+                    //std::cout<<"Executing team :"<< destination<<std::endl;
+                    executeTeam((const TPGTeam*)(destination), visitedVertices,
+                                actionsTaken, nbEdgesActivated);
+                }
+            }
+
+            auto destinationAssessedActions = destination->getAssessedActions();
+            // Add the action of the observed vertices to the action used
+            actionAssessed.insert(destinationAssessedActions.begin(), destinationAssessedActions.end());
+        } else {
+
+            /*std::cout<<"Ignore with actions :";
+            for(auto a: destination->getAssessedActions()){
+                std::cout<<a<<"-";
+            }std::cout<<std::endl;*/
         }
+
 
         i++;
     }
@@ -265,10 +291,14 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
 
     // An action value must be positive, so -1 for an action mean that no action
     // value is choosen yet.
-    std::vector<double> actionsTaken(env.getNbContinuousActions());
+    std::vector<double> actionsTaken(env.getNbContinuousActions(), 0.0);
 
     // Execute the team only if it is really a team
     if (dynamic_cast<const TPGTeam*>(&root)) {
+        /*std::cout<<"START ROOT "<<currentVertex<<"   ";
+        for(auto a: currentVertex->getAssessedActions()){
+            std::cout<<a<<"-";
+        }std::cout<<std::endl;*/
         executeTeam(dynamic_cast<const TPGTeam*>(currentVertex),
                     visitedVertices, &actionsTaken, nbEdgesActivated);
     }

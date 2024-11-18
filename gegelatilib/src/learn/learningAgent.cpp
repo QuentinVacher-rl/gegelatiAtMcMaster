@@ -381,7 +381,6 @@ void Learn::LearningAgent::decimateWorstRoots(
     // Restore root actions
     results.insert(preservedVertex.begin(), preservedVertex.end());
 }
-
 uint64_t Learn::LearningAgent::train(volatile bool& altTraining,
                                      bool printProgressBar)
 {

@@ -37,10 +37,12 @@
 #define TPG_VERTEX_H
 
 #include <list>
+#include <set>
 
 namespace TPG {
     // Declare class to make it usable as an attribute.
     class TPGEdge;
+    class TPGActionEdge;
 
     /**
      * \brief Abstract class representing the vertices of a TPGGraph
@@ -60,6 +62,11 @@ namespace TPG {
          * \brief Get a const reference to outgoing edges of this TPGVertex.
          */
         const std::list<TPGEdge*>& getOutgoingEdges() const;
+
+        /**
+         * \brief return assessed actions
+         */
+        virtual const std::set<uint64_t>& getAssessedActions() const;
 
         /**
          * \brief Method to add an incoming TPGEdge to the TPGVertex.
@@ -109,6 +116,19 @@ namespace TPG {
          */
         virtual void removeOutgoingEdge(TPG::TPGEdge* edge);
 
+
+        /**
+         * \brief Update the assessed actions
+         */
+        virtual void updateAssessedActions();
+
+        /**
+         * \brief compare the set given and the assessed actions of the vertex
+         * 
+         * If the intersection is empty, return false, else true
+         */
+        virtual bool hasSameAssessedActions(std::set<uint64_t> actions) const;
+
       protected:
         /**
          * \brief Protected default constructor to forbid the instanciation of
@@ -125,6 +145,12 @@ namespace TPG {
          * \brief Set of outgoing TPGEdge of the TPGVertex.
          */
         std::list<TPG::TPGEdge*> outgoingEdges;
+
+
+        /**
+         * \brief Set of assessed actions by the team
+         */
+        std::set<uint64_t> assessedActions;
     };
 }; // namespace TPG
 

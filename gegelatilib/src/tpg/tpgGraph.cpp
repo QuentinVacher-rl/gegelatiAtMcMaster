@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>
+#include <queue>
 
 #include "tpg/tpgGraph.h"
 
@@ -182,17 +183,22 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
 
     // Copy the outgoing edges (if any).
     for (auto edge : vertex.getOutgoingEdges()) {
+
+        // If edge is action Edge, copy the action edge
         if(dynamic_cast<TPG::TPGActionEdge*>(edge) != nullptr){
 
             this->addNewActionEdge(*newVertex,
                             std::make_shared<Program::Program>(*edge->getProgramSharedPointer()),
                             ((TPG::TPGActionEdge*)(edge))->getActionClass());
-        } else {
 
+        // If edge is TPGEdge and destination is an action vertex, copy the action vertex
+        } else {
             this->addNewEdge(*newVertex, *(edge->getDestination()),
                             std::make_shared<Program::Program>(*edge->getProgramSharedPointer()));
         }
     }
+
+    newVertex->updateAssessedActions();
 
     return *newVertex;
 }
@@ -296,7 +302,7 @@ void TPG::TPGGraph::removeEdge(const TPGEdge& edge)
         ->removeIncomingEdge(iterator->get());
 
     // Delete the destination if it was an action with no incoming edge anymore
-    if(env.getParams().mutation.tpg.seperateTeamAndRoot && dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination()) != nullptr){
+    if(dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination()) != nullptr){
         const TPG::TPGAction* action = dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination());
         if(action->getIncomingEdges().size() == 0){
             removeVertex(*action);
@@ -343,6 +349,7 @@ const TPG::TPGEdge& TPG::TPGGraph::cloneEdge(const TPGEdge& edge)
                                 std::make_shared<Program::Program>(*iterEdge->get()->getProgramSharedPointer()),
                                 (dynamic_cast<const TPGActionEdge*>(&edge))->getActionClass());
     } else {
+
         return this->addNewEdge(*iterEdge->get()->getSource(),
                                 *iterEdge->get()->getDestination(),
                                 std::make_shared<Program::Program>(*iterEdge->get()->getProgramSharedPointer()));
@@ -397,6 +404,7 @@ bool TPG::TPGGraph::setEdgeSource(const TPGEdge& edge, const TPGVertex& newSrc)
         return true;
     }
     else {
+        std::cout<<"Ahhhhhhh"<<std::endl;
         return false;
     }
 }
@@ -481,6 +489,45 @@ void TPG::TPGGraph::setActionClassEdge(const TPGEdge* edge, uint64_t newActionCl
     }
 
 }
+
+
+void TPG::TPGGraph::updateAssessedActions(const TPG::TPGVertex* vertex) {
+    std::queue<const TPG::TPGVertex*> vertexToUpdate;
+    vertexToUpdate.push(vertex);
+
+    while (!vertexToUpdate.empty()) {
+        // Get the front vertex in the queue
+        auto currentVertex = vertexToUpdate.front();
+        vertexToUpdate.pop();
+
+        // Find the vertex to get the non-const reference
+        auto it = this->findVertex(currentVertex);
+        if (it != this->vertices.end()) {
+            // Add the vertices leading to the current vertex to the queue
+            for (auto incomingEdge : (*it)->getIncomingEdges()) {
+                vertexToUpdate.push(incomingEdge->getSource());
+            }
+
+            // Update assessed actions for the current vertex
+            (*it)->updateAssessedActions();
+        } else {
+            throw std::runtime_error(
+                "Vertex to assess actions not in the graph.");
+        }
+    }
+}
+
+void TPG::TPGGraph::updateAllAssessedActions() {
+
+    // Launch update method for all actions. 
+    // All teams should be linked to actions, even not directly.
+    for(auto vertex: this->vertices){
+        if(dynamic_cast<TPGAction*>(vertex) != nullptr){
+            this->updateAssessedActions(vertex);
+        }
+    }
+}
+
 
 void TPG::TPGGraph::orderActionEdges(const TPG::TPGAction* action)
 {

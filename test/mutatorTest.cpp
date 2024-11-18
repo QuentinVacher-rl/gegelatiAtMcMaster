@@ -686,11 +686,14 @@ TEST_F(MutatorTest, TPGMutatorRemoveRandomEdge)
 TEST_F(MutatorTest, TPGMutatorAddRandomEdge)
 {
     TPG::TPGGraph tpg(*e);
+    
+    Mutator::MutationParameters params;
     const TPG::TPGTeam& vertex0 = tpg.addNewTeam();
     const TPG::TPGAction& vertex1 = tpg.addNewAction(0);
     const TPG::TPGTeam& vertex2 = tpg.addNewTeam();
     const TPG::TPGAction& vertex3 = tpg.addNewAction(1);
     const TPG::TPGAction& vertex4 = tpg.addNewAction(2);
+    std::vector<const TPG::TPGTeam*> teams;
     std::list<const TPG::TPGEdge*> edges;
 
     edges.push_back(&tpg.addNewEdge(vertex0, vertex1, progPointer));
@@ -741,8 +744,8 @@ TEST_F(MutatorTest, TPGMutatorMutateEdgeDestination)
     Mutator::RNG rng;
     std::list<std::shared_ptr<Program::Program>> programs;
     rng.setSeed(2);
-    ASSERT_NO_THROW(Mutator::TPGMutator::mutateEdgeDestination(
-        tpg, &edge1, {&vertex3, &vertex4}, {&vertex1, &vertex2}, programs, params, rng));
+    ASSERT_NO_THROW(Mutator::TPGMutator::mutateOutgoingEdge(
+        tpg, &edge1, vertex0, {&vertex3, &vertex4}, {&vertex1, &vertex2}, programs, params, rng));
     // Check properties of the tpg
     ASSERT_EQ(tpg.getEdges().size(), 2)
         << "Number of edge should remain unchanged after destination change.";
@@ -786,7 +789,7 @@ TEST_F(MutatorTest, TPGMutatorMutateOutgoingEdge)
     std::list<std::shared_ptr<Program::Program>> newPrograms;
 
     ASSERT_NO_THROW(Mutator::TPGMutator::mutateOutgoingEdge(
-        tpg, &edge0, {&vertex0}, {&vertex1}, newPrograms, params, rng));
+        tpg, &edge0, vertex0, {&vertex0}, {&vertex1}, newPrograms, params, rng));
 
     // Check that progPointer use count was decreased since the mutated program
     // is a copy of the original
@@ -841,7 +844,7 @@ TEST_F(MutatorTest, TPGMutatorMutateTeam)
     // the mutation process.)
     ASSERT_NO_THROW(Mutator::TPGMutator::mutateTPGTeam(
         tpg, arch, vertex0, {&vertex0, &vertex4},
-        {&vertex1, &vertex2, &vertex3}, {&edge2}, newPrograms, params, rng))
+        {&vertex1, &vertex2, &vertex3}, {&edge2}, {},   newPrograms, params, rng))
         << "Mutate team should not fail in these conditions.";
 
     // No other check really needed since individual mutation functions are
@@ -880,7 +883,7 @@ TEST_F(MutatorTest, TPGMutatorMutateProgramBehaviorAgainstArchive)
 
     std::list<std::shared_ptr<Program::Program>> newPrograms;
 
-    Mutator::TPGMutator::mutateOutgoingEdge(tpg, &edge0, {&vertex0}, {&vertex1},
+    Mutator::TPGMutator::mutateOutgoingEdge(tpg, &edge0, vertex0, {&vertex0}, {&vertex1},
                                             newPrograms, params, rng);
 
     ASSERT_NO_THROW(Mutator::TPGMutator::mutateProgramBehaviorAgainstArchive(
@@ -910,7 +913,7 @@ TEST_F(MutatorTest, TPGMutatorMutateProgramBehaviorAgainstArchive)
 
     newPrograms.clear();
 
-    Mutator::TPGMutator::mutateOutgoingEdge(tpg, &edge0, {&vertex0}, {&vertex1},
+    Mutator::TPGMutator::mutateOutgoingEdge(tpg, &edge0, vertex0, {&vertex0}, {&vertex1},
                                             newPrograms, params, rng);
 
     ASSERT_NO_THROW(Mutator::TPGMutator::mutateProgramBehaviorAgainstArchive(

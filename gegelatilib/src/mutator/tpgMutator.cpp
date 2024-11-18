@@ -56,20 +56,29 @@
 #include "mutator/rng.h"
 #include "mutator/tpgMutator.h"
 
+
+
 void Mutator::TPGMutator::initRandomTPG(
     TPG::TPGGraph& graph, const Mutator::MutationParameters& params,
     Mutator::RNG& rng, const std::vector<uint64_t>& vectActions)
 {
-    std::cout<<"Start Init Random TPG"<<std::endl;
-    uint64_t nbActions = params.tpg.initNbActions;
+    uint64_t nbActions = graph.getEnvironment().getNbContinuousActions();
 
-    if (params.tpg.maxInitOutgoingEdges > nbActions) {
+    if (params.tpg.nbActionEdgeInit > graph.getEnvironment().getNbContinuousActions()){
+        throw std::runtime_error("Maximum initial number of outgoing edges "
+                            "cannot exceed the number of action");
+    }
+    if (params.tpg.maxInitOutgoingEdges < 1 ) {
         throw std::runtime_error("Maximum initial number of outgoing edges "
                                  "cannot exceed the number of action");
     }
-    if (nbActions < 2) {
-        throw std::runtime_error("A TPG with a single action makes no sense.");
+
+    if (params.tpg.initNbActions < params.tpg.initNbRoots){
+        throw std::runtime_error("Can't be more root team than action");
     }
+    /*if (nbActions < 2) {
+        throw std::runtime_error("A TPG with a single action makes no sense.");
+    }*/
     //if (params.tpg.initNbRoots < nbActions) {
     //    throw std::runtime_error("The number of init roots should be above or "
     //                             "equal to the number of actions.");
@@ -83,46 +92,56 @@ void Mutator::TPGMutator::initRandomTPG(
     // Create teams, programs and Actions
     std::vector<const TPG::TPGAction*> actions;
     std::vector<const TPG::TPGTeam*> teams;
-    std::vector<std::shared_ptr<Program::Program>> programs;
-    for (uint64_t actionClass = 0; actionClass < vectActions.size();
-         actionClass++) {
-        // Temporary code made for only one action class
-        for (uint64_t actionID = 0; actionID < nbActions;
-             actionID++) {
-            
-            actions.push_back(&(graph.addNewAction(actionID, actionClass)));
+    std::vector<std::shared_ptr<Program::Program>> contextPrograms;
+    std::vector<std::shared_ptr<Program::Program>> actionPrograms;
 
 
-            uint64_t nbActionEdges = 1;
-            if(params.tpg.multiActionProg){
-                nbActionEdges = graph.getEnvironment().getNbContinuousActions();
-            }
-            for(size_t i = 0; i < nbActionEdges; i++){
-                std::shared_ptr<Program::Program> prog = std::make_shared<Program::Program>(graph.getEnvironment(), true);
-                Mutator::ProgramMutator::initRandomProgram(*prog, params, rng);
-                graph.addNewActionEdge(*actions.back(), prog, i);
-            }
+    for (size_t i = 0; i < params.tpg.initNbActions; i++) {
+
+        // Create an action
+        actions.push_back(&(graph.addNewAction(0, 0)));
+        
+        std::set<uint64_t> actionUsed;
+        for(size_t j = 0; j < params.tpg.nbActionEdgeInit; j++){
+
+            // Create an action program
+            actionPrograms.emplace_back(new Program::Program(graph.getEnvironment(), true));
+            // RandomInit the Programs
+            Mutator::ProgramMutator::initRandomProgram(*actionPrograms.back(), params,
+                                                        rng);
+
+            // Find an action class not already used by this action 
+            uint64_t actionClass;
+            do{
+                actionClass = rng.getInt32(0, nbActions - 1);}
+            while(actionUsed.find(actionClass) != actionUsed.end());
+            actionUsed.insert(actionClass);
+
+            // Create the action edge
+            graph.addNewActionEdge(*actions.at(i),
+                                actionPrograms.back(),
+                                actionClass);
         }
     }
-    for (size_t i = 0; i < params.tpg.initNbRoots; i++) {
-        teams.push_back(&(graph.addNewTeam()));
-    }
-    for (size_t i = 0; i <  params.tpg.initNbRoots; i++) {
-        programs.emplace_back(new Program::Program(graph.getEnvironment()));
+
+    for(size_t i = 0; i < params.tpg.initNbRoots; i++){
+
+        // Create a team
+        teams.push_back(&(graph.addNewTeam()));   
+
+        // Create a program to connect the team and the action
+        contextPrograms.emplace_back(new Program::Program(graph.getEnvironment(), false));
         // RandomInit the Programs
-        Mutator::ProgramMutator::initRandomProgram(*programs.back(), params,
+        Mutator::ProgramMutator::initRandomProgram(*contextPrograms.back(), params,
                                                    rng);
+
+        // Connect the team to the action
+        graph.addNewEdge(*teams.at(i),
+                         *actions.at(i),
+                         contextPrograms.at(i));
     }
 
-    // Connect each team with two distinct actions, through two distinct
-    // programs Association here are determinists since randomness would
-    // uselessly complicate the code while bringing no real value since anyway,
-    // Programs have been initialized randomly.
-    for (size_t i = 0; i < params.tpg.initNbRoots; i++) {
-        graph.addNewEdge(*teams.at(i),
-                         *actions.at(i  % nbActions),
-                         programs.at(i));
-    }
+    graph.updateAllAssessedActions();
 
     // Add additional connections to TPG
     // Team-by-Team
@@ -134,11 +153,11 @@ void Mutator::TPGMutator::initRandomTPG(
         // For each additional edge to add
         for (uint64_t i = 0; i < nbAdditionalEdges; i++) {
             // Pick 2 random programs not already used by the Team
-            int64_t randomProgIndex[2] = {-1, -1};
-            int pickedProgram = 0;
+            int64_t randomContextProgIndex[2] = {-1, -1};
+            int pickedContextProgram = 0;
             {
                 // Copy the list of programs
-                std::vector<int> availableChoices(programs.size());
+                std::vector<int> availableChoices(contextPrograms.size());
                 std::iota(availableChoices.begin(), availableChoices.end(), 0);
                 // Remove already connected ones
                 auto iter = availableChoices.begin();
@@ -146,9 +165,9 @@ void Mutator::TPGMutator::initRandomTPG(
                     if (std::count_if(
                             team->getOutgoingEdges().begin(),
                             team->getOutgoingEdges().end(),
-                            [&iter, &programs](const TPG::TPGEdge* edge) {
+                            [&iter, &contextPrograms](const TPG::TPGEdge* edge) {
                                 return &edge->getProgram() ==
-                                       programs.at(*iter).get();
+                                       contextPrograms.at(*iter).get();
                             }) > 0) {
                         iter = availableChoices.erase(iter);
                     }
@@ -161,31 +180,260 @@ void Mutator::TPGMutator::initRandomTPG(
                 for (int i = 0; i < 2 && availableChoices.size() > 0; i++) {
                     uint64_t progNr =
                         rng.getUnsignedInt64(0, availableChoices.size() - 1);
-                    randomProgIndex[i] = availableChoices.at(progNr);
+                    randomContextProgIndex[i] = availableChoices.at(progNr);
                     availableChoices.erase(availableChoices.begin() + progNr);
-                    pickedProgram++;
+                    pickedContextProgram++;
                 }
             }
             // Select the least used program for the connection
-            uint64_t selectedProgramIndex =
-                (pickedProgram > 1 &&
-                 programs.at(randomProgIndex[1]).use_count() <
-                     programs.at(randomProgIndex[0]).use_count())
-                    ? randomProgIndex[1]
-                    : randomProgIndex[0];
+            uint64_t selectedContextProgramIndex =
+                (pickedContextProgram > 1 &&
+                 contextPrograms.at(randomContextProgIndex[1]).use_count() <
+                     contextPrograms.at(randomContextProgIndex[0]).use_count())
+                    ? randomContextProgIndex[1]
+                    : randomContextProgIndex[0];
 
-            // Copy the program
-            programs.emplace_back(new Program::Program(*programs.at(selectedProgramIndex).get()));
 
-            // Add the connection
+            // Copy the programs
+            contextPrograms.emplace_back(new Program::Program(*contextPrograms.at(selectedContextProgramIndex).get()));
+
+            auto actionIndex = rng.getInt32(0, actions.size() - 1);
+
             graph.addNewEdge(*team,
-                             *actions.at(((selectedProgramIndex / 2) +
-                                          (selectedProgramIndex % 2)) %
-                                         nbActions),
-                             programs.back());
+                             *actions.at(actionIndex),
+                             contextPrograms.back());
+
+
+        }
+
+        graph.updateAssessedActions(team);
+    }
+
+}
+
+
+
+void Mutator::TPGMutator::removeRandomActionEdge(TPG::TPGGraph& graph,
+                                           const TPG::TPGAction& action,
+                                           Mutator::RNG& rng)
+{
+    // Pick an outgoing edge randomly,
+    const std::list<TPG::TPGEdge*>& pickableEdges = action.getOutgoingEdges();
+
+    // Note: No need to take special care of Actions. Since cycles can not
+    // appear in TPG with the current mutation process, there is no need to
+    // maintain an action within each team.
+
+    // Pick a random edge
+    auto iterSet = pickableEdges.begin();
+    std::advance(iterSet, rng.getUnsignedInt64(0, pickableEdges.size() - 1));
+    const TPG::TPGEdge* removedEdge = *iterSet;
+    graph.removeActionEdge(*removedEdge);
+}
+
+void Mutator::TPGMutator::addRandomActionEdge(
+    TPG::TPGGraph& graph, const TPG::TPGAction& action,
+    const std::list<const TPG::TPGEdge*>& preExistingActionEdges, Mutator::RNG& rng)
+{
+    // Pick an edge (excluding ones from the team and edges with the team as a
+    // destination)
+    auto pickableEdges(preExistingActionEdges);
+    // cf erase-remove idiom
+    pickableEdges.erase(
+        std::remove_if(
+            pickableEdges.begin(), pickableEdges.end(),
+            [&action](const TPG::TPGEdge* edge) -> bool {
+                if(action.getAssessedActions().find(dynamic_cast<const TPG::TPGActionEdge*>(edge)->getActionClass()) ==
+                   action.getAssessedActions().end())
+                {
+                    return edge->getSource() == &action;
+                } else {
+                    return true;
+                }
+                   
+            }
+        ),
+        pickableEdges.end()
+    );
+
+    if(pickableEdges.size() == 0){
+        std::cout<<"nioehoia"<<std::endl;
+    }
+
+    // Pick a pickable Edge
+    // (This code assumes that the set of pickable edge is never empty..
+    // otherwise it will throw an exception. Possible solution if needed
+    // initialize an entirely new program and pick a random target.)
+    std::list<const TPG::TPGEdge*>::iterator iter = pickableEdges.begin();
+    std::advance(iter, rng.getUnsignedInt64(0, pickableEdges.size() - 1));
+    const TPG::TPGEdge* pickedEdge = *iter;
+
+
+
+    // Create new edge from team and with the same ProgramSharedPointer
+    // But with the team as its source
+    // throw std::runtime_error if the edge is not from the graph;
+    const TPG::TPGEdge& newEdge = graph.cloneEdge(*pickedEdge);
+    graph.setEdgeSource(newEdge, action);
+}
+
+
+
+
+void Mutator::TPGMutator::swapActionEdges(            
+    TPG::TPGGraph& graph, const TPG::TPGAction& action, Mutator::RNG& rng)
+{
+
+    // Randomly select two edges
+    size_t index1 = rng.getUnsignedInt64(0, action.getOutgoingEdges().size() - 1);
+    size_t index2 = rng.getUnsignedInt64(0, action.getOutgoingEdges().size() - 2);
+    if(index1 == index2){
+        index2++;
+    }
+
+    // Use a single iterator to traverse and identify both edges
+    TPG::TPGEdge* edge1 = nullptr;
+    TPG::TPGEdge* edge2 = nullptr;
+    size_t currentIndex = 0;
+
+    for (auto it = action.getOutgoingEdges().begin(); it != action.getOutgoingEdges().end(); ++it, ++currentIndex) {
+        if (currentIndex == index1) {
+            edge1 = *it;
+        } else if (currentIndex == index2) {
+            edge2 = *it;
+        }
+        if (edge1 && edge2) {
+            break; // Stop as soon as both edges are found
         }
     }
+
+    // Extract and swap action classes
+    auto actionClass1 = dynamic_cast<TPG::TPGActionEdge*>(edge1)->getActionClass();
+    auto actionClass2 = dynamic_cast<TPG::TPGActionEdge*>(edge2)->getActionClass();
+
+    graph.setActionClassEdge(edge1, actionClass2);
+    graph.setActionClassEdge(edge2, actionClass1);
+
 }
+
+
+
+void Mutator::TPGMutator::mutateTPGActionEdge(
+    TPG::TPGGraph& graph, const TPG::TPGAction& action, TPG::TPGActionEdge* actionEdge,
+    std::list<std::shared_ptr<Program::Program>>& newPrograms,
+    const Mutator::MutationParameters& params, Mutator::RNG& rng)
+{ 
+
+        
+    // copy program
+    newPrograms.push_back(actionEdge->getProgramSharedPointer());
+
+    // Change action ID randomly if the action do not contain all actions. 
+    if (action.getAssessedActions().size() < graph.getEnvironment().getNbContinuousActions() &&
+        params.tpg.pChangeActionClass > rng.getDouble(0.0, 1.0)) {
+
+        uint64_t newActionID = rng.getInt32(0, graph.getEnvironment().getNbContinuousActions() - 1);
+        while(action.getAssessedActions().find(newActionID) != action.getAssessedActions().end()){
+            newActionID = rng.getInt32(0, graph.getEnvironment().getNbContinuousActions() - 1);
+        }
+
+        actionEdge->setActionClass(newActionID);   
+        
+        graph.updateAssessedActions(&action);   
+
+    }
+
+}
+
+
+void Mutator::TPGMutator::mutateTPGAction(
+    TPG::TPGGraph& graph, const TPG::TPGAction& action,
+    const std::vector<const TPG::TPGAction*>& preExistingActions,
+    std::list<const TPG::TPGEdge*> preExistingActionEdges,
+    std::list<std::shared_ptr<Program::Program>>& newPrograms,
+    const Mutator::MutationParameters& params, Mutator::RNG& rng)
+{ 
+
+    // 1. Remove randomly selected edges
+    // Keep at least two edges (otherwise the team is useless)
+    double proba = params.tpg.pActionEdgeDeletion;
+    while (action.getOutgoingEdges().size() > 1 &&
+        proba > rng.getDouble(0.0, 1.0)) {
+        removeRandomActionEdge(graph, action, rng);
+
+        // Decrement the proba of removing another edge
+        proba *= params.tpg.pActionEdgeDeletion;
+
+        // Update assessed actions    
+        graph.updateAssessedActions(&action);
+        
+    }
+    
+
+    // 2. Add random duplicated edge with the team as its source
+    proba = params.tpg.pActionEdgeAddition;
+    while (action.getOutgoingEdges().size() < graph.getEnvironment().getNbContinuousActions() &&
+           proba > rng.getDouble(0.0, 1.0)) {
+
+        // Add an edge (by duplication of an existing one)
+        addRandomActionEdge(graph, action, preExistingActionEdges, rng);
+
+        // Decrement the proba of adding another edge
+        proba *= params.tpg.pActionEdgeAddition;
+
+        // Update assessed actions    
+        graph.updateAssessedActions(&action);
+                
+    }
+    
+
+
+
+    // 3. swap randomly selected edges
+    // With at least two edges
+    proba = params.tpg.pSwapActionProgram;
+    while (action.getOutgoingEdges().size() > 2 &&
+            proba > rng.getDouble(0.0, 1.0)) {
+        swapActionEdges(graph, action, rng);
+
+        // Decrement the proba of swapping two edges
+        proba *= params.tpg.pSwapActionProgram;
+
+        
+    }
+
+
+    bool anyMutationDone = false;
+    do {
+        std::vector<uint64_t> indexUsed;
+        uint64_t index;
+        // 4. mutate randomly selected program on action Edge. 
+        proba = params.tpg.pMutateActionProgram;
+        while(indexUsed.size() < action.getOutgoingEdges().size()  && proba > rng.getDouble(0.0, 1.0)){
+            
+            do {
+                index = rng.getUnsignedInt64(0, action.getOutgoingEdges().size()-1);
+            } while(std::find(indexUsed.begin(), indexUsed.end(), index) != indexUsed.end()) ;
+
+            indexUsed.push_back(index);
+    
+            std::list<TPG::TPGEdge *>::const_iterator iter = action.getOutgoingEdges().begin();
+            std::advance(iter, index);
+            TPG::TPGActionEdge* actionEdge = dynamic_cast<TPG::TPGActionEdge*>(*iter);
+
+            mutateTPGActionEdge(graph, action, actionEdge, newPrograms, params, rng);
+
+            proba *= params.tpg.pMutateActionProgram;
+
+            anyMutationDone = true;
+        }
+    } while (!anyMutationDone);
+
+
+    graph.orderActionEdges(&action);
+
+}
+
 
 void Mutator::TPGMutator::removeRandomEdge(TPG::TPGGraph& graph,
                                            const TPG::TPGTeam& team,
@@ -214,12 +462,15 @@ void Mutator::TPGMutator::addRandomEdge(
     auto pickableEdges(preExistingEdges);
     // cf erase-remove idiom
     pickableEdges.erase(
-        std::remove_if(pickableEdges.begin(), pickableEdges.end(),
-                       [&team](const TPG::TPGEdge* edge) -> bool {
-                           return edge->getSource() == &team ||
-                                  edge->getDestination() == &team;
-                       }),
-        pickableEdges.end());
+        std::remove_if(
+            pickableEdges.begin(), pickableEdges.end(),
+            [&team](const TPG::TPGEdge* edge) -> bool {
+                return edge->getSource() == &team ||
+                    edge->getDestination() == &team;
+            }
+        ),
+        pickableEdges.end()
+    );
 
     // Pick a pickable Edge
     // (This code assumes that the set of pickable edge is never empty..
@@ -229,6 +480,8 @@ void Mutator::TPGMutator::addRandomEdge(
     std::advance(iter, rng.getUnsignedInt64(0, pickableEdges.size() - 1));
     const TPG::TPGEdge* pickedEdge = *iter;
 
+
+
     // Create new edge from team and with the same ProgramSharedPointer
     // But with the team as its source
     // throw std::runtime_error if the edge is not from the graph;
@@ -236,162 +489,9 @@ void Mutator::TPGMutator::addRandomEdge(
     graph.setEdgeSource(newEdge, team);
 }
 
-void Mutator::TPGMutator::changeActionEdge(            
-    TPG::TPGGraph& graph, const TPG::TPGAction& action,
-    const std::vector<const TPG::TPGAction*>& preExistingActions, Mutator::RNG& rng)
-{
-    // Select a random action
-    const TPG::TPGAction* actionTarget = preExistingActions.at(rng.getUnsignedInt64(0, preExistingActions.size() - 1)); // Récupérer l'action à cet index
-
-    // Select a random index
-    auto indexEdgeTarget = rng.getUnsignedInt64(0, action.getOutgoingEdges().size() - 1);
-    
-    std::list<TPG::TPGEdge *>::const_iterator iter = actionTarget->getOutgoingEdges().begin();
-    std::advance(iter, indexEdgeTarget);
-    const TPG::TPGEdge* pickedEdge = *iter;
-
-    const TPG::TPGEdge& newEdge = graph.cloneEdge(*pickedEdge);
-    graph.setEdgeSource(newEdge, action);
-
-    iter = action.getOutgoingEdges().begin();
-    std::advance(iter, indexEdgeTarget);
-    const TPG::TPGEdge* removedEdge = *iter;
-    graph.removeActionEdge(*removedEdge);
-
-    
-    graph.orderActionEdges(&action);
-}
-
-void Mutator::TPGMutator::swapActionEdges(            
-    TPG::TPGGraph& graph, const TPG::TPGAction& action, Mutator::RNG& rng)
-{
-
-
-    size_t index1 = rng.getUnsignedInt64(0, action.getOutgoingEdges().size() - 1);
-    size_t index2 = 0;
-    do {
-        index2 = rng.getUnsignedInt64(0, action.getOutgoingEdges().size() - 1);
-    } while (index1 == index2);
-
-
-    std::list<TPG::TPGEdge *>::const_iterator iter = action.getOutgoingEdges().begin();
-    std::advance(iter, index1);
-    graph.setActionClassEdge(*iter, index2);
-
-    iter = action.getOutgoingEdges().begin();
-    std::advance(iter, index2);
-    graph.setActionClassEdge(*iter, index1);
-
-    graph.orderActionEdges(&action);
-}
-
-void Mutator::TPGMutator::mutateTPGAction(
-    TPG::TPGGraph& graph, const TPG::TPGAction& action,
-    const std::vector<const TPG::TPGAction*>& preExistingActions,
-    std::list<std::shared_ptr<Program::Program>>& newPrograms,
-    const Mutator::MutationParameters& params, Mutator::RNG& rng)
-{ 
-
-    bool anyMutationDone = false;
-    do {
-        // 1. swap randomly selected edges
-        // With at least two edges
-        double proba = params.tpg.pSwapActionProgram;
-        while (action.getOutgoingEdges().size() > 2 &&
-                proba > rng.getDouble(0.0, 1.0)) {
-            swapActionEdges(graph, action, rng);
-
-            // Decrement the proba of swapping two edges
-            proba *= params.tpg.pSwapActionProgram;
-
-            
-            anyMutationDone = true;
-        }
-
-        // 2. change randomly selected edge by another one. 
-        proba = params.tpg.pChangeActionProgram;
-        while (proba > rng.getDouble(0.0, 1.0)) {
-            changeActionEdge(graph, action, preExistingActions, rng);
-
-            // Decrement the proba of swapping two edges
-            proba *= params.tpg.pChangeActionProgram;
-
-            
-            anyMutationDone = true;
-        }
-
-
-        std::vector<uint64_t> indexUsed;
-        uint64_t index;
-        // 3. mutate randomly selected program on action Edge. 
-        proba = params.tpg.pMutateActionProgram;
-        while(indexUsed.size() < action.getOutgoingEdges().size()  && proba > rng.getDouble(0.0, 1.0)){
-            
-            do {
-                index = rng.getUnsignedInt64(0, action.getOutgoingEdges().size()-1);
-            } while(std::find(indexUsed.begin(), indexUsed.end(), index) != indexUsed.end()) ;
-
-            indexUsed.push_back(index);
-    
-            std::list<TPG::TPGEdge *>::const_iterator iter = action.getOutgoingEdges().begin();
-            std::advance(iter, index);
-            TPG::TPGEdge* pickedEdge = *iter;
-        
-            // copy program
-            newPrograms.push_back(pickedEdge->getProgramSharedPointer());
-
-            proba *= params.tpg.pMutateActionProgram;
-
-            anyMutationDone = true;
-        }
-    } while (!anyMutationDone);
-
-
-
-
-
-}
-
-void Mutator::TPGMutator::mutateEdgeDestination(
-    TPG::TPGGraph& graph, const TPG::TPGEdge* edge,
-    const std::vector<const TPG::TPGTeam*>& preExistingTeams,
-    const std::vector<const TPG::TPGAction*>& preExistingActions,
-    std::list<std::shared_ptr<Program::Program>>& newPrograms,
-    const Mutator::MutationParameters& params, Mutator::RNG& rng)
-{
-    // Pick an edge among preexisting vertices
-    const TPG::TPGVertex* target = NULL;
-
-    // Should the new target be an action or a team
-    bool targetAction =
-        rng.getDouble(0, 1) < params.tpg.pEdgeDestinationIsAction;
-
-    // Pick any target
-    // Note: Having an action in all teams is no longer enforced,
-    // as the presence of cycle in TPGs is not possible according to the current
-    // mutation process.
-    if (targetAction) {
-
-        target = preExistingActions.at(
-            rng.getUnsignedInt64(0, preExistingActions.size() - 1)); 
-
-        // If target is an action root, duplicate it to avoid changing the action root population
-        if(target->getIncomingEdges().size() == 0 && params.tpg.seperateTeamAndRoot){
-            target = &(const TPG::TPGVertex&)graph.cloneVertex(*target);
-        }
-
-    } else {
-        target = preExistingTeams.at(
-            rng.getUnsignedInt64(0, preExistingTeams.size() - 1));
-    }
-
-    // Change the target
-    // Changing the target should not fail.
-    graph.setEdgeDestination(*edge, *target);
-}
 
 void Mutator::TPGMutator::mutateOutgoingEdge(
-    TPG::TPGGraph& graph, const TPG::TPGEdge* edge,
+    TPG::TPGGraph& graph, const TPG::TPGEdge* edge, const TPG::TPGTeam& team,
     const std::vector<const TPG::TPGTeam*>& preExistingTeams,
     const std::vector<const TPG::TPGAction*>& preExistingActions,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
@@ -403,8 +503,24 @@ void Mutator::TPGMutator::mutateOutgoingEdge(
     // As it Stephen kelly's work, Edge target modification is conditionned
     // to the modification of the prealable Edge.Program behavior.
     if (rng.getDouble(0.0, 1.0) < params.tpg.pEdgeDestinationChange) {
-        mutateEdgeDestination(graph, edge, preExistingTeams, preExistingActions,
-                              newPrograms, params, rng);
+        // Pick an edge among preexisting vertices
+        const TPG::TPGVertex* target = NULL;
+
+
+        bool targetAction = rng.getDouble(0, 1) < params.tpg.pEdgeDestinationIsAction;
+
+        if (targetAction) {
+            target = preExistingActions.at(
+                rng.getUnsignedInt64(0, preExistingActions.size() - 1)); 
+        } else {
+            target = preExistingTeams.at(
+                rng.getUnsignedInt64(0, preExistingTeams.size() - 1));
+        }
+
+
+        // Change the target
+        // Changing the target should not fail.
+        graph.setEdgeDestination(*edge, *target);
     } 
 }
 
@@ -413,19 +529,28 @@ void Mutator::TPGMutator::mutateTPGTeam(
     const std::vector<const TPG::TPGTeam*>& preExistingTeams,
     const std::vector<const TPG::TPGAction*>& preExistingActions,
     const std::list<const TPG::TPGEdge*>& preExistingEdges,
+    const std::list<const TPG::TPGEdge*>& preExistingActionEdges,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
     const Mutator::MutationParameters& params, Mutator::RNG& rng)
 {
+
+
     // 1. Remove randomly selected edges
     {
         // Keep at least two edges (otherwise the team is useless)
         double proba = params.tpg.pEdgeDeletion;
         while (team.getOutgoingEdges().size() > 1 &&
-               proba > rng.getDouble(0.0, 1.0)) {
+            proba > rng.getDouble(0.0, 1.0)) {
             removeRandomEdge(graph, team, rng);
 
             // Decrement the proba of removing another edge
             proba *= params.tpg.pEdgeDeletion;
+
+            // Update assessed actions    
+            graph.updateAssessedActions(&team);
+                    
+
+            
         }
     }
 
@@ -433,15 +558,19 @@ void Mutator::TPGMutator::mutateTPGTeam(
     {
         double proba = params.tpg.pEdgeAddition;
         while (team.getOutgoingEdges().size() < params.tpg.maxOutgoingEdges &&
-               proba > rng.getDouble(0.0, 1.0)) {
+            proba > rng.getDouble(0.0, 1.0)) {
+
             // Add an edge (by duplication of an existing one)
             addRandomEdge(graph, team, preExistingEdges, rng);
 
             // Decrement the proba of adding another edge
             proba *= params.tpg.pEdgeAddition;
+
+            // Update assessed actions    
+            graph.updateAssessedActions(&team);
+                    
         }
     }
-
     // 3. Mutate edges of the team
     {
         bool anyMutationDone = false;
@@ -450,36 +579,45 @@ void Mutator::TPGMutator::mutateTPGTeam(
             // And possibly modify their target
             for (TPG::TPGEdge* edge : team.getOutgoingEdges()) {
 
+                // Mutate the program, but need to choose between context program or action program if it exist
+                if (rng.getDouble(0.0, 1.0) < params.tpg.pProgramMutation){
 
-                // Edge->Program bid modification
-                if (rng.getDouble(0.0, 1.0) < params.tpg.pProgramMutation) {
-                    // Mutate the edge
-                    // Add it to the list of new Program to be mutated.
-                    newPrograms.push_back(edge->getProgramSharedPointer());
+                    // If destination is action, and probability win, mutate the action program
+                    if(dynamic_cast<const TPG::TPGAction*>(edge->getDestination()) != nullptr &&
+                        rng.getDouble(0.0, 1.0) > params.tpg.probaContextOverActionProgram){
 
-                    mutateOutgoingEdge(graph, edge, preExistingTeams,
-                                       preExistingActions, newPrograms, params,
-                                       rng);
+                        // Clone the randomly selected action
+                        const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(*edge->getDestination());
+
+                        // Mutate the action
+                        mutateTPGAction(graph, newAction, preExistingActions, preExistingActionEdges,
+                                        newPrograms, params, rng);
+
+                        // Set the action
+                        graph.setEdgeDestination(*edge, newAction);
+
+                    } else {
+                        // Mutate the context program
+                        // Add it to the list of new Program to be mutated.
+                        newPrograms.push_back(edge->getProgramSharedPointer());
+
+                        mutateOutgoingEdge(graph, edge, team, preExistingTeams,
+                                        preExistingActions, newPrograms, params,
+                                        rng);
+                    }
+
+                    // Update assessed actions    
+                    graph.updateAssessedActions(&team);
+                    
                     anyMutationDone = true;
-
-                // We dont want to do context and action program mutation at the same time
-                } else if (dynamic_cast<const TPG::TPGAction*>(edge->getDestination()) != nullptr &&
-                    rng.getDouble(0.0, 1.0) < params.tpg.pMutateActionVertex){
-
-                    // Clone the randomly selected action
-                    const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(*edge->getDestination());
-
-                    // Mutate the action
-                    mutateTPGAction(graph, newAction, preExistingActions,
-                                    newPrograms, params, rng);
-
-                    // Set the action
-                    graph.setEdgeDestination(*edge, newAction);
-                    anyMutationDone = true; 
                 }
             }
         } while (!anyMutationDone);
     }
+
+
+
+
 }
      
 void Mutator::TPGMutator::mutateProgramBehaviorAgainstArchive(
@@ -558,10 +696,7 @@ void Mutator::TPGMutator::mutateNewProgramBehaviors(
             programsToMutate.push(
                 {newProg, rng.getUnsignedInt64(0, UINT64_MAX)});
 
-            /*if(newProg->isActionProgram()){
-                std::cout<<"EHHHY ";
-                std::cout<<newProg->getNbLines()<<std::endl;
-            }*/
+
         }
 
         std::mutex mutexMutation;
@@ -675,12 +810,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
             preExistingActionEdges.push_back(edge.get());
         });
 
-    // Creer complete list
-    std::list<const TPG::TPGEdge*> preExistingAllEdges;
-    preExistingAllEdges.insert(preExistingAllEdges.end(), preExistingEdges.begin(), preExistingEdges.end());
-    preExistingAllEdges.insert(preExistingAllEdges.end(), preExistingActionEdges.begin(), preExistingActionEdges.end());
-
-
     // Create an empty list to store Programs to mutate.
     std::list<std::shared_ptr<Program::Program>> newPrograms;
 
@@ -729,7 +858,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                     *rootVertices.at(clonedRootIndex));
                 // Apply mutations to the root
                 mutateTPGTeam(graph, archive, newTeam, preExistingTeams,
-                            preExistingActions, preExistingEdges, newPrograms, params,
+                            preExistingActions, preExistingEdges, preExistingActionEdges, newPrograms, params,
                             rng);
             }
 
@@ -742,7 +871,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(
                     *rootVertices.at(clonedRootIndex));
                 // Apply mutations to the root
-                mutateTPGAction(graph, newAction, preExistingActions,
+                mutateTPGAction(graph, newAction, preExistingActions, preExistingActionEdges,
                                 newPrograms, params, rng);
             }
         }
