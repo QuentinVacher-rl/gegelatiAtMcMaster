@@ -218,24 +218,28 @@ void File::TPGGraphDotImporter::readAction(std::smatch& matches)
         std::string action_label = matches[2];
         uint64_t action_number = std::stoi(matches[1]);
 
-        // Action label contain the actionID and actionClass with format
-        // "ActionValue-actionID"
-        uint64_t currActionClass =
-            std::stoi(action_label.substr(0, action_label.find('-')));
-        uint64_t currActionID =
-            std::stoi(action_label.substr(action_label.find('-') + 1));
+        // Vector to store the extracted numbers
+        std::vector<uint64_t> numbers;
 
+        // Use a stringstream to parse the input
+        std::stringstream ss(action_label);
+        std::string token;
+
+        // Split the string by the delimiter '-'
+        while (std::getline(ss, token, '-')) {
+            numbers.push_back(std::stoull(token)); // Convert the token to uint64_t and store it
+        }
         // elmt points to the action with the same label as the action we are
         // parsing
-        auto elmt = actionID.find(action_label);
+        auto elmt = actionID.find(action_number);
         if (elmt == actionID.end()) {
             // create a new action and insert it if none was previously found
-            this->actionID.insert(std::pair<std::string, const TPG::TPGVertex*>(
-                action_label,
-                &this->tpg.addNewAction(currActionID, currActionClass)));
+            this->actionID.insert(std::pair<uint64_t, const TPG::TPGVertex*>(
+                action_number,
+                &this->tpg.addNewAction(action_number, 0)));
         }
-        this->actionLabel.insert(
-            std::pair<uint64_t, std::string>(action_number, action_label));
+        this->actionClasses.insert(
+            std::pair<const TPG::TPGVertex*, std::vector<uint64_t>>(this->tpg.getVertices().back(), numbers));
     }
 }
 
@@ -248,15 +252,16 @@ void File::TPGGraphDotImporter::readLinkActionProgram(std::smatch& matches)
         uint64_t program = std::stoi(matches[2]);
 
         // get the action depending on its label
-        auto action_lab = this->actionLabel.find(act_in);
-        if (action_lab != this->actionLabel.end()) {
-            auto action_it = this->actionID.find(action_lab->second);
+        auto action_it = this->actionID.find(act_in);
+        if (action_it != this->actionID.end()) {
             // find the program to add to the edge
             auto p_it = programID.find(program);
             if (action_it != this->actionID.end() && p_it != programID.end()) {
                 const TPG::TPGVertex* action = action_it->second;
-                uint64_t actionClass = dynamic_cast<const TPG::TPGAction*>(action)->getActionClass();
+
+                uint64_t actionClass = this->actionClasses.at(action).at(action->getOutgoingEdges().size());
                 std::shared_ptr<Program::Program> p = p_it->second;
+
                 this->tpg.addNewActionEdge(*action, p, actionClass);
             }
         }
@@ -272,10 +277,9 @@ void File::TPGGraphDotImporter::readLinkTeamProgramAction(std::smatch& matches)
         uint64_t act_out = std::stoi(matches[3]);
 
         // get the action depending on its label
-        auto action_lab = this->actionLabel.find(act_out);
-        if (action_lab != this->actionLabel.end()) {
+        auto action_it = this->actionID.find(act_out);
+        if (action_it != this->actionID.end()) {
             auto team_it = this->vertexID.find(team_in);
-            auto action_it = this->actionID.find(action_lab->second);
             // find the program to add to the edge
             auto p_it = programID.find(program);
             if (team_it != vertexID.end() &&
@@ -352,13 +356,13 @@ void File::TPGGraphDotImporter::readLinkTeamProgram(std::smatch& matches)
 void File::TPGGraphDotImporter::importGraph()
 {
     // force seek at the beginning of file.
-    pFile.seekg(0);
+    pFile.seekg(1);
 
     // clear every storing objects
     this->tpg.clear();
     this->vertexID.clear();
     this->actionID.clear();
-    this->actionLabel.clear();
+    this->actionClasses.clear();
     this->programID.clear();
 
     // skip header
@@ -367,6 +371,8 @@ void File::TPGGraphDotImporter::importGraph()
     while (read) {
         read = this->readLineFromFile();
     }
+
+    this->tpg.updateAllAssessedActions();
 }
 
 bool File::TPGGraphDotImporter::readLineFromFile()

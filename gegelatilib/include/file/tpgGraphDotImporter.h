@@ -93,6 +93,13 @@ namespace File {
          */
         std::map<uint64_t, const TPG::TPGVertex*> vertexID;
 
+
+
+        /**
+         * \brief Map associating pointers to TPGAction to a vector of integer action class.
+         */
+        std::map<const TPG::TPGVertex*, std::vector<uint64_t>> actionClasses;
+
         /**
          * \brief Map associating pointers to Program to an integer ID.
          *
@@ -109,15 +116,7 @@ namespace File {
          * This map is used to ensure that identical actions are not created
          * more than once.
          */
-        std::map<std::string, const TPG::TPGVertex*, std::less<>> actionID;
-
-        /**
-         * \brief Map associating actions to the corresponding action ID
-         *
-         * This map is here is used to access the correct TPGVertex while
-         * linking an action.
-         */
-        std::map<uint64_t, std::string> actionLabel;
+        std::map<uint64_t, const TPG::TPGVertex*, std::less<>> actionID;
 
         /**
          * \brief string used to spot the end of a line in the program

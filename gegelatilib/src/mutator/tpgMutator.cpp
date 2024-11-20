@@ -122,6 +122,8 @@ void Mutator::TPGMutator::initRandomTPG(
                                 actionPrograms.back(),
                                 actionClass);
         }
+
+        graph.orderActionEdges(actions.back());
     }
 
     for(size_t i = 0; i < params.tpg.initNbRoots; i++){
@@ -257,7 +259,8 @@ void Mutator::TPGMutator::addRandomActionEdge(
     );
 
     if(pickableEdges.size() == 0){
-        std::cout<<"nioehoia"<<std::endl;
+        // Chances are really low but the pickableEdges can be empty
+        return;
     }
 
     // Pick a pickable Edge
