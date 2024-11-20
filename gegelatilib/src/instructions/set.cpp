@@ -36,7 +36,10 @@
 
 #include <algorithm>
 
+#include <iostream>
+
 #include "instructions/set.h"
+#include "data/constant.h"
 
 bool Instructions::Set::add(const Instruction& instruction)
 {
@@ -61,6 +64,16 @@ unsigned int Instructions::Set::getMaxNbOperands() const
     unsigned int res = 0;
     for (auto instruction : this->instructions) {
         unsigned int nb = instruction.get().getNbOperands();
+        res = (nb > res) ? nb : res;
+    }
+    return res;
+}
+
+unsigned int Instructions::Set::getMaxNbConstants() const
+{
+    unsigned int res = 0;
+    for (auto instruction : this->instructions) {
+        unsigned int nb = instruction.get().getNbConstants();
         res = (nb > res) ? nb : res;
     }
     return res;

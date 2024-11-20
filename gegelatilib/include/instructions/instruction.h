@@ -169,6 +169,15 @@ namespace Instructions {
         unsigned int getNbOperands() const;
 
         /**
+         * \brief Get the number of constants required to execute the
+         * Instruction.
+         *
+         * \return an unsigned int value corresponding to the number of constants
+         * required by the Instruction.
+         */
+        unsigned int getNbConstants() const;
+
+        /**
          * \brief Check if a given vector contains elements whose types
          * corresponds to the types of the Instruction operands.
          *

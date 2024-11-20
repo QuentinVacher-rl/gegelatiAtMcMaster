@@ -63,6 +63,20 @@ unsigned int Instructions::Instruction::getNbOperands() const
     return (unsigned int)this->operandTypes.size();
 }
 
+unsigned int Instructions::Instruction::getNbConstants() const
+{
+    unsigned int nbConstants = 0;
+
+    // Get the number of constant in the instruction
+    for(auto operandType: this->operandTypes){
+        if(operandType.get() == typeid(Data::Constant)){
+            nbConstants++;
+        }
+    }
+
+    return nbConstants;
+}
+
 bool Instruction::checkOperandTypes(
     const std::vector<Data::UntypedSharedPtr>& arguments) const
 {
