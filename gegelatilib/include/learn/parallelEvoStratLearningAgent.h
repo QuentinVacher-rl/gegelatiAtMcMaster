@@ -75,7 +75,7 @@ namespace Learn {
          */
         virtual void evaluateAllErrorWeightsInParallel(
             uint64_t generationNumber, LearningMode mode,
-            std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, 
+            std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, 
                           std::vector<double>>*>& results);
         /**
          * \brief Subfunction of LearningMode which handles the
@@ -138,7 +138,7 @@ namespace Learn {
             std::map<uint64_t, std::pair<std::shared_ptr<EvaluationResult>,
                                          std::shared_ptr<Job>>>&
                 resultsPerJobMap,
-            std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, 
+            std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, 
                           std::vector<double>>*>& results);
 
       public:
@@ -167,7 +167,7 @@ namespace Learn {
          * \param[in] mode the LearningMode to use during the policy
          * evaluation.
          */
-        virtual std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
+        virtual std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*>
         evaluateAllErrorWeights(uint64_t generationNumber, LearningMode mode) override;
 
 

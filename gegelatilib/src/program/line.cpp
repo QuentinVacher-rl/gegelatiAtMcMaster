@@ -143,7 +143,7 @@ bool Program::Line::operator!=(const Line& other) const
 }
 
 
-uint64_t Program::Line::getNbConstants()
+uint64_t Program::Line::getNbConstants() const
 {
     return this->nbConstants;
 }

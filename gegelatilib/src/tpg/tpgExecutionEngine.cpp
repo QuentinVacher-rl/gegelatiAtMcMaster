@@ -50,7 +50,7 @@ void TPG::TPGExecutionEngine::setArchive(Archive* newArchive)
     this->archive = newArchive;
 }
 
-void TPG::TPGExecutionEngine::setErrorWeights(const std::map<Program::Program*, std::vector<double>>* newErrorWeights)
+void TPG::TPGExecutionEngine::setErrorWeights(const std::map<Program::Line*, std::vector<double>>* newErrorWeights)
 {
     progExecutionEngine.setErrorWeights(newErrorWeights);
 }

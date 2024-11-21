@@ -820,8 +820,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         }
     }
 
-
-
     // While the target is not reached, add new teams
     uint64_t currentNumberOfRoot = rootVertices.size();
 
@@ -903,11 +901,11 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 }
 
 
-std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateErrorWeights(
+std::map<Program::Line*, std::vector<double>> Mutator::TPGMutator::generateErrorWeights(
     TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng, double xmin, double xmax)
 {
     // Initialise the map
-    std::map<Program::Program*, std::vector<double>> errorWeights;
+    std::map<Program::Line*, std::vector<double>> errorWeights;
 
     std::vector<const std::list<std::unique_ptr<TPG::TPGEdge>>*> allEdges;
     allEdges.push_back(&graph.getEdges());
@@ -916,16 +914,28 @@ std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateEr
     for (const auto* edgeList : allEdges) {
         // Assurez-vous que edgeList est un pointeur vers une liste de unique_ptr
         for (const auto& edge : *edgeList) {
+            
             Program::Program* program = &edge->getProgram();
 
-            // Initialise the vector of errors of the program
-            std::vector<double> errorThisProgram(program->getNbConstants());
+            for(size_t idx_line = 0; idx_line< program->getNbLines(); idx_line++){
 
-            std::generate(errorThisProgram.begin(), errorThisProgram.end(), [&rng, &xmin, xmax]() {
-                return rng.getDouble(xmin, xmax); // TODO NORMAL DISTRIBUTION
-            });
+                Program::Line* line = &program->getLine(idx_line);
 
-            errorWeights.insert(std::make_pair(program, errorThisProgram));
+                if(line->getNbConstants() > 0 && !program->isIntron(idx_line)){
+
+                    // Initialise the vector of errors of the program
+                    std::vector<double> errorThisLine(line->getNbConstants());
+
+                    std::generate(errorThisLine.begin(), errorThisLine.end(), [&rng, &xmin, xmax]() {
+                        return rng.getDouble(xmin, xmax); // TODO NORMAL DISTRIBUTION
+                    });
+
+                    errorWeights.insert(std::make_pair(line, errorThisLine));
+                }
+
+            }
+
+
         }  
     }
 
@@ -933,11 +943,11 @@ std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateEr
     return errorWeights;
 }
 
-std::map<Program::Program*, std::vector<double>> Mutator::TPGMutator::generateTwinNegErrorWeights(
-    TPG::TPGGraph& graph, std::map<Program::Program*, std::vector<double>> initError)
+std::map<Program::Line*, std::vector<double>> Mutator::TPGMutator::generateTwinNegErrorWeights(
+    TPG::TPGGraph& graph, std::map<Program::Line*, std::vector<double>> initError)
 {
     // Initialise the map
-    std::map<Program::Program*, std::vector<double>> twinNegErrorWeights;
+    std::map<Program::Line*, std::vector<double>> twinNegErrorWeights;
 
     for(auto pair: initError){
         std::vector<double> negatedError(pair.first->getNbConstants());

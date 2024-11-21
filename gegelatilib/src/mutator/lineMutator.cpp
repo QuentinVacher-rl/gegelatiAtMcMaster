@@ -41,23 +41,8 @@
 #include "mutator/lineMutator.h"
 
 
-static void changeConstantAt(Program::Line& line, uint64_t index, Mutator::RNG& rng){
-    // Sample the new value
-    double newConstantValue = rng.getDouble(
-        line.getEnvironment().getParams().mutation.actProg.maxConstValue,
-        line.getEnvironment().getParams().mutation.actProg.minConstValue
-    );
-    // Set it
-    line.getConstantHandler().setDataAt(
-        typeid(Data::Constant), index,
-        {newConstantValue});
-}
 
-static void initRandomConstants(Program::Line& line, Mutator::RNG& rng){
-    for(auto idx = 0; idx < line.getEnvironment().getInstructionSet().getMaxNbConstants(); idx++){
-        changeConstantAt(line, idx, rng);
-    }
-}
+
 
 
 /**
@@ -156,6 +141,33 @@ static bool initRandomCorrectLineOperand(
     return operandFound;
 }
 
+
+void Mutator::LineMutator::changeConstantAt(Program::Line& line, uint64_t index, Mutator::RNG& rng){
+    // Sample the new value
+    double newConstantValue = rng.getDouble(
+        line.getEnvironment().getParams().mutation.actProg.maxConstValue,
+        line.getEnvironment().getParams().mutation.actProg.minConstValue
+    );
+    // Set it
+    line.getConstantHandler().setDataAt(
+        typeid(Data::Constant), index,
+        {newConstantValue});
+}
+
+void Mutator::LineMutator::initRandomConstants(Program::Line& line, Mutator::RNG& rng){
+    for(auto idx = 0; idx < line.getEnvironment().getInstructionSet().getMaxNbConstants(); idx++){
+        // Sample the new value
+        double newConstantValue = rng.getDouble(
+            line.getEnvironment().getParams().mutation.actProg.maxConstValue,
+            line.getEnvironment().getParams().mutation.actProg.minConstValue
+        );
+        // Set it
+        line.getConstantHandler().setDataAt(
+            typeid(Data::Constant), idx,
+            {newConstantValue});
+    }
+}
+
 void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
                                                  Mutator::RNG& rng,
                                                  bool actionProgram)
@@ -235,6 +247,9 @@ void Mutator::LineMutator::alterCorrectLine(Program::Line& line,
             line.getEnvironment().getInstructionSet().getInstruction(
                 newInstructionIndex);
 
+        
+        // Get the number of constant in the instruction
+        line.setNbConstants(instruction.getNbConstants());
 
         for (uint64_t i = 0; i < instruction.getNbOperands(); i++) {
             const std::type_info& type =

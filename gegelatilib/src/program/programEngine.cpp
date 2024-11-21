@@ -80,42 +80,7 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     if (prog.getEnvironment().getNbConstant() > 0) {
         
 
-        if(errorWeights == nullptr){
-            // replace programs constants if already existing
-            dataScsConstsAndRegs.at(1) = prog.cGetConstantHandler();
-
-        } else {
-            // Create pointer to the program
-            const Program* progPtr = &prog;
-
-            // Find it in the map
-            //auto it = errorWeights->find(progPtr);
-            auto it  = std::find_if(errorWeights->begin(), errorWeights->end(), [progPtr](
-                std::pair<Program *, std::vector<double>>pair){return pair.first == progPtr;}
-            );
-            if (it != errorWeights->end()) {
-
-                // Get the weights
-                const std::vector<double>& weights = it->second;
-
-                // If error on weights have been set
-                for(size_t i = 0; i < prog.getEnvironment().getNbConstant(); i++){
-
-                    double* originConstValue = (double*)prog.cGetConstantHandler().getDataAt(typeid(Data::Constant), i).getSharedPointer<Data::Constant>().get();
-                    double weightConstValue = weights.at(i);
-                    constants.setDataAt(typeid(Data::Constant), i, {*originConstValue + weightConstValue});
-                }
-
-                dataScsConstsAndRegs.at(1) = constants;
-
-            } else {
-                 throw std::runtime_error("Program not find in the map of error weights");
-            }
-
-        }
-
-        // increment offset for the datahandlers verification
-        offset++;
+        throw std::runtime_error("Program should not have constants for now");
     }
 
     // Check dataSource are similar in all point to the program environment
@@ -161,7 +126,7 @@ void Program::ProgramEngine::setActionClass(uint64_t actionClass)
     this->actionClass = actionClass;
 }
 
-void Program::ProgramEngine::setErrorWeights(const std::map<Program*, std::vector<double>>* newErrorWeights)
+void Program::ProgramEngine::setErrorWeights(const std::map<Line*, std::vector<double>>* newErrorWeights)
 {
     this->errorWeights = newErrorWeights;
 }
@@ -201,22 +166,64 @@ const Instructions::Instruction& Program::ProgramEngine::getCurrentInstruction()
 }
 
 const void Program::ProgramEngine::fetchCurrentOperands(
-    std::vector<Data::UntypedSharedPtr>& operands) const
+    std::vector<Data::UntypedSharedPtr>& operands)
 {
     const Line& line = this->getCurrentLine(); // throw std::out_of_range
     const Instructions::Instruction& instruction =
         this->getCurrentInstruction(); // throw std::out_of_range
 
+    uint64_t indexConst = 0;
+
+
     // Get as many operands as required by the instruction.
-    for (uint64_t i = 0; i < instruction.getNbOperands(); i++) {
-        const Data::DataHandler& dataSource = this->dataScsConstsAndRegs.at(
-            line.getOperand(i).first); // Throws std::out_of_range
-        const uint64_t operandLocation = getOperandLocation(i);
+    for (uint64_t i = 0; i < instruction.getNbOperandsWithConst(); i++) {
+
         const std::type_info& operandType =
-            instruction.getOperandTypes().at(i).get();
-        Data::UntypedSharedPtr data =
-            dataSource.getDataAt(operandType, operandLocation);
-        operands.push_back(data);
+            instruction.getOperandTypesWithConst().at(i).get();
+
+        if(operandType == typeid(Data::Constant)){
+
+            
+            double constantValue = double(*line.cGetConstantHandler().getDataAt(
+                operandType, indexConst).getSharedPointer<Data::Constant>());
+
+            if(errorWeights==nullptr){
+                lineConstants.setDataAt(typeid(Data::Constant), indexConst, Data::Constant{constantValue});
+            } else {
+
+                // Create pointer to the program
+                const Line* linePtr = &line;
+
+                // Find it in the map
+                auto it  = std::find_if(errorWeights->begin(), errorWeights->end(), [linePtr](
+                    std::pair<Line *, std::vector<double>>pair){return pair.first == linePtr;}
+                );
+                if (it != errorWeights->end()) {
+                    // Get the weights
+                    double weight = it->second.at(indexConst);
+                    lineConstants.setDataAt(typeid(Data::Constant), indexConst, Data::Constant{constantValue + weight});
+
+                } else {
+                    throw std::runtime_error("Line not find in the map of error weights");
+                }
+            }
+
+            Data::UntypedSharedPtr data =
+                lineConstants.getDataAt(operandType, indexConst);
+            
+            operands.push_back(data);
+            indexConst++;
+
+        } else {
+
+            const Data::DataHandler& dataSource = this->dataScsConstsAndRegs.at(
+                line.getOperand(i).first); // Throws std::out_of_range
+            const uint64_t operandLocation = getOperandLocation(i);
+            Data::UntypedSharedPtr data =
+                dataSource.getDataAt(operandType, operandLocation);
+            operands.push_back(data);
+        }
+
     }
 }
 

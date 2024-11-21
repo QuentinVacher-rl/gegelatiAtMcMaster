@@ -85,13 +85,15 @@ namespace Program {
         std::vector<std::reference_wrapper<const Data::DataHandler>>
             dataScsConstsAndRegs;
 
+        Data::ConstantHandler lineConstants;
+
         std::vector<std::shared_ptr<Data::PrimitiveTypeArray<double>>> sharedRegisterValues;
 
         /// Program counter of the execution engine.
         uint64_t programCounter;
 
         /// Pointer (possibly null) to the error weights.
-        const std::map<Program*, std::vector<double>>* errorWeights = nullptr;
+        const std::map<Line*, std::vector<double>>* errorWeights = nullptr;
 
         /// Current action class
         uint64_t actionClass = 0;
@@ -111,7 +113,8 @@ namespace Program {
               registers{std::make_shared<Data::PrimitiveTypeArray<double>>(
                   env.getNbRegisters())},
               constants{env.getNbConstant()},
-              program{NULL}, dataSources{env.getDataSources()}
+              program{NULL}, dataSources{env.getDataSources()},
+              lineConstants{env.getInstructionSet().getMaxNbConstants()}
         {
             // Setup the data sources
             dataScsConstsAndRegs.push_back(*this->registers);
@@ -157,7 +160,8 @@ namespace Program {
                   prog.getEnvironment().getNbRegisters())},
 
               constants{prog.getEnvironment().getNbConstant()},
-              program{NULL}
+              program{NULL},
+              lineConstants{prog.getEnvironment().getInstructionSet().getMaxNbConstants()}
         {
             // Check that T is either convertible to a const DataHandler
             static_assert(
@@ -231,7 +235,7 @@ namespace Program {
          * 
          * \param[in] newErrorWeights A pointer to the error weights
          */
-        void setErrorWeights(const std::map<Program*, std::vector<double>>* newErrorWeights);
+        void setErrorWeights(const std::map<Line*, std::vector<double>>* newErrorWeights);
 
         /**
          * \brief Method for changing the dataSources on which the Program will
@@ -307,7 +311,7 @@ namespace Program {
          *         DataHandler does not exist.
          */
         const void fetchCurrentOperands(
-            std::vector<Data::UntypedSharedPtr>& operands) const;
+            std::vector<Data::UntypedSharedPtr>& operands);
 
         /**
          * \brief Get the location for the current Instruction.

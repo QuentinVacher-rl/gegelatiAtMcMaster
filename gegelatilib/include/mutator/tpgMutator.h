@@ -348,7 +348,7 @@ namespace Mutator {
          * \param[in] xmin leave alone
          * \param[in] xmax leave alone
          */
-        std::map<Program::Program*, std::vector<double>> generateErrorWeights(
+        std::map<Program::Line*, std::vector<double>> generateErrorWeights(
             TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng, double xmin, double xmax
         );
         /**
@@ -359,8 +359,8 @@ namespace Mutator {
          * \param[in,out] graph the TPGGraph to mutate.
          * \param[in,out] initError the TPGGraph to mutate.
          */
-        std::map<Program::Program*, std::vector<double>> generateTwinNegErrorWeights(
-            TPG::TPGGraph& graph, std::map<Program::Program*, std::vector<double>> initError);
+        std::map<Program::Line*, std::vector<double>> generateTwinNegErrorWeights(
+            TPG::TPGGraph& graph, std::map<Program::Line*, std::vector<double>> initError);
     }; // namespace TPGMutator
 };     // namespace Mutator
 

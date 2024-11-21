@@ -52,7 +52,7 @@ const TPG::TPGVertex* Learn::Job::getRoot() const
 }
 
 
-const std::map<Program::Program*, std::vector<double>>* Learn::Job::getErrorWeights() const
+const std::map<Program::Line*, std::vector<double>>* Learn::Job::getErrorWeights() const
 {
     return errorWeights;
 }

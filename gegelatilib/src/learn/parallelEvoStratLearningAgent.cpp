@@ -45,11 +45,11 @@
 
 
 
-std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
+std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*>
     Learn::ParallelEvoStratLearningAgent::evaluateAllErrorWeights(uint64_t generationNumber,
                                        Learn::LearningMode mode)
 {
-    std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
+    std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*>
         results;
 
     if (this->maxNbThreads <= 1 || !this->learningEnvironment.isCopyable())
@@ -64,7 +64,7 @@ std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::
 
 void Learn::ParallelEvoStratLearningAgent::evaluateAllErrorWeightsInParallel(
     uint64_t generationNumber, LearningMode mode,
-    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, 
+    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, 
                     std::vector<double>>*>& results)
 {
     std::map<uint64_t,
@@ -179,7 +179,7 @@ void Learn::ParallelEvoStratLearningAgent::slaveEvalJobThread(
 void Learn::ParallelEvoStratLearningAgent::evaluateAllErrorWeightsInParallelCompileResults(
     std::map<uint64_t, std::pair<std::shared_ptr<EvaluationResult>,
                                  std::shared_ptr<Job>>>& resultsPerJobMap,
-    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, 
+    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, 
                     std::vector<double>>*>& results)
 {
     // Merge the results

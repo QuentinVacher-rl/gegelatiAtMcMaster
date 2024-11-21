@@ -99,12 +99,10 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
         
     errorWeightsPopulation.clear();
 
-    uint64_t nbAgents = 1000;
-    bool twinError = true;
     
     for (auto i = 0; i< nbAgents ; i++){
         errorWeightsPopulation.push_back(Mutator::TPGMutator::generateErrorWeights(
-            *this->tpg, this->params.mutation, this->rng, -0.5, 0.5
+            *this->tpg, this->params.mutation, this->rng, valMin, valMax
         ));
 
         if(twinError){
@@ -119,24 +117,20 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
 
 void Learn::EvoStratLearningAgent::doEvolutionStrategy(
     std::multimap<std::shared_ptr<EvaluationResult>, 
-                  const std::map<Program::Program*, std::vector<double>>*> results)
+                  const std::map<Program::Line*, std::vector<double>>*> results)
 {
 
-    
-    double lr = 1;
-
-    for (auto &programs : *results.begin()->second) {
-        Program::Program *program = programs.first;
+    for (auto &lines : *results.begin()->second) {
+        Program::Line *line = lines.first;
 
         std::vector<double> originConstants;
-        for(auto i=0; i<env.getNbConstant(); i++){
-            double* constant = (double*)(program->cGetConstantHandler().getDataAt(typeid(Data::Constant), i).getSharedPointer<Data::Constant>().get());
+        for(auto i=0; i<line->getNbConstants(); i++){
+            double* constant = (double*)(line->cGetConstantHandler().getDataAt(typeid(Data::Constant), i).getSharedPointer<Data::Constant>().get());
 
 
             originConstants.push_back(*constant);
         }
-
-        std::vector<double> evaluationWeights(program->getNbConstants());
+        std::vector<double> evaluationWeights(line->getNbConstants());
 
             //std::cout<<"Reset"<<std::endl;
         // Browse the results
@@ -144,14 +138,12 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
         for (const auto &resultEntry : results) {
             scores.push_back(resultEntry.first->getResult());
         }
-
         
         // Get the indices of scores
         std::vector<size_t> indices(scores.size());
         for (size_t i = 0; i < scores.size(); ++i) {
             indices[i] = i;
         }
-
         // Trier les indices en fonction des valeurs correspondantes dans vect
         std::sort(indices.begin(), indices.end(),
                 [&scores](size_t a, size_t b) { return scores[a] < scores[b]; });
@@ -172,10 +164,9 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
             double result = ranks[j];
 
             // Get the error weights
-            const std::vector<double> &errorWeights = resultEntry.second->at(program);
+            const std::vector<double> &errorWeights = resultEntry.second->at(line);
 
             // Afficher ou utiliser les valeurs associées à ce programme pour ce résultat
-
             uint64_t i = 0;
             for (double value : errorWeights) {
                 evaluationWeights.at(i) += value * result;
@@ -185,10 +176,10 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
             j++;
         }
 
-        for(size_t i = 0; i < program->getNbConstants(); i++){
+        for(size_t i = 0; i < line->getNbConstants(); i++){
             double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) / (double)results.size();
             //std::cout<<lr <<"-"<< evaluationWeights.at(i) <<"-"<< nbAgents<<std::endl;
-            program->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(newConstantsValue)});
+            line->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(newConstantsValue)});
 
         }
     }
@@ -212,11 +203,11 @@ std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJ
     return evaluationResult;
 }
 
-std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
+std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*>
 Learn::EvoStratLearningAgent::evaluateAllErrorWeights(uint64_t generationNumber,
                                        Learn::LearningMode mode)
 {
-    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
+    std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*>
         result;
 
     // Create the TPGExecutionEngine for this evaluation.

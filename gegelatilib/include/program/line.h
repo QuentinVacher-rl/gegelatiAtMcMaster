@@ -106,6 +106,7 @@ namespace Program {
               instructionIndex{other.instructionIndex},
               destinationIndex{other.destinationIndex},
               constants{other.constants},
+              nbConstants{other.nbConstants},
               operands{(std::pair<uint64_t, uint64_t>*)calloc(
                   other.environment.getMaxNbOperands(),
                   sizeof(std::pair<uint64_t, uint64_t>))}
@@ -233,7 +234,7 @@ namespace Program {
         /**
          * \brief Get the number of constants in the line.
          */
-        uint64_t getNbConstants();
+        uint64_t getNbConstants() const;
         /** 
          * \brief set a new number of constants in the program.
          * 

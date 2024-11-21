@@ -72,7 +72,7 @@ namespace Learn {
         /**
          * error weights to set on each constants of each program.
          */
-        const std::map<Program::Program*, std::vector<double>>* errorWeights;
+        const std::map<Program::Line*, std::vector<double>>* errorWeights;
 
       public:
         /// Deleted default constructor.
@@ -89,7 +89,7 @@ namespace Learn {
          * @param[in] errorWeights The error weights to add on the constants' program.
          */
         Job(const TPG::TPGVertex* root, uint64_t archiveSeed = 0,
-            uint64_t idx = 0, std::map<Program::Program*, std::vector<double>>* errorWeights = nullptr)
+            uint64_t idx = 0, std::map<Program::Line*, std::vector<double>>* errorWeights = nullptr)
             : root(root), archiveSeed(archiveSeed), idx(idx), errorWeights(errorWeights)
         {
         }
@@ -123,7 +123,7 @@ namespace Learn {
          *
          * @return The errorWeights embedded by the job.
          */
-        virtual const std::map<Program::Program*, std::vector<double>>* getErrorWeights() const;
+        virtual const std::map<Program::Line*, std::vector<double>>* getErrorWeights() const;
     };
 } // namespace Learn
 

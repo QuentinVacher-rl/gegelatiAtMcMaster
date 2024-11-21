@@ -52,12 +52,23 @@ namespace Learn {
     {
       protected:
 
+        /// Parameter to add to json parser soon
+        double lr = 0.05;
+        /// Parameter to add to json parser soon
+        uint64_t nbAgents = 1000;
+        /// Parameter to add to json parser soon
+        bool twinError = true;
+        /// Parameter to add to json parser soon
+        double valMin = -0.1;
+        /// Parameter to add to json parser soon
+        double valMax = 0.1;
+
         /**
          * vector containing, for each value a map.
          * 
          * Each map link each program in the graph to a vector of error weights applied to the constant of the program.
          */
-        std::vector<std::map<Program::Program*, std::vector<double>>> errorWeightsPopulation;
+        std::vector<std::map<Program::Line*, std::vector<double>>> errorWeightsPopulation;
 
       public:
 
@@ -92,7 +103,7 @@ namespace Learn {
          * \param[in] mode the LearningMode to use during the policy
          * evaluation.
          */
-        virtual std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*>
+        virtual std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*>
         evaluateAllErrorWeights(uint64_t generationNumber, LearningMode mode);
 
         /**
@@ -105,7 +116,7 @@ namespace Learn {
          * 
          * \param[in] results TODO
         */ 
-        virtual void doEvolutionStrategy(std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Program*, std::vector<double>>*> results);
+        virtual void doEvolutionStrategy(std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*> results);
 
 
         /**

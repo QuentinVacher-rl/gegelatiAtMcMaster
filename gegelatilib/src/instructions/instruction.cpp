@@ -55,10 +55,22 @@ Instruction::Instruction() : operandTypes()
 const std::vector<std::reference_wrapper<const std::type_info>>& Instruction::
     getOperandTypes() const
 {
-    return this->operandTypes;
+    return this->operandTypesNoConst;
 }
 
 unsigned int Instructions::Instruction::getNbOperands() const
+{
+    return (unsigned int)this->operandTypesNoConst.size();
+}
+
+
+const std::vector<std::reference_wrapper<const std::type_info>>& Instruction::
+    getOperandTypesWithConst() const
+{
+    return this->operandTypes;
+}
+
+unsigned int Instructions::Instruction::getNbOperandsWithConst() const
 {
     return (unsigned int)this->operandTypes.size();
 }
