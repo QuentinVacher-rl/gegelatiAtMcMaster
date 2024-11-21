@@ -293,11 +293,12 @@ namespace TPG {
          * updated.
          *
          * \param[in] edge a const reference to the TPGEdge to remove.
+         * \param[in] removeActionRoot to remove action root with no edges anymore
          *
          * \throw std::runtime_error In case one of the TPGEdges does not
          *                           exist in the TPGGraph.
          */
-        void removeEdge(const TPGEdge& edge);
+        void removeEdge(const TPGEdge& edge, bool removeActionRoot=true);
 
         /**
          * \brief Remove a TPGActionEdge from the TPGGraph.

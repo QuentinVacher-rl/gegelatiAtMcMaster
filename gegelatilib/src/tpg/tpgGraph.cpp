@@ -138,21 +138,23 @@ void TPG::TPGGraph::removeVertex(const TPGVertex& vertex)
 {
     // Remove the vertex based on a pointer comparison.
     auto iterator = this->findVertex(&vertex);
+    bool removeActionRoot = dynamic_cast<const TPG::TPGAction*>(&vertex) == nullptr;
     if (iterator != this->vertices.end()) {
         // Remove all connected edges.
         // copy inEdges set for removal
         // (because iterating on the modified set is not a good idea).
         std::list<TPGEdge*> inEdgesToRemove = (*iterator)->getIncomingEdges();
         for (auto inEdge : inEdgesToRemove) {
-            this->removeEdge(*inEdge);
+            this->removeEdge(*inEdge, removeActionRoot);
         }
         // copy outEdges set for removal
         std::list<TPGEdge*> outEdgesToRemove = (*iterator)->getOutgoingEdges();
         for (auto outEdge : outEdgesToRemove) {
-            this->removeEdge(*outEdge);
+            this->removeEdge(*outEdge, removeActionRoot);
         }
         // Free the memory of the vertex
         delete *iterator;
+
         // Remove the pointer from the list.
         this->vertices.erase(iterator);
     }
@@ -278,7 +280,7 @@ const std::list<std::unique_ptr<TPG::TPGEdge>>& TPG::TPGGraph::getActionEdges() 
     return this->actionEdges;
 }
 
-void TPG::TPGGraph::removeEdge(const TPGEdge& edge)
+void TPG::TPGGraph::removeEdge(const TPGEdge& edge, bool removeActionRoot)
 {
     if(dynamic_cast<const TPGActionEdge*>(&edge) != nullptr){
         return this->removeActionEdge(edge);
@@ -302,7 +304,7 @@ void TPG::TPGGraph::removeEdge(const TPGEdge& edge)
         ->removeIncomingEdge(iterator->get());
 
     // Delete the destination if it was an action with no incoming edge anymore
-    if(dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination()) != nullptr){
+    if(removeActionRoot && dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination()) != nullptr){
         const TPG::TPGAction* action = dynamic_cast<const TPG::TPGAction* >(iterator->get()->getDestination());
         if(action->getIncomingEdges().size() == 0){
             removeVertex(*action);
@@ -404,7 +406,6 @@ bool TPG::TPGGraph::setEdgeSource(const TPGEdge& edge, const TPGVertex& newSrc)
         return true;
     }
     else {
-        std::cout<<"Ahhhhhhh"<<std::endl;
         return false;
     }
 }
