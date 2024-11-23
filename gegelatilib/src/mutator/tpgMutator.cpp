@@ -513,8 +513,8 @@ void Mutator::TPGMutator::mutateOutgoingEdge(
         bool targetAction = rng.getDouble(0, 1) < params.tpg.pEdgeDestinationIsAction;
 
         if (targetAction) {
-            target = preExistingActions.at(
-                rng.getUnsignedInt64(0, preExistingActions.size() - 1)); 
+            target = &graph.cloneVertex(*preExistingActions.at(
+                rng.getUnsignedInt64(0, preExistingActions.size() - 1))); 
         } else {
             target = preExistingTeams.at(
                 rng.getUnsignedInt64(0, preExistingTeams.size() - 1));
