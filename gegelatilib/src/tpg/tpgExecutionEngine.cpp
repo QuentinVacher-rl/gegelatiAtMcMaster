@@ -55,6 +55,15 @@ void TPG::TPGExecutionEngine::setErrorWeights(const std::map<Program::Line*, std
     progExecutionEngine.setErrorWeights(newErrorWeights);
 }
 
+void TPG::TPGExecutionEngine::clearUsageLines()
+{
+    progExecutionEngine.clearUsageLines();
+}
+std::map<const Program::Line *, uint64_t>& TPG::TPGExecutionEngine::getUsageLInes()
+{
+    return progExecutionEngine.getUsageLInes();
+}
+
 Environment TPG::TPGExecutionEngine::getEnvironment()
 {
     return this->env;

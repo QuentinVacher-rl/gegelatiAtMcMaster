@@ -262,6 +262,19 @@ namespace Program {
          * \param[in] newNbConstants set the new number of constants in the program
          */
         void setNbConstants(uint64_t newNbConstants);
+
+        /** 
+         * \brief TODO
+         */
+        std::vector<double> getLineConstants() const;
+
+        /** 
+         * \brief TODO
+         * 
+         * \param[in] newConstants TODO
+         */
+        void setLineConstants(std::vector<double>& newConstants);
+
         /**
          * \brief Checks whether a Line at the given index is an intron.
          *

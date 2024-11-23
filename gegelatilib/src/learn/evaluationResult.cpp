@@ -51,6 +51,30 @@ size_t Learn::EvaluationResult::getNbEvaluation() const
     return this->nbEvaluation;
 }
 
+std::map<const Program::Line *, uint64_t>& Learn::EvaluationResult::getUsedLines() 
+{
+    return this->usageLines;
+}
+
+void Learn::EvaluationResult::addUsageLines(std::map<const Program::Line *, uint64_t>& addedLines)
+{
+    for(auto newPair: addedLines){
+
+        // Create pointer to the program
+        const Program::Line* linePtr = newPair.first;
+
+        // Find it in the map
+        auto it  = std::find_if(usageLines.begin(), usageLines.end(), [linePtr](
+            std::pair<const Program::Line *, uint64_t>pair){return pair.first == linePtr;}
+        );
+        if (it != usageLines.end()) {
+            it->second += newPair.second;
+        } else {
+            usageLines.insert(std::make_pair(linePtr, newPair.second));
+        }
+    }
+}
+
 Learn::EvaluationResult& Learn::EvaluationResult::operator+=(
     const Learn::EvaluationResult& other)
 {

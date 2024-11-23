@@ -276,6 +276,37 @@ const Data::Constant Program::Program::getConstantAt(size_t index) const
     return *value;
 }
 
+
+std::vector<double> Program::Program::getLineConstants() const
+{
+    std::vector<double> constants;
+    for(auto pair: this->lines){
+        for(size_t idx = 0; idx < this->environment.getInstructionSet().getMaxNbConstants(); idx++){
+            constants.push_back((double)pair.first->getConstantAt(idx));
+        }
+    }
+    return constants;
+}
+
+void Program::Program::setLineConstants(std::vector<double>& newConstants)
+{
+    size_t i=0;
+    for(auto pair: this->lines){
+        for(size_t idx=0; idx < this->environment.getInstructionSet().getMaxNbConstants(); idx++){
+
+            double newConstantValue = newConstants.at(i);
+
+            pair.first->getConstantHandler().setDataAt(
+                typeid(Data::Constant), idx,
+                {newConstantValue});
+
+            i++;
+        }
+
+    }
+}
+
+
 bool Program::Program::hasIdenticalBehavior(const Program& other) const
 {
     size_t thisLineIdx = 0;

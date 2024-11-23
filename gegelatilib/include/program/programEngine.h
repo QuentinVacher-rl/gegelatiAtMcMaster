@@ -93,7 +93,10 @@ namespace Program {
         uint64_t programCounter;
 
         /// Pointer (possibly null) to the error weights.
-        const std::map<Line*, std::vector<double>>* errorWeights = nullptr;
+        std::map<Line*, std::vector<double>> errorWeights;
+
+        /// Map indicating the number of used per line during execution.
+        std::map<const Line*, uint64_t> usageLines;
 
         /// Current action class
         uint64_t actionClass = 0;
@@ -236,6 +239,18 @@ namespace Program {
          * \param[in] newErrorWeights A pointer to the error weights
          */
         void setErrorWeights(const std::map<Line*, std::vector<double>>* newErrorWeights);
+
+        /**
+         * \brief TODO
+         */
+        void clearUsageLines();
+
+        /**
+         * \brief TODO
+         */
+        std::map<const Line*, uint64_t>& getUsageLInes();
+
+
 
         /**
          * \brief Method for changing the dataSources on which the Program will

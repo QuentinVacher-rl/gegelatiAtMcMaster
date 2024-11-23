@@ -105,6 +105,17 @@ namespace TPG {
         void setErrorWeights(const std::map<Program::Line*, std::vector<double>>* newErrorWeights);
 
         /**
+         * \brief TODO
+         */
+        void clearUsageLines();
+        /**
+         * \brief TODO
+         */
+        std::map<const Program::Line *, uint64_t>& getUsageLInes();
+
+
+
+        /**
          * \brief get the environment used
          * 
          */

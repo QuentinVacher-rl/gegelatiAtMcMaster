@@ -102,7 +102,7 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
     
     for (auto i = 0; i< nbAgents ; i++){
         errorWeightsPopulation.push_back(Mutator::TPGMutator::generateErrorWeights(
-            *this->tpg, this->params.mutation, this->rng, valMin, valMax
+            *this->tpg, this->params.mutation, this->rng
         ));
 
         if(twinError){
@@ -118,10 +118,14 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
 void Learn::EvoStratLearningAgent::doEvolutionStrategy(
     std::multimap<std::shared_ptr<EvaluationResult>, 
                   const std::map<Program::Line*, std::vector<double>>*> results)
+
 {
 
     for (auto &lines : *results.begin()->second) {
         Program::Line *line = lines.first;
+
+        size_t nbUsed = 0;
+        
 
         std::vector<double> originConstants;
         for(auto i=0; i<line->getNbConstants(); i++){
@@ -132,11 +136,13 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
         }
         std::vector<double> evaluationWeights(line->getNbConstants());
 
-            //std::cout<<"Reset"<<std::endl;
         // Browse the results
+        //std::cout<<"for one line"<<std::endl;
         std::vector<double> scores;
         for (const auto &resultEntry : results) {
             scores.push_back(resultEntry.first->getResult());
+
+
         }
         
         // Get the indices of scores
@@ -160,28 +166,37 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
         for (const auto &resultEntry : results) {
 
 
-            // Get the score result
-            double result = ranks[j];
+            auto usedLines = resultEntry.first->getUsedLines();
+            if(usedLines.find(line) != usedLines.end() ||true){
+                // Get the score result
+                double result = ranks[indices[j]];
 
-            // Get the error weights
-            const std::vector<double> &errorWeights = resultEntry.second->at(line);
+                // Get the error weights
+                const std::vector<double> &errorWeights = resultEntry.second->at(line);
 
-            // Afficher ou utiliser les valeurs associées à ce programme pour ce résultat
-            uint64_t i = 0;
-            for (double value : errorWeights) {
-                evaluationWeights.at(i) += value * result;
-                i++;
+                // Afficher ou utiliser les valeurs associées à ce programme pour ce résultat
+                uint64_t i = 0;
+                for (double value : errorWeights) {
+                    evaluationWeights.at(i) += value * result;
+                    i++;
+                }
+
+
+                nbUsed++;
             }
+
 
             j++;
         }
 
-        for(size_t i = 0; i < line->getNbConstants(); i++){
-            double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) / (double)results.size();
-            //std::cout<<lr <<"-"<< evaluationWeights.at(i) <<"-"<< nbAgents<<std::endl;
-            line->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(newConstantsValue)});
+        if (nbUsed > 0) {
+            for(size_t i = 0; i < line->getNbConstants(); i++){
+                double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) /( (double)nbAgents * sigma);
+                line->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(newConstantsValue)});
 
+            }
         }
+
     }
 }
 
@@ -193,11 +208,16 @@ std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJ
 
     if(mode == Learn::LearningMode::TRAINING){
         tee.setErrorWeights(job.getErrorWeights());
+        tee.clearUsageLines();
     }
 
     std::shared_ptr<Learn::EvaluationResult> evaluationResult = LearningAgent::evaluateJob(
         tee, job, generationNumber, mode, le
     );
+
+    if(mode == Learn::LearningMode::TRAINING){
+        evaluationResult->addUsageLines(tee.getUsageLInes());
+    }
 
 
     return evaluationResult;

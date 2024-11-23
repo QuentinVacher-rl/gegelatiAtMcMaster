@@ -905,7 +905,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
 
 std::map<Program::Line*, std::vector<double>> Mutator::TPGMutator::generateErrorWeights(
-    TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng, double xmin, double xmax)
+    TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng)
 {
     // Initialise the map
     std::map<Program::Line*, std::vector<double>> errorWeights;
@@ -913,6 +913,9 @@ std::map<Program::Line*, std::vector<double>> Mutator::TPGMutator::generateError
     std::vector<const std::list<std::unique_ptr<TPG::TPGEdge>>*> allEdges;
     allEdges.push_back(&graph.getEdges());
     allEdges.push_back(&graph.getActionEdges());
+
+    std::mt19937 generator(rng.getInt32(0, 10000000)); // 42 est la graine
+    std::normal_distribution<double> distribution(0, 1);
 
     for (const auto* edgeList : allEdges) {
         // Assurez-vous que edgeList est un pointeur vers une liste de unique_ptr
@@ -929,8 +932,8 @@ std::map<Program::Line*, std::vector<double>> Mutator::TPGMutator::generateError
                     // Initialise the vector of errors of the program
                     std::vector<double> errorThisLine(line->getNbConstants());
 
-                    std::generate(errorThisLine.begin(), errorThisLine.end(), [&rng, &xmin, xmax]() {
-                        return rng.getDouble(xmin, xmax); // TODO NORMAL DISTRIBUTION
+                    std::generate(errorThisLine.begin(), errorThisLine.end(), [&rng, &distribution, &generator]() {
+                        return distribution(generator); // TODO NORMAL DISTRIBUTION
                     });
 
                     errorWeights.insert(std::make_pair(line, errorThisLine));

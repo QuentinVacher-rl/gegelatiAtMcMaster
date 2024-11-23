@@ -102,13 +102,9 @@ void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
     Program::Program& p = edge.getProgram();
     if (this->findProgramID(edge.getProgram(), progID)) {
         // First time thie Program is encountered
-        fprintf(pFile, "%sP%" PRIu64 " [fillcolor=\"#cccccc\" shape=point] //",
+        fprintf(pFile, "%sP%" PRIu64 " [fillcolor=\"#cccccc\" shape=point]\n",
                 this->offset.c_str(), progID);
-        // add next the content of the constant data handler in a comment (//)
-        for (int i = 0; i < p.getEnvironment().getNbConstant(); i++) {
-            fprintf(pFile, "%f|", static_cast<double>(p.getConstantAt(i)));
-        }
-        fprintf(pFile, "\n");
+
         // print the program content :
         printProgram(p);
         fprintf(pFile, "%sP%" PRIu64 " -> I%" PRIu64 "[style=invis]\n",
@@ -165,8 +161,15 @@ void File::TPGGraphDotExporter::printProgram(const Program::Program& program)
 
         programContent += "&#92;n";
     }
-    fprintf(pFile, "%sI%" PRIu64 " [shape=box style=invis label=\"%s\"]\n",
+    fprintf(pFile, "%sI%" PRIu64 " [shape=box style=invis label=\"%s\"] //",
             this->offset.c_str(), progID, programContent.c_str());
+
+    // add next the content of the constant data handler in a comment (//)
+    auto constants = program.getLineConstants();
+    for (auto constantValue: constants) {
+        fprintf(pFile, "%f|", constantValue);
+    }
+    fprintf(pFile, "\n");
 }
 
 void File::TPGGraphDotExporter::printTPGGraphHeader()

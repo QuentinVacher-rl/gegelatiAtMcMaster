@@ -200,6 +200,8 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
     
     // Get the number of constant in the instruction
     line.setNbConstants(instruction.getNbConstants());
+
+    
     initRandomConstants(line, rng);
 
     auto operandTypes = instruction.getOperandTypes();

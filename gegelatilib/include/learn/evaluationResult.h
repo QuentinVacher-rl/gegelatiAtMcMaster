@@ -37,6 +37,8 @@
 #define EVALUATION_RESULT_H
 
 #include <memory>
+#include <map>
+#include "program/line.h"
 
 namespace Learn {
     /**
@@ -59,6 +61,9 @@ namespace Learn {
 
         /// TODO
         double nbActionsUsed;
+
+        /// TODO
+        std::map<const Program::Line *, uint64_t> usageLines;
 
       public:
         /**
@@ -100,6 +105,17 @@ namespace Learn {
          * the EvaluationResult.
          */
         virtual size_t getNbEvaluation() const;
+
+
+        /**
+         * \brief TODO
+         */
+        virtual std::map<const Program::Line *, uint64_t>& getUsedLines();
+
+        /**
+         * \brief TODO
+         */
+        virtual void addUsageLines(std::map<const Program::Line *, uint64_t>& addedLines);
 
         /**
          * \brief Polymorphic addition assignement operator for

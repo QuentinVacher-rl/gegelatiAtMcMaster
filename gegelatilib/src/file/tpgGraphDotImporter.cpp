@@ -138,6 +138,8 @@ void File::TPGGraphDotImporter::readLine(std::smatch& matches)
                 l.setInstructionIndex(instructionIdx);
                 l.setDestinationIndex(destinationIdx);
 
+                l.setNbConstants(l.getEnvironment().getInstructionSet().getInstruction(instructionIdx).getNbConstants());
+
                 // parse operands
                 readOperands(operands, l);
 
@@ -146,8 +148,35 @@ void File::TPGGraphDotImporter::readLine(std::smatch& matches)
                 }
             }
             p->identifyIntrons();
+
+
+        
+            std::string::size_type pos3;
+            std::string::size_type pos4;
+            // read constants
+            std::vector<double> v_constant;
+            pos3 = this->lastLine.find("//") + 2;
+            pos4 = this->lastLine.find("|", pos3);
+            for (;;) {
+                if (pos4 != std::string::npos) {
+                    v_constant.push_back(
+                        std::stod(this->lastLine.substr(pos3, pos4 - pos3))); // Convertit la chaîne en double
+                }
+                else {
+                    break;
+                }
+                pos3 = pos4 + 1;
+                pos4 = this->lastLine.find("|", pos3);
+            }
+            // set the previously read constants
+            p->setLineConstants(v_constant);
+            this->programID.insert(
+                std::pair<uint64_t, std::shared_ptr<Program::Program>>(
+                    std::stoi(matches[1]), p));
         }
+
     }
+
 }
 
 void File::TPGGraphDotImporter::readProgram(std::smatch& matches)
@@ -155,31 +184,10 @@ void File::TPGGraphDotImporter::readProgram(std::smatch& matches)
     if (!this->lastLine.empty() && !matches.empty()) {
         // Program definition :
         // P0 [fillcolor="#cccccc" shape=point] //const0|const1|...|constn|
-        std::string::size_type pos;
-        std::string::size_type pos1;
-        // read constants
-        std::vector<Data::Constant> v_constant;
-        pos = this->lastLine.find("//") + 2;
-        pos1 = this->lastLine.find("|", pos);
-        for (;;) {
-            if (pos1 != std::string::npos) {
-                v_constant.push_back(
-                    {std::stod(this->lastLine.substr(pos, pos1 - pos))}); // Convertit la chaîne en double
-            }
-            else {
-                break;
-            }
-            pos = pos1 + 1;
-            pos1 = this->lastLine.find("|", pos);
-        }
+
         // create new program with the correct amount of constants
         Program::Program* p = new Program::Program(this->tpg.getEnvironment());
-        // set the previously read constants
-        for (int i = 0; i < v_constant.size(); i++) {
-            p->getConstantHandler().setDataAt(typeid(Data::Constant), i,
-                                              v_constant.at(i));
-        }
-        p->setNbConstants(v_constant.size());
+
         this->programID.insert(
             std::pair<uint64_t, std::shared_ptr<Program::Program>>(
                 std::stoi(matches[1]), p));
