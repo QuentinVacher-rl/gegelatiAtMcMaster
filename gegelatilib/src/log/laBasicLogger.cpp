@@ -50,6 +50,7 @@ void Log::LABasicLogger::logResults(
     std::advance(iter, results.size() - 1);
     double max = iter->first->getResult();
     double nbActionMax = iter->first->getNbActionsUsed();
+    double avgMax = iter->first->getOtherResult();
 
     double avg = std::accumulate(
         results.begin(), results.end(), 0.0,
@@ -60,15 +61,21 @@ void Log::LABasicLogger::logResults(
     avg /= (double)results.size();
     *this << std::setw(colWidth) << min << std::setw(colWidth) << avg
           << std::setw(colWidth) << max << std::setw(colWidth) << nbActionMax;
+    if(useMSE){
+        *this << std::setw(colWidth) << avgMax;
+    }
 }
 
 void Log::LABasicLogger::logHeader()
 {
     // First line of header
     //*this << std::left;
-    *this << std::setw(2 * colWidth) << " " << std::setw(colWidth) << " " << std::setw(colWidth) << "Train";
+    *this << std::setw(2 * colWidth) << " " << std::setw(colWidth) << " " << std::setw(5*colWidth) << "Train";
+    if (useMSE){
+        *this << std::setw(colWidth);
+    }
     if (doValidation) {
-        *this << std::setw(2 * colWidth) << " " << std::setw(1 * colWidth)
+        *this << std::setw(2 * colWidth) << " " << std::setw(3 * colWidth)
               << "Valid";
     }
     *this << std::endl;
@@ -79,9 +86,15 @@ void Log::LABasicLogger::logHeader()
           << std::setw(colWidth) << "NbActR" << std::setw(colWidth) << "NbTeamR"
           << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
           << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse";
+    if (useMSE){
+        *this << std::setw(colWidth) << "AvgMax";
+    }
     if (doValidation) {
         *this << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
               << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse";
+        if (useMSE){
+            *this << std::setw(colWidth) << "AvgMax";
+    }
     }
     *this << std::setw(colWidth) << "T_mutat" << std::setw(colWidth)
           << "T_eval";

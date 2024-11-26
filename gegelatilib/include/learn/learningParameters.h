@@ -88,6 +88,14 @@ namespace Learn {
          */
         uint64_t nbIterationsPerPolicyEvaluation = 5;
 
+
+
+        inline static const std::string useMSEComment = 
+            "// Boolean to use MSE or only average of the nb of iterations per policy evaluation"
+            "// \"useMSE\" : false, // Default value";
+        /// Boolean to use MSE or only average of the nb of iterations per policy evaluation
+        bool useMSE = false;
+
         /// JSon comment
         inline static const std::string maxNbActionsPerEvalComment =
             "// Maximum number of actions performed on the learning "

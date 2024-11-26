@@ -51,6 +51,7 @@
 void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
 {
 
+
     // For now, the number of roots should be equal to one to use this class.
     if(tpg->getNbRootVertices() != 1){
         throw std::runtime_error("Evolution Strategies is only available for one root, for now.");
@@ -61,9 +62,11 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
         logger.get().logNewGeneration(generationNumber);
     }
 
+    generationNumber = 0;
     // Generate some weights
     this->generateErrorWeights();
     
+    falseTraining = false;
     // Evaluate
     auto results =
         this->evaluateAllErrorWeights(generationNumber, LearningMode::TRAINING);
@@ -82,8 +85,9 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
     // Does a validation or not according to the parameter doValidation
     // We should always do one
     if (params.doValidation) {
+        falseTraining = true;
         auto validationResults =
-            evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
+            evaluateAllRoots(generationNumber, Learn::LearningMode::TRAINING);
         for (auto logger : loggers) {
             logger.get().logAfterValidate(validationResults);
         }
@@ -99,15 +103,16 @@ void Learn::EvoStratLearningAgent::generateErrorWeights()
         
     errorWeightsPopulation.clear();
 
+    auto mutatedLines = Mutator::TPGMutator::selectMutatedLines(*this->tpg, this->params.mutation, this->rng);
     
     for (auto i = 0; i< nbAgents ; i++){
         errorWeightsPopulation.push_back(Mutator::TPGMutator::generateErrorWeights(
-            *this->tpg, this->params.mutation, this->rng
+            mutatedLines, this->params.mutation, this->rng
         ));
 
         if(twinError){
             errorWeightsPopulation.push_back(Mutator::TPGMutator::generateTwinNegErrorWeights(
-                *this->tpg, errorWeightsPopulation.back()
+                errorWeightsPopulation.back()
             ));
             i++;
         }
@@ -119,14 +124,20 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
     std::multimap<std::shared_ptr<EvaluationResult>, 
                   const std::map<Program::Line*, std::vector<double>>*> results)
 
+
 {
+    std::cout<<std::setprecision(4);
+    //std::cout<<std::endl;   
+    size_t nbAgentsEval = 5;
+
+    bool firstLine = true;
+    size_t iii = 0;
 
     for (auto &lines : *results.begin()->second) {
         Program::Line *line = lines.first;
 
         size_t nbUsed = 0;
         
-
         std::vector<double> originConstants;
         for(auto i=0; i<line->getNbConstants(); i++){
             double* constant = (double*)(line->cGetConstantHandler().getDataAt(typeid(Data::Constant), i).getSharedPointer<Data::Constant>().get());
@@ -134,21 +145,26 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
 
             originConstants.push_back(*constant);
         }
-        std::vector<double> evaluationWeights(line->getNbConstants());
+        std::vector<double> evaluationWeights(line->getNbConstants(), 0);
 
         // Browse the results
         //std::cout<<"for one line"<<std::endl;
+        size_t idxSkip = 0;
         std::vector<double> scores;
         for (const auto &resultEntry : results) {
-            scores.push_back(resultEntry.first->getResult());
-
-
+            if(idxSkip >= nbAgents - nbAgentsEval){
+                scores.push_back(resultEntry.first->getResult());
+                if(firstLine)std::cout<<"Score"<<resultEntry.first->getResult()<<std::endl;
+            }
+            idxSkip++;
         }
+        
         
         // Get the indices of scores
         std::vector<size_t> indices(scores.size());
         for (size_t i = 0; i < scores.size(); ++i) {
             indices[i] = i;
+                if(firstLine)std::cout<<"Index"<<indices[i]<<std::endl;
         }
         // Trier les indices en fonction des valeurs correspondantes dans vect
         std::sort(indices.begin(), indices.end(),
@@ -159,45 +175,92 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
 
         // Assigner les rangs en fonction des indices triés
         for (size_t rank = 0; rank < indices.size(); ++rank) {
-            ranks[indices[rank]] = static_cast<double>(rank) / (indices.size() - 1) - 0.5;
+            ranks[indices[rank]] = static_cast<double>(rank) / (indices.size() - 1);
+                if(firstLine)std::cout<<"Ranks"<<ranks[indices[rank]]<<std::endl;
         }
 
+
+        double meanReward = std::accumulate(ranks.begin(), ranks.end(), 0.0) / ranks.size();
+        //std::cout<<"\n\n\n"<<errorsMap.size()<<" "<<meanReward<<std::endl;
+
+        double sq_sum = std::accumulate(ranks.begin(), ranks.end(), 0.0, 
+                                        [meanReward](double acc, double val) {
+                                            return acc + (val - meanReward) * (val - meanReward);
+                                        });
+        double stddev = std::sqrt(sq_sum / ranks.size());
+
+        // Assigner les rangs en fonction des indices triés
+        /*for (size_t rank = 0; rank < indices.size(); ++rank) {
+            ranks[indices[rank]] = (ranks[indices[rank]] - meanReward) / stddev;
+                if(firstLine)std::cout<<"Ranks"<<ranks[indices[rank]]<<std::endl;
+        }*/
+
         uint64_t j = 0;
+        idxSkip = 0;
         for (const auto &resultEntry : results) {
 
 
-            auto usedLines = resultEntry.first->getUsedLines();
-            if(usedLines.find(line) != usedLines.end() ||true){
-                // Get the score result
-                double result = ranks[indices[j]];
+            if(idxSkip >= nbAgents - nbAgentsEval){
+                auto usedLines = resultEntry.first->getUsedLines();
+                if(usedLines.find(line) != usedLines.end()){
+                    // Get the score result
+                    double result = ranks[indices[j]];
 
-                // Get the error weights
-                const std::vector<double> &errorWeights = resultEntry.second->at(line);
+                    // Get the error weights
+                    const std::vector<double> &errorWeights = resultEntry.second->at(line);
+                    if(firstLine)std::cout<<"Result"<<result<<std::endl;
 
-                // Afficher ou utiliser les valeurs associées à ce programme pour ce résultat
-                uint64_t i = 0;
-                for (double value : errorWeights) {
-                    evaluationWeights.at(i) += value * result;
-                    i++;
+                    // Afficher ou utiliser les valeurs associées à ce programme pour ce résultat
+                    uint64_t i = 0;
+                    for (double value : errorWeights) {
+                        if(firstLine)std::cout<<"Value"<<value<<std::endl;
+                        evaluationWeights.at(i) += value * result;
+                        if(firstLine)std::cout<<"ErrWe"<<evaluationWeights.at(i)<<std::endl;
+                        if(i == -1){
+                            if(value < 0){
+                            std::cout<<value<<"|";
+
+                            } else {
+                                
+                                std::cout<<" "<<value<<"|";
+                            }
+
+                        }
+                        i++;
+                    }
+
+
+                    nbUsed++;
                 }
 
 
-                nbUsed++;
+                j++;
             }
-
-
-            j++;
+            idxSkip++;
         }
 
         if (nbUsed > 0) {
             for(size_t i = 0; i < line->getNbConstants(); i++){
-                double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) /( (double)nbAgents * sigma);
+                double newConstantsValue = originConstants.at(i) + lr * evaluationWeights.at(i) /( (double)(nbUsed) * sigma);
                 line->getConstantHandler().setDataAt(typeid(Data::Constant), i, {static_cast<double>(newConstantsValue)});
+                    
+                    
+                    if(firstLine)std::cout<<"OrCon"<<originConstants.at(i)<<std::endl;
+                    if(firstLine)std::cout<<"lr"<<lr<<std::endl;
+                    if(iii < 20 && firstLine)std::cout<<newConstantsValue<<", ";
+                    if(firstLine)std::cout<<"sigma"<<sigma<<std::endl;
+                    if(firstLine)std::cout<<"size"<<(double)(nbUsed)<<std::endl;
+                    if(firstLine)std::cout<<"NeWCo"<<newConstantsValue<<std::endl;
+                    iii++;
 
             }
         }
+        firstLine = false;
+    
 
     }
+        //std::cout<<std::endl;
+    std::cout<<std::setprecision(2);
 }
 
 
@@ -206,7 +269,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJ
     Learn::LearningMode mode, LearningEnvironment& le) const
 {
 
-    if(mode == Learn::LearningMode::TRAINING){
+    if(mode == Learn::LearningMode::TRAINING && !falseTraining){
         tee.setErrorWeights(job.getErrorWeights());
         tee.clearUsageLines();
     }
@@ -215,7 +278,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJ
         tee, job, generationNumber, mode, le
     );
 
-    if(mode == Learn::LearningMode::TRAINING){
+    if(mode == Learn::LearningMode::TRAINING && !falseTraining){
         evaluationResult->addUsageLines(tee.getUsageLInes());
     }
 
@@ -277,15 +340,15 @@ std::shared_ptr<Learn::Job> Learn::EvoStratLearningAgent::makeJob(
     // Before each root evaluation, set a new seed for the archive in
     // TRAINING Mode Else, archiving should be deactivate anyway
     uint64_t archiveSeed = 0;
-    if (mode == LearningMode::TRAINING) {
+    if (mode == LearningMode::TRAINING && !falseTraining) {
         archiveSeed = this->rng.getUnsignedInt64(0, UINT64_MAX);
     }   
     if (tpgGraph->getNbRootVertices() > 0) {
-        if(mode == LearningMode::TRAINING){
+        if(mode == LearningMode::TRAINING && !falseTraining){
             return std::make_shared<Learn::Job>(
                 Learn::Job({vertex}, archiveSeed, idx, &errorWeightsPopulation.at(idx)));
         }
-        if(mode == LearningMode::VALIDATION){
+        if(mode == LearningMode::VALIDATION ||falseTraining){
             return std::make_shared<Learn::Job>(
                 Learn::Job({vertex}, archiveSeed, idx));
         }

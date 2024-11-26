@@ -124,6 +124,10 @@ namespace Log {
          * Boolean telling the logger if the training will make a validation
          */
         bool doValidation = false;
+        /**
+         * Boolean telling the logger if the training will use MSE or not
+         */
+        bool useMSE = false;
 
         /**
          * \brief Constructor defining a given output and setting start and

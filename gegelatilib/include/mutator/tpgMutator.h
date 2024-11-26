@@ -346,19 +346,29 @@ namespace Mutator {
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        std::map<Program::Line*, std::vector<double>> generateErrorWeights(
-            TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng
-        );
+        std::vector<Program::Line*> selectMutatedLines(
+            TPG::TPGGraph& graph, const Mutator::MutationParameters& params, Mutator::RNG& rng);
+
         /**
          * Generate a map containing, for each program in the graph, a vector of error weights.
          * 
          * The number of error weights is based on the number of constants in the program.
          * 
-         * \param[in,out] graph the TPGGraph to mutate.
+         * \param[in,out] mutatedLines the TPGGraph to mutate.
+         * \param[in] params Probability parameters for the mutation.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        std::map<Program::Line*, std::vector<double>> generateErrorWeights(
+            std::vector<Program::Line*>& mutatedLines, const Mutator::MutationParameters& params, Mutator::RNG& rng);
+        /**
+         * Generate a map containing, for each program in the graph, a vector of error weights.
+         * 
+         * The number of error weights is based on the number of constants in the program.
+         * 
          * \param[in,out] initError the TPGGraph to mutate.
          */
         std::map<Program::Line*, std::vector<double>> generateTwinNegErrorWeights(
-            TPG::TPGGraph& graph, std::map<Program::Line*, std::vector<double>> initError);
+            std::map<Program::Line*, std::vector<double>>& initError);
     }; // namespace TPGMutator
 };     // namespace Mutator
 

@@ -56,7 +56,7 @@ namespace Log {
         /**
          * Width of columns when logging values.
          */
-        int colWidth = 9;
+        int colWidth = 11;
 
         /**
          * \brief Logs the min, avg and max score of the generation.

@@ -53,8 +53,10 @@ namespace Learn {
     class EvaluationResult
     {
       protected:
-        /// Double value for the result.
+        /// Double value for the result use for learnign.
         double result;
+        /// Double value for the classic result.
+        double otherResult;
 
         /// Number of evaluation leading to this result.
         size_t nbEvaluation;
@@ -84,15 +86,23 @@ namespace Learn {
          * \param[in] nbActionsU Number of action != 0
          * \param[in] nbEval Integer value representing the number of
          * evaluation leading to the recorded score.
+         * \param[in] otherRes the double value representing the result of an
+         * evaluation.
          */
-        EvaluationResult(const double& res, const size_t& nbEval, const double& nbActionsU=0.0)
-            : result{res}, nbEvaluation{nbEval}, nbActionsUsed{nbActionsU} {};
+        EvaluationResult(const double& res, const size_t& nbEval, const double& nbActionsU=0.0, const double& otherRes=0.0)
+            : result{res}, nbEvaluation{nbEval}, nbActionsUsed{nbActionsU}, otherResult{otherRes} {};
 
         /**
          * \brief Virtual method to get the default double equivalent of
          * the EvaluationResult.
          */
         virtual double getResult() const;
+
+        /**
+         * \brief Virtual method to get the default double equivalent of
+         * the EvaluationResult.
+         */
+        virtual double getOtherResult() const;
 
         /**
          * \brief Virtual method to get the default double equivalent of

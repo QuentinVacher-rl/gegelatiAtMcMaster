@@ -296,6 +296,11 @@ void File::ParametersParser::setParameterFromString(
         params.nbIterationsPerPolicyEvaluation = value.asUInt64();
         return;
     }
+    if (param == "useMSE") {
+        params.useMSE = value.asBool();;
+        return;
+    }
+    
     if (param == "maxNbActionsPerEval") {
         params.maxNbActionsPerEval = value.asUInt64();
         return;
@@ -417,6 +422,11 @@ void File::ParametersParser::writeParametersToJson(
     root["nbIterationsPerPolicyEvaluation"].setComment(
         Learn::LearningParameters::nbIterationsPerPolicyEvaluationComment,
         Json::commentBefore);
+    root["useMSE"] = params.useMSE;
+    root["useMSE"].setComment(
+        Learn::LearningParameters::useMSEComment,
+        Json::commentBefore);
+
 
     root["nbProgramConstant"] = params.nbProgramConstant;
     root["nbProgramConstant"].setComment(

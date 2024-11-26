@@ -53,13 +53,15 @@ namespace Learn {
       protected:
 
         /// Parameter to add to json parser soon
-        double lr = 0.01;
+        double lr = 0.0002;
         /// Parameter to add to json parser soon
-        uint64_t nbAgents = 1000;
+        uint64_t nbAgents = 10;
         /// Parameter to add to json parser soon
         bool twinError = true;
         /// Parameter to add to json parser soon
         double sigma = 0.1;
+        /// @brief param
+        bool falseTraining = true;
 
         /**
          * vector containing, for each value a map.

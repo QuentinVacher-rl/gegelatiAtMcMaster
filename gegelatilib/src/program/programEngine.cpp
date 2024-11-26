@@ -253,7 +253,8 @@ const void Program::ProgramEngine::fetchCurrentOperands(
                     constantValue = double(it->second.at(indexConst));
 
                 } else {
-                    throw std::runtime_error("Line not find in the map of error weights");
+                    constantValue = double(*line.cGetConstantHandler().getDataAt(
+                        operandType, indexConst).getSharedPointer<Data::Constant>());
                 }
             }
 

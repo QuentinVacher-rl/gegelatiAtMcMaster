@@ -99,6 +99,7 @@ void Learn::LearningAgent::init(uint64_t seed)
 void Learn::LearningAgent::addLogger(Log::LALogger& logger)
 {
     logger.doValidation = this->params.doValidation;
+    logger.useMSE = this->params.useMSE;
     // logs for example the headers of the columns the logger will print
     loggers.push_back(std::reference_wrapper<Log::LALogger>(logger));
 }
@@ -139,6 +140,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
 
     // Init results
     double result = 0.0;
+    double resultMSE = 0.0;
 
     double meanNbActionUsed = 0.0;
 
@@ -186,15 +188,18 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
 
         // Update results
         result += le.getScore();
+        resultMSE +=  (le.getScore() > 0) ? std::pow(le.getScore(), 2) : -std::pow(le.getScore(), 2);
     }
 
     meanNbActionUsed /= (double)params.nbIterationsPerPolicyEvaluation;
+    result /= (double)params.nbIterationsPerPolicyEvaluation;
+    resultMSE /= (double)params.nbIterationsPerPolicyEvaluation * 1000;
+
 
     // Create the EvaluationResult
     auto evaluationResult =
         std::shared_ptr<EvaluationResult>(new EvaluationResult(
-            result / (double)params.nbIterationsPerPolicyEvaluation,
-            params.nbIterationsPerPolicyEvaluation, meanNbActionUsed));
+            (this->params.useMSE) ? resultMSE : result, params.nbIterationsPerPolicyEvaluation, meanNbActionUsed, result));
 
     // Combine it with previous one if any
     if (previousEval != nullptr) {
