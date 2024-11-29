@@ -68,6 +68,16 @@ namespace TPG {
          */
         virtual const std::set<uint64_t>& getAssessedActions() const;
 
+
+        /**
+         * \brief swap the two edges of the belonging team
+         * 
+         * 
+         * \param[in] index1 a const reference to the TPGEdge to swap.
+         * \param[in] index2 a const reference to the TPGEdge to swap.
+         */
+        void swapEdges(uint64_t index1, uint64_t index2);
+
         /**
          * \brief Method to add an incoming TPGEdge to the TPGVertex.
          *

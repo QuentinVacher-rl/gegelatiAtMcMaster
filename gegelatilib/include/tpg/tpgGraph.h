@@ -287,6 +287,16 @@ namespace TPG {
         const std::list<std::unique_ptr<TPGEdge>>& getActionEdges() const;
 
         /**
+         * \brief swap the two edges of the belonging team
+         * 
+         * 
+         * \param[in] team vertex whose edges are swapped.
+         * \param[in] index1 a const reference to the TPGEdge to swap.
+         * \param[in] index2 a const reference to the TPGEdge to swap.
+         */
+        void swapEdges(const TPGVertex& team, uint64_t index1, uint64_t index2);
+
+        /**
          * \brief Remove a TPGEdge from the TPGGraph.
          *
          * If the edge is connected to TPGVertex within the graph, they are

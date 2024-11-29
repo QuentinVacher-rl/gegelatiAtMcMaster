@@ -123,3 +123,25 @@ bool TPG::TPGVertex::hasSameAssessedActions(std::set<uint64_t> actions) const {
 
     return !intersectionResult.empty();
 }
+
+
+void TPG::TPGVertex::swapEdges(uint64_t index1, uint64_t index2)
+{
+    if (index1 == index2) {
+        // Si les indices sont identiques, rien à faire
+        return;
+    }
+
+    if (index1 >= this->outgoingEdges.size() || index2 >= this->outgoingEdges.size()) {
+        throw std::out_of_range("Indices are out of bounds for the list of edges.");
+    }
+
+    // Trouver les itérateurs correspondant aux deux indices
+    auto iter1 = this->outgoingEdges.begin();
+    auto iter2 = this->outgoingEdges.begin();
+    std::advance(iter1, index1);
+    std::advance(iter2, index2);
+
+    // Échanger les deux éléments
+    std::iter_swap(iter1, iter2);
+}

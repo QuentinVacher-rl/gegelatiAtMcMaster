@@ -49,7 +49,7 @@ void Log::LABasicLogger::logResults(
     double min = iter->first->getResult();
     std::advance(iter, results.size() - 1);
     double max = iter->first->getResult();
-    double nbActionMax = iter->first->getNbActionsUsed();
+    std::vector<double> infoUsed = iter->first->getInfoSupp();
     double avgMax = iter->first->getOtherResult();
 
     double avg = std::accumulate(
@@ -60,7 +60,10 @@ void Log::LABasicLogger::logResults(
                pair) -> double { return acc + pair.first->getResult(); });
     avg /= (double)results.size();
     *this << std::setw(colWidth) << min << std::setw(colWidth) << avg
-          << std::setw(colWidth) << max << std::setw(colWidth) << nbActionMax;
+          << std::setw(colWidth) << max;
+    for(auto info: infoUsed){
+        *this<<std::setw(colWidth) << info; 
+    }
     if(useMSE){
         *this << std::setw(colWidth) << avgMax;
     }
@@ -85,7 +88,7 @@ void Log::LABasicLogger::logHeader()
     *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "NbAct" << std::setw(colWidth) << "NbTeam"
           << std::setw(colWidth) << "NbActR" << std::setw(colWidth) << "NbTeamR"
           << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
-          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse";
+          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "Info";// << std::setw(colWidth) << " ";
     if (useMSE){
         *this << std::setw(colWidth) << "AvgMax";
     }

@@ -123,90 +123,89 @@ bool Learn::LearningAgent::isRootEvalSkipped(
     }
 }
 
-std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
-    TPG::TPGExecutionEngine& tee, const Job& job, uint64_t generationNumber,
-    Learn::LearningMode mode, LearningEnvironment& le) const
-{
-    // Only consider the first root of jobs as we are not in adversarial mode
-    const TPG::TPGVertex* root = job.getRoot();
+    std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
+        TPG::TPGExecutionEngine& tee, const Job& job, uint64_t generationNumber,
+        Learn::LearningMode mode, LearningEnvironment& le) const
+    {
+        // Only consider the first root of jobs as we are not in adversarial mode
+        const TPG::TPGVertex* root = job.getRoot();
 
-    // Skip the root evaluation process if enough evaluations were already
-    // performed. In the evaluation mode only.
-    std::shared_ptr<Learn::EvaluationResult> previousEval;
-    if (mode == LearningMode::TRAINING &&
-        this->isRootEvalSkipped(*root, previousEval)) {
-        return previousEval;
-    }
-
-    // Init results
-    double result = 0.0;
-    double resultMSE = 0.0;
-
-    double meanNbActionUsed = 0.0;
-
-    // Evaluate nbIteration times
-    for (auto iterationNumber = 0;
-         iterationNumber < this->params.nbIterationsPerPolicyEvaluation;
-         iterationNumber++) {
-        // Compute a Hash
-        Data::Hash<uint64_t> hasher;
-        uint64_t hash = hasher(generationNumber) ^ hasher(iterationNumber);
-
-        // Reset the learning Environment
-        le.reset(hash, mode, iterationNumber, generationNumber);
-
-        // Reset the memory registers.
-        tee.resetAllMemoryRegisters();
-
-        double nbActionUsed = 0;
-
-
-        uint64_t nbActions = 0;
-        while (!le.isTerminal() &&
-               nbActions < this->params.maxNbActionsPerEval) {
-            // Get the actions
-            std::vector<double> actionsID =
-                tee.executeFromRoot(*root, le.getInitActions(),
-                                    this->params.nbEdgesActivable)
-                    .second;
-
-            for(int i = 0; i<le.getNbContinuousAction(); i++){
-                if(actionsID[i] != 0.0){
-                    nbActionUsed++;
-                }
-            }
-            // Do it
-            le.doActions(actionsID);
-            // Count actions
-            nbActions++;
-
-
+        // Skip the root evaluation process if enough evaluations were already
+        // performed. In the evaluation mode only.
+        std::shared_ptr<Learn::EvaluationResult> previousEval;
+        if (mode == LearningMode::TRAINING &&
+            this->isRootEvalSkipped(*root, previousEval)) {
+            return previousEval;
         }
-        nbActionUsed = nbActionUsed / nbActions;
-        meanNbActionUsed += nbActionUsed;
+
+        // Init results
+        double result = 0.0;
+        double resultMSE = 0.0;
+
+        double meanNbActionUsed = 0.0;
+
+        // Evaluate  nbIteration times
+        for (auto iterationNumber = 0;
+            iterationNumber < this->params.nbIterationsPerPolicyEvaluation;
+            iterationNumber++) {
+            // Compute a Hash
+            Data::Hash<uint64_t> hasher;
+            uint64_t hash = hasher(generationNumber) ^ hasher(iterationNumber);
+
+            // Reset the learning Environment
+            le.reset(hash, mode, iterationNumber, generationNumber);
+
+            // Reset the memory registers.
+            tee.resetAllMemoryRegisters();
+
+            double nbActionUsed = 0;
 
 
-        // Update results
-        result += le.getScore();
-        resultMSE +=  (le.getScore() > 0) ? std::pow(le.getScore(), 2) : -std::pow(le.getScore(), 2);
+            uint64_t nbActions = 0;
+            while (!le.isTerminal() &&
+                nbActions < this->params.maxNbActionsPerEval) {
+                // Get the actions
+                std::vector<double> actionsID =
+                    tee.executeFromRoot(*root, le.getInitActions(),
+                                        this->params.nbEdgesActivable)
+                        .second;
+
+                for(int i = 0; i<le.getNbContinuousAction(); i++){
+                    if(actionsID[i] != 0.0){
+                        nbActionUsed++;
+                    }
+                }
+                // Do it
+                le.doActions(actionsID);
+                // Count actions
+                nbActions++;
+
+
+            }
+            nbActionUsed = nbActionUsed / nbActions;
+            meanNbActionUsed += nbActionUsed;
+
+
+            // Update results
+            result += le.getScore();
+            resultMSE +=  (le.getScore() > 0) ? std::pow(le.getScore(), 2) : -std::pow(le.getScore(), 2);
+        }
+
+        meanNbActionUsed /= (double)params.nbIterationsPerPolicyEvaluation;
+        result /= (double)params.nbIterationsPerPolicyEvaluation;
+        resultMSE /= (double)params.nbIterationsPerPolicyEvaluation * 1000;
+
+        // Create the EvaluationResult
+        auto evaluationResult =
+            std::shared_ptr<EvaluationResult>(new EvaluationResult(
+                (this->params.useMSE) ? resultMSE : result, params.nbIterationsPerPolicyEvaluation, {meanNbActionUsed}, result));
+
+        // Combine it with previous one if any
+        if (previousEval != nullptr) {
+            *evaluationResult += *previousEval;
+        }
+        return evaluationResult;
     }
-
-    meanNbActionUsed /= (double)params.nbIterationsPerPolicyEvaluation;
-    result /= (double)params.nbIterationsPerPolicyEvaluation;
-    resultMSE /= (double)params.nbIterationsPerPolicyEvaluation * 1000;
-
-
-    // Create the EvaluationResult
-    auto evaluationResult =
-        std::shared_ptr<EvaluationResult>(new EvaluationResult(
-            (this->params.useMSE) ? resultMSE : result, params.nbIterationsPerPolicyEvaluation, meanNbActionUsed, result));
-
-    // Combine it with previous one if any
-    if (previousEval != nullptr) {
-        *evaluationResult += *previousEval;
-    }
-    return evaluationResult;
-}
 
 std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex*>
 Learn::LearningAgent::evaluateAllRoots(uint64_t generationNumber,

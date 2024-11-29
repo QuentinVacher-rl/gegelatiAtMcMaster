@@ -168,6 +168,15 @@ namespace Mutator {
          */
         void removeRandomEdge(TPG::TPGGraph& graph, const TPG::TPGTeam& team,
                               Mutator::RNG& rng);
+        /**
+         * \brief Select two outgoing Edges and swap them.
+         *
+         * \param[in,out] graph the TPGGraph within which the team is stored.
+         * \param[in] team the TPGTeam whose outgoingEdges will be altered.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        void swapRandomEdges(TPG::TPGGraph& graph, const TPG::TPGTeam& team,
+                              Mutator::RNG& rng);
 
         /**
          * \brief Add a new outgoing TPGEdge to the TPGTeam within the TPGGraph.

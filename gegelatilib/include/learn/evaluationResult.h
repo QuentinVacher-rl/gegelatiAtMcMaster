@@ -62,7 +62,7 @@ namespace Learn {
         size_t nbEvaluation;
 
         /// TODO
-        double nbActionsUsed;
+        std::vector<double> infoSupp;
 
         /// TODO
         std::map<const Program::Line *, uint64_t> usageLines;
@@ -89,8 +89,8 @@ namespace Learn {
          * \param[in] otherRes the double value representing the result of an
          * evaluation.
          */
-        EvaluationResult(const double& res, const size_t& nbEval, const double& nbActionsU=0.0, const double& otherRes=0.0)
-            : result{res}, nbEvaluation{nbEval}, nbActionsUsed{nbActionsU}, otherResult{otherRes} {};
+        EvaluationResult(const double& res, const size_t& nbEval, const std::vector<double>& infoSupp={}, const double& otherRes=0.0)
+            : result{res}, nbEvaluation{nbEval}, infoSupp{infoSupp}, otherResult{otherRes} {};
 
         /**
          * \brief Virtual method to get the default double equivalent of
@@ -108,7 +108,7 @@ namespace Learn {
          * \brief Virtual method to get the default double equivalent of
          * the EvaluationResult.
          */
-        virtual double getNbActionsUsed() const;
+        virtual std::vector<double> getInfoSupp() const;
 
         /**
          * \brief Virtual method to get the default number of evaluation of

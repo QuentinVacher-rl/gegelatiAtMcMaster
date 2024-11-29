@@ -315,6 +315,14 @@ void TPG::TPGGraph::removeEdge(const TPGEdge& edge, bool removeActionRoot)
     this->edges.erase(iterator);
 }
 
+void TPG::TPGGraph::swapEdges(const TPGVertex& team, uint64_t index1, uint64_t index2)
+{
+    auto iterator = this->findVertex(&team);
+    if (iterator != this->vertices.end()) {
+        (*iterator)->swapEdges(index1, index2);
+    }
+}
+
 
 void TPG::TPGGraph::removeActionEdge(const TPGEdge& edge)
 {

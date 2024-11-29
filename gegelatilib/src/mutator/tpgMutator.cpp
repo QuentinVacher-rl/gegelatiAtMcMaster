@@ -456,6 +456,22 @@ void Mutator::TPGMutator::removeRandomEdge(TPG::TPGGraph& graph,
     graph.removeEdge(*removedEdge);
 }
 
+
+void Mutator::TPGMutator::swapRandomEdges(TPG::TPGGraph& graph,
+                                           const TPG::TPGTeam& team,
+                                           Mutator::RNG& rng)
+{
+    // Pick an outgoing edge randomly,
+    uint64_t index1 = rng.getInt32(0, team.getOutgoingEdges().size() - 1);
+    uint64_t index2 = rng.getInt32(0, team.getOutgoingEdges().size() - 2);
+
+    if(index1 == index2){
+        index2++;
+    }
+
+    graph.swapEdges(team, index1, index2);
+}
+
 void Mutator::TPGMutator::addRandomEdge(
     TPG::TPGGraph& graph, const TPG::TPGTeam& team,
     const std::list<const TPG::TPGEdge*>& preExistingEdges, Mutator::RNG& rng)
@@ -574,6 +590,25 @@ void Mutator::TPGMutator::mutateTPGTeam(
                     
         }
     }
+
+    // 3. Swap
+    {
+        double proba = params.tpg.pSwapEdge;
+        while (team.getOutgoingEdges().size() >= 2 &&
+            proba > rng.getDouble(0.0, 1.0)) {
+
+            // Add an edge (by duplication of an existing one)
+            swapRandomEdges(graph, team, rng);
+
+            // Decrement the proba of adding another edge
+            proba *= params.tpg.pEdgeAddition;
+
+            // Update assessed actions    
+            graph.updateAssessedActions(&team);
+                    
+        }
+    }
+
     // 3. Mutate edges of the team
     {
         bool anyMutationDone = false;
@@ -797,6 +832,18 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
             }
         });
 
+    if(!params.tpg.selectAllActions){
+        preExistingActions.clear();
+
+        std::for_each(
+            rootVertices.begin(), rootVertices.end(),
+            [&preExistingActions](const TPG::TPGVertex* target) {
+                if (dynamic_cast<const TPG::TPGAction*>(target) != nullptr) {
+                    preExistingActions.push_back((const TPG::TPGAction*)target);
+                }
+            });
+    }
+
     // Get a list of pre existing edges before mutations (copy)
     std::list<const TPG::TPGEdge*> preExistingEdges;
     std::for_each(
@@ -808,9 +855,11 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
     // Get a list of pre existing action Edges before mutations (copy)
     std::list<const TPG::TPGEdge*> preExistingActionEdges;
     std::for_each(
-        graph.getActionEdges().begin(), graph.getActionEdges().end(),
-        [&preExistingActionEdges](const std::unique_ptr<TPG::TPGEdge>& edge) {
-            preExistingActionEdges.push_back(edge.get());
+        preExistingActions.begin(), preExistingActions.end(),
+        [&preExistingActionEdges](const TPG::TPGAction * action) {
+            for(const TPG::TPGEdge* edge: action->getOutgoingEdges()){
+                preExistingActionEdges.push_back(edge);
+            }
         });
 
     // Create an empty list to store Programs to mutate.

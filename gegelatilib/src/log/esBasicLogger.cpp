@@ -49,7 +49,7 @@ void Log::ESBasicLogger::logResults(
     double min = iter->first->getResult();
     std::advance(iter, results.size() - 1);
     double max = iter->first->getResult();
-    double nbActionMax = iter->first->getNbActionsUsed();
+    std::vector<double> infoSupp = iter->first->getInfoSupp();
 
     double avg = std::accumulate(
         results.begin(), results.end(), 0.0,
@@ -59,7 +59,11 @@ void Log::ESBasicLogger::logResults(
                pair) -> double { return acc + pair.first->getResult(); });
     avg /= (double)results.size();
     *this << std::setw(colWidth) << min << std::setw(colWidth) << avg
-          << std::setw(colWidth) << max << std::setw(colWidth) << nbActionMax;
+          << std::setw(colWidth) << max;
+
+    for(auto info: infoSupp){
+        std::cout<<std::setw(colWidth) << info; 
+    }
 }
 
 void Log::ESBasicLogger::logNewGeneration(uint64_t& generationNumber)
@@ -116,7 +120,10 @@ void Log::ESBasicLogger::logAfterValidate(
     // being in this method means validation is active, and so we are sure we
     // can log results
     *this << std::setw(colWidth) << results.begin()->first->getResult()
-          << std::setw(colWidth) << results.begin()->first->getNbActionsUsed();
+          << std::setw(colWidth);
+    for(auto info: results.begin()->first->getInfoSupp()){
+        std::cout<<std::setw(colWidth) << info; 
+    }
 }
 
 void Log::ESBasicLogger::logEndOfTraining()

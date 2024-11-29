@@ -126,6 +126,10 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.multiActionProg = value.asBool();
         return;
     }
+    if (param == "selectAllActions") {
+        params.mutation.tpg.selectAllActions = value.asBool();
+        return;
+    }
 
     if (param == "pChangeActionClass") {
         params.mutation.tpg.pChangeActionClass = (double)value.asDouble();
@@ -176,9 +180,11 @@ void File::ParametersParser::setParameterFromString(
         params.mutation.tpg.pSwapActionProgram = value.asDouble();
         return;
     }
+    if (param == "pSwapEdge") {
+        params.mutation.tpg.pSwapEdge = value.asDouble();
+        return;
+    }
 
-
-    
     if (param == "pProgramMutation") {
         params.mutation.tpg.pProgramMutation = value.asDouble();
         return;
@@ -339,6 +345,10 @@ void File::ParametersParser::setParameterFromString(
         params.isActionSharedMem = value.asBool();
         return;
     }
+    if (param == "isFullSharedMemory") {
+        params.isFullSharedMemory = value.asBool();
+        return;
+    }
 
 
 
@@ -451,6 +461,10 @@ void File::ParametersParser::writeParametersToJson(
     root["isActionSharedMem"].setComment(
         Learn::LearningParameters::isActionSharedMemComment,
         Json::commentBefore);
+    root["isFullSharedMemory"] = params.isFullSharedMemory;
+    root["isFullSharedMemory"].setComment(
+        Learn::LearningParameters::isFullSharedMemoryComment,
+        Json::commentBefore);
 
 
 
@@ -479,6 +493,13 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["multiActionProg"].setComment(
         Mutator::TPGParameters::multiActionProgComment,
         Json::commentBefore);
+
+
+    root["mutation"]["tpg"]["selectAllActions"] = params.mutation.tpg.selectAllActions;
+    root["mutation"]["tpg"]["selectAllActions"].setComment(
+        Mutator::TPGParameters::selectAllActionsComment,
+        Json::commentBefore);
+
 
 
     root["mutation"]["tpg"]["maxInitOutgoingEdges"] =
@@ -558,6 +579,9 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["tpg"]["pSwapActionProgram"] = params.mutation.tpg.pSwapActionProgram;
     root["mutation"]["tpg"]["pSwapActionProgram"].setComment(
         Mutator::TPGParameters::pSwapActionProgramComment, Json::commentBefore);
+    root["mutation"]["tpg"]["pSwapEdge"] = params.mutation.tpg.pSwapEdge;
+    root["mutation"]["tpg"]["pSwapEdge"].setComment(
+        Mutator::TPGParameters::pSwapEdgeComment, Json::commentBefore);
 
 
     root["mutation"]["tpg"]["pEdgeDestinationChange"] =

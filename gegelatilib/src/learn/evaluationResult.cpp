@@ -46,9 +46,9 @@ double Learn::EvaluationResult::getOtherResult() const
     return this->otherResult;
 }
 
-double Learn::EvaluationResult::getNbActionsUsed() const
+std::vector<double> Learn::EvaluationResult::getInfoSupp() const
 {
-    return this->nbActionsUsed;
+    return this->infoSupp;
 }
 
 size_t Learn::EvaluationResult::getNbEvaluation() const
@@ -102,9 +102,12 @@ Learn::EvaluationResult& Learn::EvaluationResult::operator+=(
                        other.otherResult * (double)other.nbEvaluation;
         this->otherResult /= (double)this->nbEvaluation + (double)other.nbEvaluation;
 
-        this->nbActionsUsed = this->nbActionsUsed * (double)this->nbEvaluation +
-                       other.nbActionsUsed * (double)other.nbEvaluation;
-        this->nbActionsUsed /= (double)this->nbEvaluation + (double)other.nbEvaluation;
+        for(size_t i = 0; i < this->infoSupp.size(); i++){
+            this->infoSupp[i] = this->infoSupp[i] * (double)this->nbEvaluation +
+                        other.infoSupp[i] * (double)other.nbEvaluation;
+            this->infoSupp[i] /= (double)this->nbEvaluation + (double)other.nbEvaluation;
+        }
+
 
         // Addition ot nbEvaluation
         this->nbEvaluation += other.nbEvaluation;

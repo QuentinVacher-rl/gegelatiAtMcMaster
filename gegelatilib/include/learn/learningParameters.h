@@ -201,6 +201,15 @@ namespace Learn {
         /// Boolean indicating if the action programs changed the shared memory
         bool isActionSharedMem = false;
 
+        /// JSon comment
+        inline static const std::string isFullSharedMemoryComment =
+            "// Boolean indicating if the memory is fully shared or only written by the winning bid"
+            ".\n"
+            "// \"isFullSharedMemory\" : false, // Default value";
+        /// Boolean indicating if the memory is fully shared or only written by the winning bid
+        bool isFullSharedMemory = false;
+
+
 
 
         /// JSon comment

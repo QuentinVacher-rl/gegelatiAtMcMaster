@@ -141,6 +141,7 @@ bool TPG::TPGExecutionEngine::executeAction(
             auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
 
             // Set the current action class for shared registers
+            uint64_t usedActionClass = (env.getParams().isFullSharedMemory) ? 0:actionEdge->getActionClass();
             this->progExecutionEngine.setActionClass(actionEdge->getActionClass());
 
             // Evaluate the edge and set the action value
@@ -148,7 +149,7 @@ bool TPG::TPGExecutionEngine::executeAction(
 
             // If activate, save the shared value
             if(env.getParams().isActionSharedMem && env.getParams().nbSharedRegisters > 0){
-                progExecutionEngine.setSharedRegisterValues(actionEdge->getProgram(), actionEdge->getActionClass());
+                progExecutionEngine.setSharedRegisterValues(actionEdge->getProgram(), usedActionClass);
             }
         }
 
@@ -200,10 +201,16 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
     for (auto edge : outgoingEdges) {
         
         // Set the current action class for shared registers
-        this->progExecutionEngine.setActionClass(*edge->getDestination()->getAssessedActions().begin());
+        // If full shared memory, just consider always action class 0
+        uint64_t usedActionClass = (env.getParams().isFullSharedMemory) ? 0:*edge->getDestination()->getAssessedActions().begin();
+        this->progExecutionEngine.setActionClass(usedActionClass);
         // Calcul program bid.
         double bid = this->evaluateEdge(*edge);
         resultsBid.push_back(std::make_pair(edge, bid));
+
+        if(env.getParams().nbSharedRegisters > 0 && env.getParams().isFullSharedMemory){
+            progExecutionEngine.setSharedRegisterValues(edge->getProgram(), 0);
+        }
     };
 
     // Sorting with ">=" is not possible, a sort with "<" then reverse is used
@@ -233,7 +240,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
                 std::cout<<a<<"-";
             }std::cout<<std::endl;*/
 
-            if(env.getParams().nbSharedRegisters > 0){
+            if(env.getParams().nbSharedRegisters > 0 && !env.getParams().isFullSharedMemory){
                 for(auto actionClass: destination->getAssessedActions()){
                     progExecutionEngine.setSharedRegisterValues(resultsBid[i].first->getProgram(), actionClass);
                 }

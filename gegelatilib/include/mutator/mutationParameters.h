@@ -167,6 +167,21 @@ namespace Mutator {
         double pSwapActionProgram = 0.1;
 
 
+        /// JSon comment
+        inline static const std::string pSwapEdgeComment =
+            "//  Probablity of swapping two context edge within the same team vertex\n"
+            "// \"pSwapEdge\" : 0.1, // Default value";
+        ///  Probablity of swapping two context edge within the same team vertex
+        double pSwapEdge = 0.1;
+
+
+        /// JSon comment
+        inline static const std::string selectAllActionsComment =
+            "//  Make preExistingAction during mutation only with action roots, or with all actions\n"
+            "// \"selectAllActions\" : true, // Default value";
+        ///  Make preExistingAction during mutation only with action roots, or with all actions
+        bool selectAllActions = true;
+
 
         /// JSon comment
         inline static const std::string pProgramMutationComment =
