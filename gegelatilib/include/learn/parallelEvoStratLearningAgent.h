@@ -53,13 +53,6 @@ namespace Learn {
     {
       protected:
 
-        /**
-         * vector containing, for each value a map.
-         * 
-         * Each map link each program in the graph to a vector of error weights applied to the constant of the program.
-         */
-        std::vector<std::map<Program::Program*, std::vector<double>>> errorWeightsPopulation;
-
 
         /**
          * \brief Method for evaluating all roots with parallelism.

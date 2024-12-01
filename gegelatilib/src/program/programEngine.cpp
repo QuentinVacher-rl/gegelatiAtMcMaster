@@ -120,7 +120,7 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     this->programCounter = 0;
 
     // Update line usage
-    if(!errorWeights.empty()){
+    if(!errorWeights.empty() && false){
         for(size_t idx = 0; idx < this->program->getNbLines(); idx++){
             if(!this->program->isIntron(idx)){
 
@@ -158,9 +158,9 @@ void Program::ProgramEngine::setErrorWeights(const std::map<Line*, std::vector<d
         for(size_t idx = 0; idx < pair.first->getNbConstants(); idx++){
 
             double weight = pair.second.at(idx);
-            double constantValue = (double)pair.first->getConstantAt(idx);
+            double constantValue = 0;//(double)pair.first->getConstantAt(idx);
 
-            newValues.push_back(weight * 0.1 + constantValue);
+            newValues.push_back(weight + constantValue);
         }
 
         errorWeights.insert(std::make_pair(pair.first, newValues));
