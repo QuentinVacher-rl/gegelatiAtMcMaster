@@ -12,7 +12,6 @@ void Learn::CMAESLearningAgent::initializeWeights() {
     weights /= weights.sum();
     mu = floor(mu);
 
-    std::cout<<weights<<std::endl;
 }
 
 // Generate lambda offspring

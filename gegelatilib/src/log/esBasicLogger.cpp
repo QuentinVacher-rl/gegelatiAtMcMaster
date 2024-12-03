@@ -62,7 +62,7 @@ void Log::ESBasicLogger::logResults(
           << std::setw(colWidth) << max;
 
     for(auto info: infoSupp){
-        std::cout<<std::setw(colWidth) << info; 
+        *this<<std::setw(colWidth) << info; 
     }
 }
 
@@ -87,7 +87,7 @@ void Log::ESBasicLogger::logHeader()
     // Second line of header
     //*this << std::right;
     *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
-          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse";
+          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse" << std::setw(colWidth) << "sigma" ;
     if (doValidation) {
         *this << std::setw(colWidth) << "Score" << std::setw(colWidth) << "ActUse";
     }
@@ -107,6 +107,9 @@ void Log::ESBasicLogger::logAfterEvaluate(
 
     logResults(results);
 
+    
+    *this << std::setw(colWidth) << sigma;
+
     // resets checkpoint to be able to show validation time if there is some
     chronoFromNow();
 }
@@ -122,8 +125,12 @@ void Log::ESBasicLogger::logAfterValidate(
     *this << std::setw(colWidth) << results.begin()->first->getResult()
           << std::setw(colWidth);
     for(auto info: results.begin()->first->getInfoSupp()){
-        std::cout<<std::setw(colWidth) << info; 
+        *this<<std::setw(colWidth) << info; 
     }
+}
+void Log::ESBasicLogger::setSigma(double sigma)
+{
+    this->sigma = sigma;
 }
 
 void Log::ESBasicLogger::logEndOfTraining()

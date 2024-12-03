@@ -58,6 +58,8 @@ namespace Log {
          */
         int colWidth = 9;
 
+        double sigma = 0.0;
+
         /**
          * \brief Logs the min, avg and max score of the generation.
          *
@@ -131,6 +133,15 @@ namespace Log {
         virtual void logAfterValidate(
             std::multimap<std::shared_ptr<Learn::EvaluationResult>,
                           const TPG::TPGVertex*>& results) override;
+
+
+        /**
+         * TODO
+         *
+         * \param[in] sigma scores of the validation.
+         */
+        virtual void setSigma(
+            double sigma);
 
         /**
          * Inherited via LaLogger

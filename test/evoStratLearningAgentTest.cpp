@@ -123,7 +123,7 @@ TEST_F(EvoStratLearningAgentTest, Constructor)
 
     Learn::EvoStratLearningAgent* esLa;
 
-    ASSERT_NO_THROW(esLa = new Learn::EvoStratLearningAgent(*la))
+    ASSERT_NO_THROW(esLa = new Learn::EvoStratLearningAgent(*la, 0.1))
         << "Construction of the learningAgent failed.";
 
     ASSERT_NO_THROW(delete esLa) << "Destruction of the LearningAgent failed.";
@@ -135,7 +135,7 @@ TEST_F(EvoStratLearningAgentTest, initConstants)
 
     la->keepBestPolicy();
 
-    Learn::EvoStratLearningAgent esLa(*la);
+    Learn::EvoStratLearningAgent esLa(*la, 0.1);
 
     for(auto i = 0; i < 3; i++){
 

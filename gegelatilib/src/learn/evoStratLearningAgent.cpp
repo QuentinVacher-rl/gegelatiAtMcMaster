@@ -74,12 +74,15 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
     for(auto r: results){
         fakeResultsForLogs.insert(std::make_pair(r.first, this->tpg->getRootVertices().at(0)));
     }
-    for (auto logger : loggers) {
-        logger.get().logAfterEvaluate(fakeResultsForLogs);
-    }
 
     // Learn
     this->doEvolutionStrategy(results);
+
+    for (auto logger : loggers) {
+        dynamic_cast<Log::ESBasicLogger*>(&logger.get())->setSigma(sigma);
+        logger.get().logAfterEvaluate(fakeResultsForLogs);
+    }
+
 
     // Does a validation or not according to the parameter doValidation
     // We should always do one

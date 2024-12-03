@@ -59,7 +59,7 @@ namespace Learn {
         /// Parameter to add to json parser soon
         bool twinError = true;
         /// Parameter to add to json parser soon
-        double sigma = 0.1;
+        double sigma;
         /// @brief param
         bool falseTraining = true;
 
@@ -79,8 +79,8 @@ namespace Learn {
          *
          * \param[in] la The LearningAgent used.
          */
-        EvoStratLearningAgent(LearningAgent& la)
-            : LearningAgent(la){};
+        EvoStratLearningAgent(LearningAgent& la, double sigma)
+            : LearningAgent(la), sigma{sigma} {};
 
         /**
          * \brief Train the TPGGraph for one generation.

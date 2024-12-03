@@ -405,6 +405,15 @@ bool File::TPGGraphDotImporter::readLineFromFile()
         this->lastLine = buffer;
     }
 
+    // Trouver la position de "//"
+    size_t pos = this->lastLine.find("//");
+    std::string usedLine;
+    if (pos != std::string::npos) {
+        // Garder uniquement la partie avant "//"
+        usedLine = this->lastLine.substr(0, pos);
+    }
+
+
     // check the line shape and parse it
     if (std::regex_search(this->lastLine, matches, testTeamDeclare)) {
         readTeam(matches);
@@ -415,7 +424,7 @@ bool File::TPGGraphDotImporter::readLineFromFile()
     else if (std::regex_search(this->lastLine, matches, testProgramDeclare)) {
         readProgram(matches);
     }
-    else if (std::regex_search(this->lastLine, matches,
+    else if (std::regex_search(usedLine, matches,
                                testInstructionDeclare)) {
         readLine(matches);
     }

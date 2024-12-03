@@ -143,8 +143,8 @@ namespace Learn {
          *
          * \param[in] la The LearningAgent used.
          */
-        ParallelEvoStratLearningAgent(ParallelLearningAgent& la)
-            : EvoStratLearningAgent(la){
+        ParallelEvoStratLearningAgent(ParallelLearningAgent& la, double sigma)
+            : EvoStratLearningAgent(la, sigma){
                 // overriding the maxNbThreads that basic evoLA defined to 1
                 maxNbThreads = params.nbThreads;
             };

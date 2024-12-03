@@ -64,7 +64,7 @@ namespace Learn {
         protected:
 
             int N, lambda,  counteval, eigeneval;
-            double sigma, chiN, mu, cm;
+            double chiN, mu, cm;
             double mueff=0.0;
             double cs=0.0;
             double cc=0.0;
@@ -107,8 +107,8 @@ namespace Learn {
              * \param[in] la The LearningAgent used.
              */
             CMAESLearningAgent(ParallelLearningAgent& la)
-                : ParallelEvoStratLearningAgent(la),
-                N(computeDimension(la)), sigma(0.1), cm(1),
+                : ParallelEvoStratLearningAgent(la, 0.1),
+                N(computeDimension(la)), cm(1),
                 lambda(4 + floor(3 * log(N))),
                 mu(lambda / 2),
                 counteval(0), eigeneval(0),
@@ -137,6 +137,10 @@ namespace Learn {
             virtual void doEvolutionStrategy(std::multimap<std::shared_ptr<EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*> results) override;
 
             virtual void updateRoot();
+
+            uint64_t getDimension(){
+                return (uint64_t)N;
+            }
 
 
     };
