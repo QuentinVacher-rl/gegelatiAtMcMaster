@@ -962,7 +962,7 @@ std::vector<Program::Line*> Mutator::TPGMutator::selectMutatedLines(
     allEdges.push_back(&graph.getActionEdges());
 
     std::vector<Program::Line*> mutatedLines;
-    double probaAddLine = 0.05;
+    double probaAddLine = 1;
 
     size_t nbConstant=0;
 

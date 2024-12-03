@@ -67,6 +67,8 @@ namespace Learn {
         /// TODO
         std::map<const Program::Line *, uint64_t> usageLines;
 
+        uint64_t index = 0;
+
       public:
         /**
          * \brief Deleted default constructor.
@@ -116,6 +118,9 @@ namespace Learn {
          */
         virtual size_t getNbEvaluation() const;
 
+        virtual void setIndex(size_t newIdx);
+
+        virtual size_t getIndex() const;
 
         /**
          * \brief TODO

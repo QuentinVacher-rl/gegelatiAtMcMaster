@@ -63,14 +63,20 @@ namespace Learn {
 
         protected:
 
-            int N, lambda, mu, counteval;
-            double sigma, chiN;
+            int N, lambda,  counteval, eigeneval;
+            double sigma, chiN, mu, cm;
+            double mueff=0.0;
+            double cs=0.0;
+            double cc=0.0;
+            double c1=0.0;
+            double cmu=0.0;
+            double damps=0.0;
             VectorXd xmean, ps, pc, weights;
             MatrixXd B, D, C, arx, arz;
             std::vector<double> arfitness;
             std::vector<int> arindex;
 
-            std::vector<Program::Line*> lineUsed;
+            std::set<Program::Line*> lineUsed;
 
             
             void initializeWeights();
@@ -85,21 +91,11 @@ namespace Learn {
             void update();
 
             // CMA-ES parameters
-            double mueff() const;
-
-            double cs() const;
-
-            double cc() const;
-
-            double c1() const;
-
-            double cmu() const;
-
-            double damps() const;
-
+            void compute_coefs();
+            
             uint64_t computeDimension(LearningAgent& la);
-
-            VectorXd initMeanValues(LearningAgent& la);
+            void initMeanValues();
+            void updateLineUsed();
 
         public:
 
@@ -112,16 +108,21 @@ namespace Learn {
              */
             CMAESLearningAgent(ParallelLearningAgent& la)
                 : ParallelEvoStratLearningAgent(la),
-                N(computeDimension(la)), sigma(sigma),
-                xmean(initMeanValues(la)),
+                N(computeDimension(la)), sigma(0.1), cm(1),
                 lambda(4 + floor(3 * log(N))),
                 mu(lambda / 2),
-                counteval(0),
+                counteval(0), eigeneval(0),
+                xmean(VectorXd::Zero(N)),
                 ps(VectorXd::Zero(N)), pc(VectorXd::Zero(N)),
                 B(MatrixXd::Identity(N, N)), D(MatrixXd::Identity(N, N)),
-                C(B * D * B.transpose()),
-                chiN(std::sqrt(N) * (1 - 1 / (4.0 * N) + 1 / (21.0 * N * N)))
-                { initializeWeights(); }
+                C(B * D * (B*D).transpose()),
+                chiN(std::sqrt((double)N) * (1.0 - 1.0 / (4.0 * (double)N) + 1.0 / (21.0 * (double)N * (double)N)))
+                { 
+                    updateLineUsed();
+                    initializeWeights(); 
+                    compute_coefs();
+                    initMeanValues();
+                }
 
             /**
              * \brief TODO

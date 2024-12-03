@@ -62,7 +62,6 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
         logger.get().logNewGeneration(generationNumber);
     }
 
-    generationNumber = 0;
     // Generate some weights
     this->generateErrorWeights();
     
@@ -85,9 +84,8 @@ void Learn::EvoStratLearningAgent::trainOneGeneration(uint64_t generationNumber)
     // Does a validation or not according to the parameter doValidation
     // We should always do one
     if (params.doValidation) {
-        falseTraining = true;
         auto validationResults =
-            evaluateAllRoots(generationNumber, Learn::LearningMode::TRAINING);
+            evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
         for (auto logger : loggers) {
             logger.get().logAfterValidate(validationResults);
         }
@@ -128,7 +126,7 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
 {
     std::cout<<std::setprecision(4);
     //std::cout<<std::endl;   
-    size_t nbAgentsEval = 5;
+    size_t nbAgentsEval = 500;
 
     bool firstLine = true;
     size_t iii = 0;
@@ -247,7 +245,7 @@ void Learn::EvoStratLearningAgent::doEvolutionStrategy(
                     
                     if(firstLine)std::cout<<"OrCon"<<originConstants.at(i)<<std::endl;
                     if(firstLine)std::cout<<"lr"<<lr<<std::endl;
-                    if(iii < 20 && firstLine)std::cout<<newConstantsValue<<", ";
+                    if(iii < 20)std::cout<<newConstantsValue<<", ";
                     if(firstLine)std::cout<<"sigma"<<sigma<<std::endl;
                     if(firstLine)std::cout<<"size"<<(double)(nbUsed)<<std::endl;
                     if(firstLine)std::cout<<"NeWCo"<<newConstantsValue<<std::endl;
@@ -280,6 +278,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::EvoStratLearningAgent::evaluateJ
 
     if(mode == Learn::LearningMode::TRAINING && !falseTraining){
         evaluationResult->addUsageLines(tee.getUsageLInes());
+        evaluationResult->setIndex(job.getIdx());
     }
 
 

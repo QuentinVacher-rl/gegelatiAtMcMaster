@@ -53,9 +53,9 @@ namespace Learn {
       protected:
 
         /// Parameter to add to json parser soon
-        double lr = 0.0002;
+        double lr = 0.05;
         /// Parameter to add to json parser soon
-        uint64_t nbAgents = 10;
+        uint64_t nbAgents = 1000;
         /// Parameter to add to json parser soon
         bool twinError = true;
         /// Parameter to add to json parser soon

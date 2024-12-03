@@ -10,12 +10,13 @@ void Learn::CMAESLearningAgent::initializeWeights() {
         weights(i) = log(mu + 0.5) - log(i + 1);
     }
     weights /= weights.sum();
+    mu = floor(mu);
+
+    std::cout<<weights<<std::endl;
 }
 
 // Generate lambda offspring
 void Learn::CMAESLearningAgent::generation() {
-
-    
 
     std::mt19937 generator(rng.getInt32(0, 10000000)); // 42 est la graine
     std::normal_distribution<double> distribution(0, 1);
@@ -30,86 +31,176 @@ void Learn::CMAESLearningAgent::generation() {
     }
 }
 
-// Evaluate offspring fitness
-void Learn::CMAESLearningAgent::evaluation() {
-    arfitness.resize(lambda);
-    for (int k = 0; k < lambda; ++k) {
-        //arfitness[k] = felli(arx.col(k));
-        ++counteval;
-    }
-    arindex.resize(lambda);
-    std::iota(arindex.begin(), arindex.end(), 0);
-    std::sort(arindex.begin(), arindex.end(), [&](int i, int j) {
-        return arfitness[i] < arfitness[j];
-    });
-}
-
-// Update internal parameters
 void Learn::CMAESLearningAgent::update() {
+    //std::cout<<std::setprecision(4);
+    // Affichage des hyperparamètres
+    /*std::cout << "Hyperparameters at the start of update():\n";
+    std::cout << "mueff: " << mueff << std::endl;
+    std::cout << "cs: " << cs << std::endl;
+    std::cout << "cc: " << cc << std::endl;
+    std::cout << "c1: " << c1 << std::endl;
+    std::cout << "cmu: " << cmu << std::endl;
+    std::cout << "damps: " << damps << std::endl;
+    std::cout << "N: " << N << std::endl;
+    std::cout << "sigma: " << sigma << std::endl;
+    std::cout << "xmean: " << xmean.transpose() << std::endl;
+    std::cout << "lambda: " << lambda << std::endl;
+    std::cout << "mu: " << mu << std::endl;*/
+
     VectorXd xold = xmean;
-    xmean = VectorXd::Zero(N);
     VectorXd zmean = VectorXd::Zero(N);
+    xmean = VectorXd::Zero(N);
     for (int i = 0; i < mu; ++i) {
         xmean += weights(i) * arx.col(arindex[i]);
         zmean += weights(i) * arz.col(arindex[i]);
     }
 
-    // Update evolution paths
-    ps = (1 - cs()) * ps + sqrt(cs() * (2 - cs()) * mueff()) * B * zmean;
-    bool hsig = ps.norm() / sqrt(1 - pow(1 - cs(), 2 * counteval / lambda)) / chiN < 1.4 + 2 / (N + 1);
-    pc = (1 - cc()) * pc + hsig * sqrt(cc() * (2 - cc()) * mueff()) * B * D * zmean;
 
-    // Adapt covariance matrix
-    C = (1 - c1() - cmu()) * C
-        + c1() * (pc * pc.transpose() + (1 - hsig) * cc() * (2 - cc()) * C)
-        + cmu() * (B * D * arz.leftCols(mu)) * weights.asDiagonal() * (B * D * arz.leftCols(mu)).transpose();
+
+
+    // Update evolution paths
+    ps = (1 - cs) * ps + (sqrt(cs * (2.0 - cs) * mueff)) * (B * zmean);
+    bool hsig = ps.norm() / sqrt(1.0 - pow(1.0 - cs, 2.0 * (double)counteval / (double)lambda)) / chiN < 1.4 + 2.0 / ((double)N + 1.0);
+    pc = (1.0 - cc) * pc + hsig * sqrt(cc * (2.0 - cc) * mueff) * (B * D * zmean);
+
+    // Affichage des chemins d'évolution
+    //std::cout << "ps norm: " << ps.norm() << ", ps: " << ps.transpose() << std::endl;
+    //std::cout << "pc norm: " << pc.norm() << ", pc: " << pc.transpose() << std::endl;
+
+    MatrixXd sorted_arz = MatrixXd(N, (int)mu);
+    for (int i = 0; i < mu; ++i) {
+        sorted_arz.col(i) = arz.col(arindex[i]);
+    }
+
+    // Mise à jour de C avec toutes les contributions
+    C = (1.0 - c1 - cmu) * C
+        + c1 * (pc * pc.transpose() + (1.0 - hsig) * cc * (2.0 - cc) * C)
+        + cmu * (B * D * sorted_arz) * weights.asDiagonal() * (B * D * sorted_arz).transpose();
+
+    // Affichage de la matrice de covariance
+    //std::cout << "Covariance matrix C: \n" << C << std::endl;
+
+    // Add regularization to ensure numerical stability
+    const double epsilon = 1e-12;
+    C += epsilon * MatrixXd::Identity(N, N);
 
     // Adapt step size
-    sigma *= exp((cs() / damps()) * (ps.norm() / chiN - 1));
+    sigma *= exp((cs / damps) * (ps.norm() / chiN - 1));
+    //sigma = std::max(sigma, 0.2);
 
-    // Update B and D from C
-    if (counteval % (lambda / 10) == 0) {
+    // Affichage de la taille de pas (step size)
+    // std::cout << "Step size sigma: " << sigma << std::endl;
+
+    // Update B and D from C conditionally
+    if (counteval - eigeneval > (double)lambda / ((c1 + cmu) / (double)N / 10.0)) {
+        eigeneval = counteval;
+        
+        // Symmetry enforcement again for numerical stability
+        C = 0.5 * (C + C.transpose());
+
+        // Eigen decomposition
         SelfAdjointEigenSolver<MatrixXd> eigensolver(C);
         B = eigensolver.eigenvectors();
-        D = eigensolver.eigenvalues().cwiseSqrt().asDiagonal();
+
+        // Ensure non-negative eigenvalues
+        VectorXd eigenvalues = eigensolver.eigenvalues();
+        eigenvalues = eigenvalues.cwiseMax(0);
+        //std::cout << "Eigenvalues of C: " << eigenvalues.transpose() << std::endl;
+
+        // Compute D from eigenvalues
+        D = eigenvalues.cwiseSqrt().asDiagonal();
+
+        // Affichage des valeurs propres et des matrices B et D
+        //std::cout << "Eigenvalues of C: " << eigenvalues.transpose() << std::endl;
+        //std::cout << "Matrix B (eigenvectors): \n" << B << std::endl;
+        //std::cout << "Matrix D (eigenvalues sqrt): \n" << D << std::endl;
+        /*std::cout << "Eigenvalues of C: " << eigensolver.eigenvalues().transpose() << std::endl;
+        std::cout << "ps norm: " << ps.norm() << std::endl;
+        std::cout << "pc norm: " << pc.norm() << std::endl;
+        std::cout << "sigma: " << sigma << std::endl;
+        std::cout << "Fitness best: " << arfitness[arindex[0]] << std::endl;*/
+    }
+
+
+    // Affichage du compteur d'évaluations
+    /*std::cout << "Counteval: " << counteval << std::endl;
+    std::cout << "Step size sigma: " << sigma << std::endl;
+    std::cout<<std::setprecision(2);*/
+}
+
+
+
+
+void Learn::CMAESLearningAgent::doEvolutionStrategy(std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*> results){
+
+    //std::cout<<std::endl;
+    arfitness.resize(lambda);
+    for (auto pair: results) {
+        // Minimize the score
+        arfitness[pair.first->getIndex()] = -pair.first->getResult(); 
+        ++counteval;
+    }
+
+    arindex.resize(lambda);
+    std::iota(arindex.begin(), arindex.end(), 0);
+    std::sort(arindex.begin(), arindex.end(), [&](int i, int j) {
+        return arfitness[i] < arfitness[j];
+    });
+
+    /*std::cout<<"\nIndex: ";
+    for(auto idx: arindex){
+        std::cout<<idx<<" ";
+    }std::cout<<std::endl;
+    std::cout<<"\nFitness: ";
+    for(auto idx: arfitness){
+        std::cout<<idx<<" ";
+    }std::cout<<std::endl;*/
+
+    this->update();
+    this->updateRoot();
+}
+
+
+void Learn::CMAESLearningAgent::generateErrorWeights(){
+
+    errorWeightsPopulation.clear();
+    this->generation();
+
+    for(size_t idxAgent=0; idxAgent < lambda; idxAgent++){
+        
+        std::map<Program::Line*, std::vector<double>> errorWeights;
+
+        size_t idxConstant = 0;
+        for(Program::Line* line: lineUsed){
+
+            std::vector<double> errorThisLine;
+            for(size_t idxLine=0; idxLine < line->getNbConstants(); idxLine++){
+                errorThisLine.push_back(arx(idxConstant, idxAgent));
+                idxConstant++;
+            }
+
+            errorWeights.insert(std::make_pair(line, errorThisLine));
+        }
+
+        errorWeightsPopulation.push_back(errorWeights);
     }
 }
 
 // CMA-ES parameters
-double Learn::CMAESLearningAgent::mueff() const {
-    return weights.sum() * weights.sum() / weights.squaredNorm();
+void Learn::CMAESLearningAgent::compute_coefs() {
+    mueff = weights.sum() * weights.sum() / weights.squaredNorm();
+    cc = (4.0 + mueff / (double)N) / ((double)N + 4.0 + 2.0 * mueff / (double)N);
+    cs = (mueff + 2.0) / ((double)N + mueff + 5.0);
+    c1 = 2.0 / (std::pow((double)N + 1.3, 2.0) + mueff);
+    cmu = std::min(1.0 - c1, 2.0 * (mueff - 2.0 + 1.0 / mueff) / (std::pow((double)N + 2.0, 2.0) + 2.0 * mueff / 2.0));
+    damps = 1.0 + 2.0 * std::max(0.0, std::sqrt((mueff - 1.0) / ((double)N + 1.0)) - 1.0) + cs;
+
 }
-
-
-double Learn::CMAESLearningAgent::cs() const {
-    return (mueff() + 2) / (N + mueff() + 5);
-}
-
-
-double Learn::CMAESLearningAgent::cc() const {
-    return (4 + mueff() / N) / (N + 4 + 2 * mueff() / N);
-}
-
-
-double Learn::CMAESLearningAgent::c1() const {
-    return 2 / (std::pow(N + 1.3, 2) + mueff());
-}
-
-
-double Learn::CMAESLearningAgent::cmu() const {
-    return std::min(1 - c1(), 2 * (mueff() - 2 + 1 / mueff()) / (std::pow(N + 2, 2) + 2 * mueff() / 2));
-}
-
-
-double Learn::CMAESLearningAgent::damps() const {
-    return 1 + 2 * std::max(0.0, std::sqrt((mueff() - 1) / (N + 1)) - 1) + cs();
-}
-
 
 uint64_t Learn::CMAESLearningAgent::computeDimension(Learn::LearningAgent& la)
 {    
+
     uint64_t nbDimensions = 0;
-    lineUsed.clear();
 
     std::vector<const std::list<std::unique_ptr<TPG::TPGEdge>>*> allEdges;
     allEdges.push_back(&la.getTPGGraph()->getEdges());
@@ -128,7 +219,6 @@ uint64_t Learn::CMAESLearningAgent::computeDimension(Learn::LearningAgent& la)
                 if(!program->isIntron(idx_line)){
 
                     nbDimensions += line->getNbConstants();
-                    lineUsed.push_back(line);
                 }
             }
 
@@ -136,17 +226,18 @@ uint64_t Learn::CMAESLearningAgent::computeDimension(Learn::LearningAgent& la)
         }  
     }
 
+
     return nbDimensions;
 }
 
+void Learn::CMAESLearningAgent::updateLineUsed()
+{    
 
-VectorXd Learn::CMAESLearningAgent::initMeanValues(LearningAgent& la)
-{
-    std::vector<double> listValues;
+    lineUsed.clear();
 
     std::vector<const std::list<std::unique_ptr<TPG::TPGEdge>>*> allEdges;
-    allEdges.push_back(&la.getTPGGraph()->getEdges());
-    allEdges.push_back(&la.getTPGGraph()->getActionEdges());
+    allEdges.push_back(&tpg->getEdges());
+    allEdges.push_back(&tpg->getActionEdges());
 
     for (const auto* edgeList : allEdges) {
         // Assurez-vous que edgeList est un pointeur vers une liste de unique_ptr
@@ -160,82 +251,29 @@ VectorXd Learn::CMAESLearningAgent::initMeanValues(LearningAgent& la)
 
                 if(!program->isIntron(idx_line)){
 
-                    for(size_t idx_const = 0; idx_const < line->getNbConstants(); idx_const++){
-                        listValues.push_back(line->getConstantAt(idx_const));
-                    }
+                    lineUsed.insert(line);
                 }
             }
+
+
         }  
     }
-
-    VectorXd initialMean = Map<VectorXd>(listValues.data(), listValues.size());
-    return initialMean;
 }
 
 
-void Learn::CMAESLearningAgent::generateErrorWeights(){
 
-    errorWeightsPopulation.clear();
-    this->generation();
 
-    for(size_t idxAgent=0; idxAgent < lambda; idxAgent++){
-        
-        std::map<Program::Line*, std::vector<double>> errorWeights;
+void Learn::CMAESLearningAgent::initMeanValues()
+{
+    std::vector<double> listValues;
 
-        size_t idxConstant = 0;
-        for(Program::Line* line: lineUsed){
-
-            std::vector<double> errorThisLine(line->getNbConstants());
-            for(size_t idxLine=0; idxLine < line->getNbConstants(); idxLine++){
-                errorThisLine.push_back(arx(idxAgent, idxConstant));
-                idxConstant++;
-            }
-
-            errorWeights.insert(std::make_pair(line, errorThisLine));
-        }  
-
-        errorWeightsPopulation.push_back(errorWeights);
-    }
-}
-
-/**
- * \brief Do the evolution strategy depending on the results 
- * 
- * \param[in] results TODO
-*/ 
-
-void Learn::CMAESLearningAgent::doEvolutionStrategy(std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*> results){
-    
-    errorWeightsPopulation;
-
-    arfitness.resize(lambda);
-    int k = 0;
-    for (auto pair: errorWeightsPopulation) {
-        // Find the index of the pair in results
-        auto it = std::find_if(results.begin(), results.end(),
-            [&pair](const auto& resultPair) {
-                return resultPair.second == &pair; // Compare pointers
-            });
-
-        if (it != results.end()) {
-
-            arfitness[k] = it->first->getResult(); 
-        } else {
-            // If the pair is not found
-            std::cout << "Pair not found in results." << std::endl;
+    for(auto line: this->lineUsed){
+        for(size_t idx_const = 0; idx_const < line->getNbConstants(); idx_const++){
+            listValues.push_back(line->getConstantAt(idx_const));
         }
-
-        ++counteval;
     }
 
-
-    arindex.resize(lambda);
-    std::iota(arindex.begin(), arindex.end(), 0);
-    std::sort(arindex.begin(), arindex.end(), [&](int i, int j) {
-        return arfitness[i] < arfitness[j];
-    });
-    this->update();
-    this->updateRoot();
+    xmean = Map<VectorXd>(listValues.data(), listValues.size());
 }
 
 void Learn::CMAESLearningAgent::updateRoot()
@@ -246,27 +284,13 @@ void Learn::CMAESLearningAgent::updateRoot()
 
 
     size_t idx_meanVal = 0;
-    for (const auto* edgeList : allEdges) {
-        // Assurez-vous que edgeList est un pointeur vers une liste de unique_ptr
-        for (const auto& edge : *edgeList) {
-            
-            Program::Program* program = &edge->getProgram();
-
-            for(size_t idx_line = 0; idx_line< program->getNbLines(); idx_line++){
-
-                Program::Line* line = &program->getLine(idx_line);
-
-                if(!program->isIntron(idx_line)){
-
-                    for(size_t idx_const = 0; idx_const < line->getNbConstants(); idx_const++){
-                        line->getConstantHandler().setDataAt(
-                            typeid(Data::Constant), idx_const, {static_cast<double>(xmean[idx_meanVal])
-                        });
-                        idx_meanVal++;
-                    }
-                }
-            }
-        }  
+    for(auto line: this->lineUsed){
+        for(size_t idx_const = 0; idx_const < line->getNbConstants(); idx_const++){
+            line->getConstantHandler().setDataAt(
+                typeid(Data::Constant), idx_const, {static_cast<double>(xmean[idx_meanVal])
+            });
+            idx_meanVal++;
+        }
     }
 
 }

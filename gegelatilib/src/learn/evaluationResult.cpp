@@ -61,6 +61,16 @@ std::map<const Program::Line *, uint64_t>& Learn::EvaluationResult::getUsedLines
     return this->usageLines;
 }
 
+void Learn::EvaluationResult::setIndex(size_t newIdx)
+{
+    this->index = newIdx;
+}
+
+size_t Learn::EvaluationResult::getIndex() const
+{
+    return this->index;
+}
+
 void Learn::EvaluationResult::addUsageLines(std::map<const Program::Line *, uint64_t>& addedLines)
 {
     for(auto newPair: addedLines){

@@ -158,9 +158,8 @@ void Program::ProgramEngine::setErrorWeights(const std::map<Line*, std::vector<d
         for(size_t idx = 0; idx < pair.first->getNbConstants(); idx++){
 
             double weight = pair.second.at(idx);
-            double constantValue = 0;//(double)pair.first->getConstantAt(idx);
 
-            newValues.push_back(weight + constantValue);
+            newValues.push_back(weight);
         }
 
         errorWeights.insert(std::make_pair(pair.first, newValues));
