@@ -27,6 +27,12 @@ void Learn::CMAESLearningAgent::generation() {
             arz(i, k) = distribution(generator);
         }
         arx.col(k) = xmean + sigma * (B * D * arz.col(k));
+
+        /*if(twinError && k < lambda - 1){
+            arz.col(k+1) = -arz.col(k);
+            arx.col(k+1) = xmean + sigma * (B * D * arz.col(k+1));
+            k++;
+        }*/
     }
 }
 
@@ -48,9 +54,9 @@ void Learn::CMAESLearningAgent::update() {
 
     VectorXd xold = xmean;
     VectorXd zmean = VectorXd::Zero(N);
-    xmean = VectorXd::Zero(N);
+    //xmean = VectorXd::Zero(N);
     for (int i = 0; i < mu; ++i) {
-        xmean += weights(i) * arx.col(arindex[i]);
+        xmean += cm * weights(i) * (arx.col(arindex[i]) - xold);
         zmean += weights(i) * arz.col(arindex[i]);
     }
 

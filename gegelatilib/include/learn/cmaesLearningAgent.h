@@ -142,6 +142,10 @@ namespace Learn {
                 return (uint64_t)N;
             }
 
+            uint64_t getNbAgents(){
+                return (uint64_t)lambda;
+            }
+
 
     };
 }; // namespace Learn

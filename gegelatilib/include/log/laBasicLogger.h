@@ -52,7 +52,7 @@ namespace Log {
      */
     class LABasicLogger : public LALogger
     {
-      private:
+      protected:
         /**
          * Width of columns when logging values.
          */
@@ -65,7 +65,7 @@ namespace Log {
          * they both have the same input and want to log the same elements
          * (min, avg max).
          */
-        void logResults(std::multimap<std::shared_ptr<Learn::EvaluationResult>,
+        virtual void logResults(std::multimap<std::shared_ptr<Learn::EvaluationResult>,
                                       const TPG::TPGVertex*>& results);
 
       public:

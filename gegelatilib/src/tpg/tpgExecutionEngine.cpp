@@ -142,7 +142,7 @@ bool TPG::TPGExecutionEngine::executeAction(
 
             // Set the current action class for shared registers
             uint64_t usedActionClass = (env.getParams().isFullSharedMemory) ? 0:actionEdge->getActionClass();
-            this->progExecutionEngine.setActionClass(actionEdge->getActionClass());
+            this->progExecutionEngine.setActionClass(usedActionClass);
 
             // Evaluate the edge and set the action value
             (*actionsTaken)[actionEdge->getActionClass()] = this->evaluateEdge(*actionEdge);

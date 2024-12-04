@@ -87,7 +87,7 @@ void Log::ESBasicLogger::logHeader()
     // Second line of header
     //*this << std::right;
     *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
-          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse" << std::setw(colWidth) << "sigma" ;
+          << std::setw(colWidth) << "Max" << std::setw(colWidth) << "ActUse" << std::setw(colWidth) << "100sigma" ;
     if (doValidation) {
         *this << std::setw(colWidth) << "Score" << std::setw(colWidth) << "ActUse";
     }
@@ -108,7 +108,7 @@ void Log::ESBasicLogger::logAfterEvaluate(
     logResults(results);
 
     
-    *this << std::setw(colWidth) << sigma;
+    *this << std::setw(colWidth) << 100*sigma;
 
     // resets checkpoint to be able to show validation time if there is some
     chronoFromNow();
