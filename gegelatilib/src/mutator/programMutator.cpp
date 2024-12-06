@@ -169,7 +169,7 @@ bool Mutator::ProgramMutator::mutateProgram(Program::Program& p,
     }
 
     // mutate the programs constants if they exists
-    if (false && //TODO CHANGE THIS IMPORTANT
+    if (//TODO CHANGE THIS IMPORTANT
         rng.getDouble(0.0, 1.0) < progParams.pConstantMutation) {
         anyMutation = true;
         alterRandomConstant(p, params, rng);

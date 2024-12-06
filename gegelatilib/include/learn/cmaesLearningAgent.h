@@ -106,9 +106,9 @@ namespace Learn {
              *
              * \param[in] la The LearningAgent used.
              */
-            CMAESLearningAgent(ParallelLearningAgent& la)
-                : ParallelEvoStratLearningAgent(la, 0.1),
-                N(computeDimension(la)), cm(1),
+            CMAESLearningAgent(ParallelLearningAgent& la, double sigma=0.1, double cm = 1.0)
+                : ParallelEvoStratLearningAgent(la, sigma),
+                N(computeDimension(la)), cm(cm),
                 lambda(4 + floor(3 * log(N))),
                 mu(lambda / 2),
                 counteval(0), eigeneval(0),

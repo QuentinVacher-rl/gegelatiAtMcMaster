@@ -56,9 +56,10 @@ void Learn::CMAESLearningAgent::update() {
     VectorXd zmean = VectorXd::Zero(N);
     //xmean = VectorXd::Zero(N);
     for (int i = 0; i < mu; ++i) {
-        xmean += cm * weights(i) * (arx.col(arindex[i]) - xold);
+        //xmean += cm/sigma * weights(i) * (arz.col(arindex[i]) - xold);
         zmean += weights(i) * arz.col(arindex[i]);
     }
+    xmean = xmean + sigma * (B * D * zmean);
 
 
 
@@ -86,8 +87,10 @@ void Learn::CMAESLearningAgent::update() {
     //std::cout << "Covariance matrix C: \n" << C << std::endl;
 
     // Add regularization to ensure numerical stability
-    const double epsilon = 1e-12;
+    const double epsilon = 1e-8;
     C += epsilon * MatrixXd::Identity(N, N);
+
+    std::cout<<"\n"<<C<<std::endl;
 
     // Adapt step size
     sigma *= exp((cs / damps) * (ps.norm() / chiN - 1));
@@ -97,7 +100,7 @@ void Learn::CMAESLearningAgent::update() {
     // std::cout << "Step size sigma: " << sigma << std::endl;
 
     // Update B and D from C conditionally
-    if (counteval - eigeneval > (double)lambda / ((c1 + cmu) / (double)N / 10.0)) {
+    if (true || counteval - eigeneval > (double)lambda / ((c1 + cmu) / (double)N / 10.0)) {
         eigeneval = counteval;
         
         // Symmetry enforcement again for numerical stability
@@ -107,10 +110,16 @@ void Learn::CMAESLearningAgent::update() {
         SelfAdjointEigenSolver<MatrixXd> eigensolver(C);
         B = eigensolver.eigenvectors();
 
+        if ((eigensolver.eigenvalues().array() < 0).any()) {
+            std::cout << "La matrice n'est pas positive semi-définie !" << std::endl;
+        }
+
         // Ensure non-negative eigenvalues
         VectorXd eigenvalues = eigensolver.eigenvalues();
         eigenvalues = eigenvalues.cwiseMax(0);
         //std::cout << "Eigenvalues of C: " << eigenvalues.transpose() << std::endl;
+
+
 
         // Compute D from eigenvalues
         D = eigenvalues.cwiseSqrt().asDiagonal();
@@ -133,7 +142,16 @@ void Learn::CMAESLearningAgent::update() {
     std::cout<<std::setprecision(2);*/
 }
 
+// CMA-ES parameters
+void Learn::CMAESLearningAgent::compute_coefs() {
+    mueff = weights.sum() * weights.sum() / weights.squaredNorm();
+    cc = (4.0 + mueff / (double)N) / ((double)N + 4.0 + 2.0 * mueff / (double)N);
+    cs = (mueff + 2.0) / ((double)N + mueff + 5.0);
+    c1 = 2.0 / (std::pow((double)N + 1.3, 2.0) + mueff);
+    cmu = std::min(1.0 - c1, 2.0 * (mueff - 2.0 + 1.0 / mueff) / (std::pow((double)N + 2.0, 2.0) + 2.0 * mueff / 2.0));
+    damps = 1.0 + 2.0 * std::max(0.0, std::sqrt((mueff - 1.0) / ((double)N + 1.0)) - 1.0) + cs;
 
+}
 
 
 void Learn::CMAESLearningAgent::doEvolutionStrategy(std::multimap<std::shared_ptr<Learn::EvaluationResult>, const std::map<Program::Line*, std::vector<double>>*> results){
@@ -191,16 +209,7 @@ void Learn::CMAESLearningAgent::generateErrorWeights(){
     }
 }
 
-// CMA-ES parameters
-void Learn::CMAESLearningAgent::compute_coefs() {
-    mueff = weights.sum() * weights.sum() / weights.squaredNorm();
-    cc = (4.0 + mueff / (double)N) / ((double)N + 4.0 + 2.0 * mueff / (double)N);
-    cs = (mueff + 2.0) / ((double)N + mueff + 5.0);
-    c1 = 2.0 / (std::pow((double)N + 1.3, 2.0) + mueff);
-    cmu = std::min(1.0 - c1, 2.0 * (mueff - 2.0 + 1.0 / mueff) / (std::pow((double)N + 2.0, 2.0) + 2.0 * mueff / 2.0));
-    damps = 1.0 + 2.0 * std::max(0.0, std::sqrt((mueff - 1.0) / ((double)N + 1.0)) - 1.0) + cs;
 
-}
 
 uint64_t Learn::CMAESLearningAgent::computeDimension(Learn::LearningAgent& la)
 {    
@@ -291,8 +300,10 @@ void Learn::CMAESLearningAgent::updateRoot()
     size_t idx_meanVal = 0;
     for(auto line: this->lineUsed){
         for(size_t idx_const = 0; idx_const < line->getNbConstants(); idx_const++){
+            double currentWeight = (double)line->getConstantAt(idx_const);
             line->getConstantHandler().setDataAt(
-                typeid(Data::Constant), idx_const, {static_cast<double>(xmean[idx_meanVal])
+                typeid(Data::Constant), idx_const, {static_cast<double>(
+                    (1-cm) * currentWeight + cm * xmean[idx_meanVal])
             });
             idx_meanVal++;
         }

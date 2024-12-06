@@ -615,10 +615,15 @@ void Mutator::TPGMutator::mutateTPGTeam(
         do {
             // Process edge-by-edge
             // And possibly modify their target
-            for (TPG::TPGEdge* edge : team.getOutgoingEdges()) {
+
+            auto it = team.getOutgoingEdges().begin();
+            std::advance(it, rng.getUnsignedInt64(0, team.getOutgoingEdges().size() - 1));
+            TPG::TPGEdge* edge = *it;
+
+            //for (TPG::TPGEdge* edge : team.getOutgoingEdges()) {
 
                 // Mutate the program, but need to choose between context program or action program if it exist
-                if (rng.getDouble(0.0, 1.0) < params.tpg.pProgramMutation){
+                //if (rng.getDouble(0.0, 1.0) < params.tpg.pProgramMutation){
 
                     // If destination is action, and probability win, mutate the action program
                     if(dynamic_cast<const TPG::TPGAction*>(edge->getDestination()) != nullptr &&
@@ -648,8 +653,8 @@ void Mutator::TPGMutator::mutateTPGTeam(
                     graph.updateAssessedActions(&team);
                     
                     anyMutationDone = true;
-                }
-            }
+                //}
+            //}
         } while (!anyMutationDone);
     }
 
