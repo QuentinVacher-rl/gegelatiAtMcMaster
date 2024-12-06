@@ -277,6 +277,23 @@ const Data::Constant Program::Program::getConstantAt(size_t index) const
 }
 
 
+
+const Data::PrimitiveTypeArray<double>& Program::Program::cGetRegisterInitHandler() const
+{
+    return this->registerInit;
+}
+
+Data::PrimitiveTypeArray<double>& Program::Program::getRegisterInitHandler()
+{
+    return this->registerInit;
+}
+
+const double Program::Program::getRegisterInitAt(size_t index) const
+{
+    return *this->registerInit.getDataAt(typeid(double), index)
+            .getSharedPointer<const double>();
+}
+
 std::vector<double> Program::Program::getLineConstants() const
 {
     std::vector<double> constants;

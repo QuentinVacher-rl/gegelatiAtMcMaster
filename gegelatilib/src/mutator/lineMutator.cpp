@@ -145,8 +145,10 @@ static bool initRandomCorrectLineOperand(
 void Mutator::LineMutator::changeConstantAt(Program::Line& line, uint64_t index, Mutator::RNG& rng){
     // Sample the new value
     double delta = rng.getDouble(
-        0.5, 2 
+        0.5, 1.5
     );
+    if(delta > 1) delta = delta * 2 - 1;
+
 
     double currentConstantValue = line.getConstantAt(index);
 

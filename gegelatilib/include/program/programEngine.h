@@ -132,7 +132,8 @@ namespace Program {
                 dataScsConstsAndRegs.push_back(data.get());
             }
 
-            for (auto actionClass = 0; actionClass < env.getNbContinuousActions(); actionClass++){
+            uint64_t nbSharedRegisterData = (env.getParams().isFullSharedMemory) ? 1: env.getNbContinuousActions();
+            for (auto actionClass = 0; actionClass < nbSharedRegisterData; actionClass++){
                 sharedRegisterValues.push_back(
                     std::make_shared<Data::PrimitiveTypeArray<double>>(
                     env.getParams().nbSharedRegisters)
@@ -184,7 +185,8 @@ namespace Program {
                 this->dataSources.push_back(data.get());
             }
 
-            for (auto actionClass = 0; actionClass < prog.getEnvironment().getNbContinuousActions(); actionClass++){
+            uint64_t nbSharedRegisterData = (prog.getEnvironment().getParams().isFullSharedMemory) ? 1: prog.getEnvironment().getNbContinuousActions();
+            for (auto actionClass = 0; actionClass < nbSharedRegisterData; actionClass++){
                 sharedRegisterValues.push_back(
                     std::make_shared<Data::PrimitiveTypeArray<double>>(
                     prog.getEnvironment().getParams().nbSharedRegisters)
@@ -393,6 +395,13 @@ namespace Program {
          * \param actionClass index of the action the values are shared for
          */
         virtual void setSharedRegisterValues(const Program& prog, uint64_t actionClass);
+
+        /**
+         * \brief init the new shared registers values
+         * 
+         * 
+         */
+        virtual void initSharedRegisterValues(Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg);
     };
 
     template <class T>

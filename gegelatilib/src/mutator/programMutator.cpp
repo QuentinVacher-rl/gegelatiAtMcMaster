@@ -54,7 +54,14 @@ void Mutator::ProgramMutator::initRandomProgram(
         c_value = {
             rng.getDouble(progParams.minConstValue, progParams.maxConstValue)};
         p.getConstantHandler().setDataAt(typeid(Data::Constant), i, c_value);
-        p.setNbConstants(p.getEnvironment().getNbConstant());
+    }
+
+    // insert random constants in the program
+    double r_value;
+    for (int i = 0; i < p.getEnvironment().getNbRegisters(); i++) {
+        c_value = {
+            rng.getDouble(progParams.minConstValue, progParams.maxConstValue)};
+        p.getRegisterInitHandler().setDataAt(typeid(double), i, c_value);
     }
 
     // Select the number of line randomly
@@ -117,7 +124,7 @@ bool Mutator::ProgramMutator::alterRandomLine(Program::Program& p,
     return true;
 }
 
-bool Mutator::ProgramMutator::alterRandomConstant(
+bool Mutator::ProgramMutator::alterRandomLineConstant(
     Program::Program& p, const MutationParameters& params, Mutator::RNG& rng)
 {
     const ProgramParameters& progParams = p.isActionProgram() ? params.actProg : params.contProg;
@@ -133,6 +140,37 @@ bool Mutator::ProgramMutator::alterRandomConstant(
     const uint64_t const_idx = rng.getUnsignedInt64(0, p.getLine(line_idx).getNbConstants() - 1);
 
     Mutator::LineMutator::changeConstantAt(p.getLine(line_idx), const_idx, rng);
+    return true;
+}
+
+
+bool Mutator::ProgramMutator::alterRandomConstant(
+    Program::Program& p, const MutationParameters& params, Mutator::RNG& rng)
+{
+    const ProgramParameters& progParams = p.isActionProgram() ? params.actProg : params.contProg;
+
+
+    const uint64_t register_idx =
+        rng.getUnsignedInt64(0, p.getEnvironment().getNbRegisters() - 1);
+
+    // Sample the new value
+    double delta = rng.getDouble(
+        0.5, 1.5
+    );
+    if(delta > 1) delta = delta * 2 - 1;
+
+    double currentConstantValue = p.getRegisterInitAt(register_idx);
+
+    double newConstantValue = currentConstantValue * delta;
+
+    if(0.1 > rng.getDouble(0, 1)){
+        newConstantValue = -newConstantValue;
+    }
+    // Set it
+    p.getRegisterInitHandler().setDataAt(
+        typeid(Data::Constant), register_idx,
+        {newConstantValue});
+
     return true;
 }
 
@@ -166,6 +204,13 @@ bool Mutator::ProgramMutator::mutateProgram(Program::Program& p,
     if (rng.getDouble(0.0, 1.0) < progParams.pSwap) {
         anyMutation = true;
         swapRandomLines(p, rng);
+    }
+
+    // mutate the programs constants if they exists
+    if (//TODO CHANGE THIS IMPORTANT
+        rng.getDouble(0.0, 1.0) < progParams.pConstantMutation) {
+        anyMutation = true;
+        alterRandomLineConstant(p, params, rng);
     }
 
     // mutate the programs constants if they exists

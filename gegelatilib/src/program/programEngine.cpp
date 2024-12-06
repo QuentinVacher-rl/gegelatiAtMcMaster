@@ -54,7 +54,7 @@ void Program::ProgramEngine::setProgram(const Program& prog)
 
         // Else, create the registers and add them to the map.
         this->mapMemoryRegisters[&prog] =
-            std::make_shared<Data::PrimitiveTypeArray<double>>(nbRegs);
+            std::make_shared<Data::PrimitiveTypeArray<double>>(prog.cGetRegisterInitHandler());
         this->registers = this->mapMemoryRegisters[&prog];
     }
 
@@ -391,8 +391,16 @@ void Program::ProgramEngine::setSharedRegisterValues(const Program& prog, uint64
 
         throw std::runtime_error("Register should have been found");
     }
+}
 
-
-
-
+void Program::ProgramEngine::initSharedRegisterValues(Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg)
+{
+    size_t valueIndex = 0;
+    for(auto handler: sharedRegisterValues){
+        for(size_t idx = 0; idx < nbSharedReg; idx++){
+            double newValue = *(values.getDataAt(typeid(double), valueIndex).getSharedPointer<double>().get());
+            handler->setDataAt(typeid(double), idx, newValue);
+            valueIndex++;
+        }
+    }
 }

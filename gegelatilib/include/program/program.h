@@ -79,6 +79,10 @@ namespace Program {
          **/
         Data::ConstantHandler constants;
 
+        /**
+         * \brief TODO
+         **/
+        Data::PrimitiveTypeArray<double> registerInit;
 
         /// Number of constants (TODO Change for weights) contained by the program.
         uint64_t nbConstants = 0;
@@ -96,9 +100,11 @@ namespace Program {
          * in the Program attributes.
          */
         Program(const Environment& e, bool actProg = false)
-            : environment{e}, constants{e.getNbConstant()}, actionProgram{actProg}
+            : environment{e}, constants{e.getNbConstant()}, 
+            registerInit{e.getNbRegisters()}, actionProgram{actProg}
         {
             constants.resetData(); // force all constant to 0 at first.
+            registerInit.resetData();
         };
 
         /**
@@ -112,6 +118,7 @@ namespace Program {
         Program(const Program& other)
             : environment{other.environment}, lines{other.lines},
               constants{other.constants}, nbConstants{other.nbConstants}, 
+              registerInit{other.registerInit},
               actionProgram{other.actionProgram}
         {
             // Replace lines with their copy
@@ -136,6 +143,7 @@ namespace Program {
         Program(const Program& other, bool isActProg)
             : environment{other.environment}, lines{other.lines},
               constants{other.constants}, nbConstants{other.nbConstants}, 
+              registerInit{other.registerInit},
               actionProgram{isActProg}
         {
             // Replace lines with their copy
@@ -331,6 +339,40 @@ namespace Program {
          *	\return the value of the constant at the given index
          */
         const Data::Constant getConstantAt(size_t index) const;
+
+
+
+        /**
+         *  \brief get the constantHandler object of the Program
+         *
+         *  This method gives a reference to the constantHandler associated
+         *  with the program
+         *
+         *  \return the constantHandler of the program
+         */
+        Data::PrimitiveTypeArray<double>& getRegisterInitHandler();
+
+        /**
+         *  \brief get a const reference to the constantHandler object of the
+         * Program
+         *
+         *  This method gives a const reference to the constantHandler
+         * associated with the program
+         *
+         *  \return the constantHandler of the program through a const reference
+         */
+        const Data::PrimitiveTypeArray<double>& cGetRegisterInitHandler() const;
+
+        /**
+         *	\brief Get the value of a constant at a given index
+         *
+         *	Although this method is not required as the data is accessible from
+         *	the constantHandler, it allows a shortcut and add readability.
+         *
+         *	\param[in] index the position at which we access the constant
+         *	\return the value of the constant at the given index
+         */
+        const double getRegisterInitAt(size_t index) const;
 
         /**
          * \brief Check if two Program have the same behavior.
