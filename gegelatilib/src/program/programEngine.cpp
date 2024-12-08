@@ -393,7 +393,7 @@ void Program::ProgramEngine::setSharedRegisterValues(const Program& prog, uint64
     }
 }
 
-void Program::ProgramEngine::initSharedRegisterValues(Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg)
+void Program::ProgramEngine::initSharedRegisterValues(const Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg)
 {
     size_t valueIndex = 0;
     for(auto handler: sharedRegisterValues){

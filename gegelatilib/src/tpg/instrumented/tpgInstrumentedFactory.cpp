@@ -46,15 +46,15 @@ std::shared_ptr<TPG::TPGGraph> TPG::TPGInstrumentedFactory::createTPGGraph(
         env, std::make_unique<TPGInstrumentedFactory>());
 }
 
-TPG::TPGTeam* TPG::TPGInstrumentedFactory::createTPGTeam() const
+TPG::TPGTeam* TPG::TPGInstrumentedFactory::createTPGTeam(const size_t nbSharedRegs) const
 {
-    return new TPGTeamInstrumented();
+    return new TPGTeamInstrumented(nbSharedRegs);
 }
 
 TPG::TPGAction* TPG::TPGInstrumentedFactory::createTPGAction(
-    const uint64_t actID, const uint64_t actClass) const
+    const uint64_t actID, const uint64_t actClass, const size_t nbSharedRegs) const
 {
-    return new TPGActionInstrumented(actID, actClass);
+    return new TPGActionInstrumented(actID, actClass, nbSharedRegs);
 }
 
 std::unique_ptr<TPG::TPGEdge> TPG::TPGInstrumentedFactory::createTPGEdge(

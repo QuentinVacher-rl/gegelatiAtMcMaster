@@ -39,6 +39,8 @@
 #include <list>
 #include <set>
 
+#include <data/primitiveTypeArray.h>
+
 namespace TPG {
     // Declare class to make it usable as an attribute.
     class TPGEdge;
@@ -139,12 +141,43 @@ namespace TPG {
          */
         virtual bool hasSameAssessedActions(std::set<uint64_t> actions) const;
 
+        /**
+         *  \brief TODO
+         *
+         *  This method gives a reference to the constantHandler associated
+         *  with the program
+         *
+         *  \return the constantHandler of the program
+         */
+        Data::PrimitiveTypeArray<double>& getSharedRegisterInitHandler();
+
+        /**
+         *  \brief TODO
+         *
+         *  This method gives a const reference to the constantHandler
+         * associated with the program
+         *
+         *  \return the constantHandler of the program through a const reference
+         */
+        const Data::PrimitiveTypeArray<double>& cGetSharedRegisterInitHandler() const;
+
+        /**
+         *	\brief Get the value of a constant at a given index
+         *
+         *	Although this method is not required as the data is accessible from
+         *	the constantHandler, it allows a shortcut and add readability.
+         *
+         *	\param[in] index the position at which we access the constant
+         *	\return the value of the constant at the given index
+         */
+        const double getSharedRegisterInitAt(size_t index) const;
+
       protected:
         /**
          * \brief Protected default constructor to forbid the instanciation of
          * object of this abstract class.
          */
-        TPGVertex(){};
+        TPGVertex(size_t nbSharedRegisters) : sharedRegisterInit{nbSharedRegisters} {};
 
         /**
          * \brief Set of incoming TPGEdge of the TPGVertex.
@@ -161,6 +194,12 @@ namespace TPG {
          * \brief Set of assessed actions by the team
          */
         std::set<uint64_t> assessedActions;
+
+        
+        /**
+         * \brief TODO
+         **/
+        Data::PrimitiveTypeArray<double> sharedRegisterInit;
     };
 }; // namespace TPG
 

@@ -47,6 +47,9 @@ namespace TPG {
     class TPGTeamInstrumented : public TPG::TPGTeam,
                                 public TPG::TPGVertexInstrumentation
     {
+        public:
+            TPGTeamInstrumented(size_t nbSharedRegisters = 0)
+                : TPGTeam(), TPGVertexInstrumentation() {};
     };
 } // namespace TPG
 

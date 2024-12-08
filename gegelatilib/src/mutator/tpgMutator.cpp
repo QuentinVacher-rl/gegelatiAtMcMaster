@@ -100,6 +100,7 @@ void Mutator::TPGMutator::initRandomTPG(
 
         // Create an action
         actions.push_back(&(graph.addNewAction(0, 0)));
+        initSharedRegsValues(graph, *actions.back(), params, rng);
         
         std::set<uint64_t> actionUsed;
         for(size_t j = 0; j < params.tpg.nbActionEdgeInit; j++){
@@ -130,6 +131,7 @@ void Mutator::TPGMutator::initRandomTPG(
 
         // Create a team
         teams.push_back(&(graph.addNewTeam()));   
+        initSharedRegsValues(graph, *teams.back(), params, rng);
 
         // Create a program to connect the team and the action
         contextPrograms.emplace_back(new Program::Program(graph.getEnvironment(), false));
@@ -202,7 +204,7 @@ void Mutator::TPGMutator::initRandomTPG(
             auto actionIndex = rng.getInt32(0, actions.size() - 1);
 
             graph.addNewEdge(*team,
-                             *actions.at(actionIndex),
+                             graph.cloneVertex(*actions.at(actionIndex)),
                              contextPrograms.back());
 
 
@@ -787,6 +789,65 @@ void Mutator::TPGMutator::mutateNewProgramBehaviors(
     }
 }
 
+
+void Mutator::TPGMutator::mutateSharedRegsValues(TPG::TPGGraph& graph, const TPG::TPGVertex& vertex,
+    const Mutator::MutationParameters& params, Mutator::RNG& rng)
+{
+
+    
+    uint64_t nbSharedRegs = graph.getEnvironment().getParams().nbSharedRegisters;
+    if(!graph.getEnvironment().getParams().isFullSharedMemory){
+        nbSharedRegs *= graph.getEnvironment().getNbContinuousActions();
+    } 
+
+    double proba = params.tpg.pSharedRegsValueMutation;
+    while(nbSharedRegs > 0
+          && proba > rng.getDouble(0, 1)){
+        
+        // Sample random index and get the value
+        size_t idx = rng.getUnsignedInt64(0, nbSharedRegs - 1);
+        double currentValue = vertex.getSharedRegisterInitAt(idx);
+
+        // Sample the modification factor
+        double delta = rng.getDouble(
+            0.5, 1.5
+        );
+        if(delta > 1) delta = delta * 2 - 1;
+
+        // 10% chance of swapping
+        if(0.1 > rng.getDouble(0, 1)) delta *= -1;
+
+        // Compute the new value
+        double newConstantValue = currentValue * delta;
+        graph.setSharedRegsValue(&vertex, idx, newConstantValue);
+
+        proba *= params.tpg.pSharedRegsValueMutation;
+
+    }
+}
+
+void Mutator::TPGMutator::initSharedRegsValues(TPG::TPGGraph& graph, const TPG::TPGVertex& vertex,
+    const Mutator::MutationParameters& params, Mutator::RNG& rng)
+{
+
+    
+    uint64_t nbSharedRegs = graph.getEnvironment().getParams().nbSharedRegisters;
+    if(!graph.getEnvironment().getParams().isFullSharedMemory){
+        nbSharedRegs *= graph.getEnvironment().getNbContinuousActions();
+    } 
+
+    // Generate random values
+    std::vector<double> values;
+    for(size_t idx = 0; idx <nbSharedRegs; idx++){
+        values.push_back(rng.getDouble(params.tpg.minSharedRegsValue, params.tpg.maxSharedRegsValue));
+    }
+
+    // Init the values
+    graph.initSharedRegValues(&vertex, values);
+
+}
+
+
 void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                                       const Archive& archive,
                                       const Mutator::MutationParameters& params,
@@ -915,6 +976,8 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 mutateTPGTeam(graph, archive, newTeam, preExistingTeams,
                             preExistingActions, preExistingEdges, preExistingActionEdges, newPrograms, params,
                             rng);
+
+                mutateSharedRegsValues(graph, newTeam, params, rng);
             }
 
 
@@ -928,6 +991,8 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 // Apply mutations to the root
                 mutateTPGAction(graph, newAction, preExistingActions, preExistingActionEdges,
                                 newPrograms, params, rng);
+
+                mutateSharedRegsValues(graph, newAction, params, rng);
             }
         }
 

@@ -60,7 +60,7 @@ void Mutator::ProgramMutator::initRandomProgram(
     double r_value;
     for (int i = 0; i < p.getEnvironment().getNbRegisters(); i++) {
         c_value = {
-            rng.getDouble(progParams.minConstValue, progParams.maxConstValue)};
+            rng.getDouble(progParams.minRegsValue, progParams.maxRegsValue)};
         p.getRegisterInitHandler().setDataAt(typeid(double), i, c_value);
     }
 
@@ -215,7 +215,7 @@ bool Mutator::ProgramMutator::mutateProgram(Program::Program& p,
 
     // mutate the programs constants if they exists
     if (//TODO CHANGE THIS IMPORTANT
-        rng.getDouble(0.0, 1.0) < progParams.pConstantMutation) {
+        rng.getDouble(0.0, 1.0) < progParams.pRegsValueMutation) {
         anyMutation = true;
         alterRandomConstant(p, params, rng);
     }

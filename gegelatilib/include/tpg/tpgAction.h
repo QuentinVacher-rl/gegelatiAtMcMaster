@@ -78,8 +78,8 @@ namespace TPG {
          * TPGAction. Default value = 0. To avoid specified 0 in single action
          * cases.
          */
-        TPGAction(const uint64_t actID, const uint64_t actClass = 0)
-            : actionID{actID}, actionClass{actClass} {};
+        TPGAction(const uint64_t actID, const uint64_t actClass = 0, size_t nbSharedRegisters = 0)
+            : TPGVertex(nbSharedRegisters), actionID{actID}, actionClass{actClass} {};
 
         /**
          * \brief Specialization throwing an std::runtime_exception.

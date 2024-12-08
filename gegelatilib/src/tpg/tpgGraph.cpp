@@ -77,14 +77,22 @@ const TPG::TPGFactory& TPG::TPGGraph::getFactory() const
 
 const TPG::TPGTeam& TPG::TPGGraph::addNewTeam()
 {
-    this->vertices.push_back(factory->createTPGTeam());
+    size_t nbSharedRegs = env.getParams().nbSharedRegisters;
+    if(!env.getParams().isFullSharedMemory){
+        nbSharedRegs *= env.getNbContinuousActions();
+    }
+    this->vertices.push_back(factory->createTPGTeam(nbSharedRegs));
     return (const TPGTeam&)(*this->vertices.back());
 }
 
 const TPG::TPGAction& TPG::TPGGraph::addNewAction(uint64_t actionID,
                                                   uint64_t actionClass)
 {
-    this->vertices.push_back(factory->createTPGAction(actionID, actionClass));
+    size_t nbSharedRegs = env.getParams().nbSharedRegisters;
+    if(!env.getParams().isFullSharedMemory){
+        nbSharedRegs *= env.getNbContinuousActions();
+    }
+    this->vertices.push_back(factory->createTPGAction(actionID, actionClass, nbSharedRegs));
     return (const TPGAction&)(*this->vertices.back());
 }
 
@@ -181,6 +189,16 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
 
     // Get the new vertex
     TPGVertex* newVertex = this->vertices.back();
+
+        
+    uint64_t nbSharedRegs = env.getParams().nbSharedRegisters;
+    if(!env.getParams().isFullSharedMemory){
+        nbSharedRegs *= env.getNbContinuousActions();
+    } 
+    for(size_t idx = 0; idx < nbSharedRegs; idx++){
+        newVertex->getSharedRegisterInitHandler().setDataAt(typeid(double), idx,
+            vertex.getSharedRegisterInitAt(idx));
+    }
 
 
     // Copy the outgoing edges (if any).
@@ -551,6 +569,39 @@ void TPG::TPGGraph::orderActionEdges(const TPG::TPGAction* action)
     }
 }
 
+
+void TPG::TPGGraph::setSharedRegsValue(const TPG::TPGVertex* vertex, size_t idx, double newConstantValue){
+
+    auto it = this->findVertex(vertex);
+
+    if (it != this->vertices.end()) {
+        // Found the vertex, modify it as needed
+        (*it)->getSharedRegisterInitHandler().setDataAt(typeid(double), idx, newConstantValue);
+    } else {
+        throw std::runtime_error(
+            "Vertex to set shared register value not in the graph.");
+    }
+}
+
+void TPG::TPGGraph::initSharedRegValues(const TPG::TPGVertex* vertex, std::vector<double>& values){
+    
+
+    auto it = this->findVertex(vertex);
+
+    if (it != this->vertices.end()) {
+        TPG::TPGVertex* v = *it;
+
+        // Found the vertex, modify it as needed
+        for(size_t idx = 0; idx < values.size(); idx++){
+            v->getSharedRegisterInitHandler().setDataAt(typeid(double), idx,
+                values.at(idx));
+        }
+    } else {
+        throw std::runtime_error(
+            "Vertex to init shared register value not in the graph.");
+    }
+
+}
 
 void TPG::TPGGraph::setConstantsOfRoots(const TPG::TPGVertex *team, std::vector<double> constants)
 {

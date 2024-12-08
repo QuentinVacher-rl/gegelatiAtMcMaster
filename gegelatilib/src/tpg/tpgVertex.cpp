@@ -145,3 +145,20 @@ void TPG::TPGVertex::swapEdges(uint64_t index1, uint64_t index2)
     // Échanger les deux éléments
     std::iter_swap(iter1, iter2);
 }
+
+
+const Data::PrimitiveTypeArray<double>& TPG::TPGVertex::cGetSharedRegisterInitHandler() const
+{
+    return this->sharedRegisterInit;
+}
+
+Data::PrimitiveTypeArray<double>& TPG::TPGVertex::getSharedRegisterInitHandler()
+{
+    return this->sharedRegisterInit;
+}
+
+const double TPG::TPGVertex::getSharedRegisterInitAt(size_t index) const
+{
+    return *this->sharedRegisterInit.getDataAt(typeid(double), index)
+            .getSharedPointer<const double>();
+}

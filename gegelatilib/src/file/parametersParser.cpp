@@ -247,6 +247,20 @@ void File::ParametersParser::setParameterFromString(
             params.mutation.actProg.maxConstValue = value.asDouble();
             return;
         }
+
+        if (param == "pRegsValueMutation") {
+            params.mutation.actProg.pRegsValueMutation = value.asDouble();
+            return;
+        }
+        if (param == "minRegsValue") {
+            params.mutation.actProg.minRegsValue = value.asDouble();
+            return;
+        }
+        if (param == "maxRegsValue") {
+            params.mutation.actProg.maxRegsValue = value.asDouble();
+            return;
+        }
+
     } else if (paramClass == "contProg"){
         if (param == "maxProgramSize") {
             params.mutation.contProg.maxProgramSize = (size_t)value.asUInt();
@@ -272,12 +286,12 @@ void File::ParametersParser::setParameterFromString(
             params.mutation.contProg.pSwap = value.asDouble();
             return;
         }
-        if (param == "pConstantMutation") {
-            params.mutation.contProg.pConstantMutation = value.asDouble();
-            return;
-        }
         if (param == "pNewProgram") {
             params.mutation.contProg.pNewProgram = value.asDouble();
+            return;
+        }
+        if (param == "pConstantMutation") {
+            params.mutation.contProg.pConstantMutation = value.asDouble();
             return;
         }
         if (param == "minConstValue") {
@@ -286,6 +300,19 @@ void File::ParametersParser::setParameterFromString(
         }
         if (param == "maxConstValue") {
             params.mutation.contProg.maxConstValue = value.asDouble();
+            return;
+        }
+
+        if (param == "pRegsValueMutation") {
+            params.mutation.contProg.pRegsValueMutation = value.asDouble();
+            return;
+        }
+        if (param == "minRegsValue") {
+            params.mutation.contProg.minRegsValue = value.asDouble();
+            return;
+        }
+        if (param == "maxRegsValue") {
+            params.mutation.contProg.maxRegsValue = value.asDouble();
             return;
         }
     }
@@ -335,6 +362,20 @@ void File::ParametersParser::setParameterFromString(
         params.nbSharedRegisters = (size_t)value.asUInt();
         return;
     }
+
+    if (param == "minSharedRegsValue") {
+        params.mutation.tpg.minSharedRegsValue = value.asDouble();
+        return;
+    }
+    if (param == "maxSharedRegsValue") {
+        params.mutation.tpg.maxSharedRegsValue = value.asDouble();
+        return;
+    }
+    if (param == "pSharedRegsValueMutation") {
+        params.mutation.tpg.pSharedRegsValueMutation = value.asDouble();
+        return;
+    }
+
 
     
     if (param == "useMemoryRegisters") {
@@ -451,6 +492,22 @@ void File::ParametersParser::writeParametersToJson(
     root["nbSharedRegisters"] = params.nbSharedRegisters;
     root["nbSharedRegisters"].setComment(
         Learn::LearningParameters::nbSharedRegistersComment, Json::commentBefore);
+
+
+
+    root["mutation"]["tpg"]["minSharedRegsValue"] = params.mutation.tpg.minSharedRegsValue;
+    root["mutation"]["tpg"]["minSharedRegsValue"].setComment(
+        Mutator::TPGParameters::minSharedRegsValueComment,
+        Json::commentBefore);
+    root["mutation"]["tpg"]["maxSharedRegsValue"] = params.mutation.tpg.maxSharedRegsValue;
+    root["mutation"]["tpg"]["maxSharedRegsValue"].setComment(
+        Mutator::TPGParameters::maxSharedRegsValueComment,
+        Json::commentBefore);
+    root["mutation"]["tpg"]["pSharedRegsValueMutation"] = params.mutation.tpg.pSharedRegsValueMutation;
+    root["mutation"]["tpg"]["pSharedRegsValueMutation"].setComment(
+        Mutator::TPGParameters::pSharedRegsValueMutationComment,
+        Json::commentBefore);
+
 
     root["useMemoryRegisters"] = params.useMemoryRegisters;
     root["useMemoryRegisters"].setComment(
@@ -648,6 +705,17 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["actProg"]["pSwap"].setComment(
         Mutator::ProgramParameters::pSwapComment, Json::commentBefore);
 
+    root["mutation"]["actProg"]["pRegsValueMutation"] = params.mutation.actProg.pRegsValueMutation;
+    root["mutation"]["actProg"]["pRegsValueMutation"].setComment(
+        Mutator::ProgramParameters::pRegsValueMutationComment, Json::commentBefore);
+    root["mutation"]["actProg"]["minRegsValue"] = params.mutation.actProg.minRegsValue;
+    root["mutation"]["actProg"]["minRegsValue"].setComment(
+        Mutator::ProgramParameters::minRegsValueComment, Json::commentBefore);
+    root["mutation"]["actProg"]["maxRegsValue"] = params.mutation.actProg.maxRegsValue;
+    root["mutation"]["actProg"]["maxRegsValue"].setComment(
+        Mutator::ProgramParameters::maxRegsValueComment, Json::commentBefore);
+
+
 
     // mutation.contProgram parameters
     root["mutation"]["contProg"]["maxConstValue"] =
@@ -695,6 +763,16 @@ void File::ParametersParser::writeParametersToJson(
     root["mutation"]["contProg"]["pSwap"] = params.mutation.contProg.pSwap;
     root["mutation"]["contProg"]["pSwap"].setComment(
         Mutator::ProgramParameters::pSwapComment, Json::commentBefore);
+
+    root["mutation"]["contProg"]["pRegsValueMutation"] = params.mutation.contProg.pRegsValueMutation;
+    root["mutation"]["contProg"]["pRegsValueMutation"].setComment(
+        Mutator::ProgramParameters::pRegsValueMutationComment, Json::commentBefore);
+    root["mutation"]["contProg"]["minRegsValue"] = params.mutation.contProg.minRegsValue;
+    root["mutation"]["contProg"]["minRegsValue"].setComment(
+        Mutator::ProgramParameters::minRegsValueComment, Json::commentBefore);
+    root["mutation"]["contProg"]["maxRegsValue"] = params.mutation.contProg.maxRegsValue;
+    root["mutation"]["contProg"]["maxRegsValue"].setComment(
+        Mutator::ProgramParameters::maxRegsValueComment, Json::commentBefore);
 
     // Write to the output stream
     std::ofstream writtenFile(path);

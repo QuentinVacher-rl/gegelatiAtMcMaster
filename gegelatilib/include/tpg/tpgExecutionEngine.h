@@ -105,6 +105,14 @@ namespace TPG {
         void setErrorWeights(const std::map<Program::Line*, std::vector<double>>* newErrorWeights);
 
         /**
+         * \brief set the initial value of the shared registers
+         * 
+         * \param[in] values TODO
+         * \param[in] nbSharedReg TODO
+         */
+        void initSharedRegisterValues(const Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg);
+
+        /**
          * \brief TODO
          */
         void clearUsageLines();

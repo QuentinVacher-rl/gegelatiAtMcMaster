@@ -437,6 +437,24 @@ namespace TPG {
          */
         void orderActionEdges(const TPG::TPGAction* action);
 
+        /**
+         * \brief set the value of the vertex in the init shared registers values
+         * 
+         * \param[in] vertex TODO
+         * \param[in] idx TODO
+         * \param[in] newConstantValue TODO
+         */
+        void setSharedRegsValue(const TPG::TPGVertex* vertex, size_t idx, double newConstantValue);
+
+        
+        /**
+         * \brief init the values of the vertex in the init shared registers values
+         * 
+         * \param[in] vertex TODO
+         * \param[in] values TODO
+         */
+        void initSharedRegValues(const TPG::TPGVertex* vertex, std::vector<double>& values);
+
       protected:
         /// Environment of the TPGGraph
         const Environment& env;

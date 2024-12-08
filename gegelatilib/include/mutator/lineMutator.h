@@ -65,7 +65,7 @@ namespace Mutator {
          * altered.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        void initRandomConstants(Program::Line& line, Mutator::RNG& rng);
+        void initRandomConstants(Program::Line& line, Mutator::RNG& rng, bool actionProgram);
 
         /**
          * \brief Randomly initializes a Program::Line.

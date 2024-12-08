@@ -55,10 +55,26 @@ void TPG::TPGExecutionEngine::setErrorWeights(const std::map<Program::Line*, std
     progExecutionEngine.setErrorWeights(newErrorWeights);
 }
 
+
+void TPG::TPGExecutionEngine::initSharedRegisterValues(const Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg)
+{
+    progExecutionEngine.initSharedRegisterValues(values, nbSharedReg);
+}
+
+
 void TPG::TPGExecutionEngine::clearUsageLines()
 {
     progExecutionEngine.clearUsageLines();
 }
+
+void TPG::TPGExecutionEngine::resetAllMemoryRegisters()
+{
+    this->progExecutionEngine.resetAllMemoryRegisters();
+    this->progExecutionEngine.resetSharedRegisters();
+}
+
+
+
 std::map<const Program::Line *, uint64_t>& TPG::TPGExecutionEngine::getUsageLInes()
 {
     return progExecutionEngine.getUsageLInes();
@@ -95,11 +111,6 @@ void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(std::vector<doubl
     }
 }
 
-void TPG::TPGExecutionEngine::resetAllMemoryRegisters()
-{
-    this->progExecutionEngine.resetAllMemoryRegisters();
-    this->progExecutionEngine.resetSharedRegisters();
-}
 
 double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
 {
@@ -299,7 +310,9 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
 
     // Reset the shared memory
     if(!env.getParams().useMemoryRegisters){
-        progExecutionEngine.resetSharedRegisters();
+        progExecutionEngine.initSharedRegisterValues(
+            root.cGetSharedRegisterInitHandler(), env.getParams().nbSharedRegisters
+        );
     }
 
     const TPGVertex* currentVertex = &root;

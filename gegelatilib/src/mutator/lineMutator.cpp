@@ -163,13 +163,13 @@ void Mutator::LineMutator::changeConstantAt(Program::Line& line, uint64_t index,
         {newConstantValue});
 }
 
-void Mutator::LineMutator::initRandomConstants(Program::Line& line, Mutator::RNG& rng){
+void Mutator::LineMutator::initRandomConstants(Program::Line& line, Mutator::RNG& rng, bool actionProgram){
     for(auto idx = 0; idx < line.getEnvironment().getInstructionSet().getMaxNbConstants(); idx++){
         // Sample the new value
-        double newConstantValue = rng.getDouble(
-            line.getEnvironment().getParams().mutation.actProg.maxConstValue,
-            line.getEnvironment().getParams().mutation.actProg.minConstValue
-        );
+
+        Mutator::ProgramParameters paramUsed = (actionProgram) ? line.getEnvironment().getParams().mutation.actProg : line.getEnvironment().getParams().mutation.contProg;
+
+        double newConstantValue = rng.getDouble(paramUsed.minConstValue, paramUsed.maxConstValue);
         // Set it
         line.getConstantHandler().setDataAt(
             typeid(Data::Constant), idx,
@@ -211,7 +211,7 @@ void Mutator::LineMutator::initRandomCorrectLine(Program::Line& line,
     line.setNbConstants(instruction.getNbConstants());
 
     
-    initRandomConstants(line, rng);
+    initRandomConstants(line, rng, actionProgram);
 
     auto operandTypes = instruction.getOperandTypes();
 

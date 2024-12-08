@@ -401,7 +401,7 @@ namespace Program {
          * 
          * 
          */
-        virtual void initSharedRegisterValues(Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg);
+        virtual void initSharedRegisterValues(const Data::PrimitiveTypeArray<double>& values, size_t nbSharedReg);
     };
 
     template <class T>

@@ -190,13 +190,13 @@ TEST_F(TPGInstrumentedTest, TPGInstrumentedFactory)
     std::unique_ptr<TPG::TPGEdge> edge;
     std::unique_ptr<TPG::TPGExecutionEngine> tee;
 
-    ASSERT_NO_THROW(action = factory.createTPGAction(0, 0))
+    ASSERT_NO_THROW(action = factory.createTPGAction(0, 0, 0))
         << "TPGFactory could not build a TPGAction.";
     ASSERT_NE(action, nullptr) << "Created TPGAction should not be null.";
     ASSERT_EQ(typeid(*action), typeid(TPG::TPGActionInstrumented))
         << "Action built by the TPGInstrumentedFactory has an incorrect type.";
 
-    ASSERT_NO_THROW(team = factory.createTPGTeam())
+    ASSERT_NO_THROW(team = factory.createTPGTeam(0))
         << "TPGGraphELementFactory could not build a TPGAction.";
     ASSERT_NE(team, nullptr) << "Created TPGTeam should not be null.";
     ASSERT_EQ(typeid(*team), typeid(TPG::TPGTeamInstrumented))

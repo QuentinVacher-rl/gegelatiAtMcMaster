@@ -85,7 +85,7 @@ namespace TPG {
          *
          * This method allocates and returns a new TPGTeam.
          */
-        virtual TPGTeam* createTPGTeam() const;
+        virtual TPGTeam* createTPGTeam(const size_t nbSharedRegs) const;
 
         /**
          * \brief Create a TPGAction for a TPGGraph.
@@ -97,7 +97,8 @@ namespace TPG {
          * TPGAction.
          */
         virtual TPGAction* createTPGAction(const uint64_t actID,
-                                           const uint64_t actClass) const;
+                                           const uint64_t actClass,
+                                           const size_t nbSharedRegs) const;
 
         /**
          * \brief Create a TPGEdge for a TPGGraph.

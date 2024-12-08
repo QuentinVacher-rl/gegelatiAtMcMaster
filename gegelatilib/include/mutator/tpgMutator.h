@@ -310,6 +310,29 @@ namespace Mutator {
             Mutator::RNG& rng, const Mutator::MutationParameters& params,
             const Archive& archive);
 
+
+        /**
+         * \brief Mutate the shared registers of the current vertex
+         * 
+         * \param[in] graph TODO
+         * \param[in] vertex TODO
+         * \param[in] params TODO
+         * \param[in] rng TODO
+         */
+        void mutateSharedRegsValues(TPG::TPGGraph& graph, const TPG::TPGVertex& vertex,
+            const Mutator::MutationParameters& params, Mutator::RNG& rng);
+
+        /**
+         * \brief Init the shared registers of the current vertex
+         * 
+         * \param[in] graph TODO
+         * \param[in] vertex TODO
+         * \param[in] params TODO
+         * \param[in] rng TODO
+         */
+        void initSharedRegsValues(TPG::TPGGraph& graph, const TPG::TPGVertex& vertex,
+            const Mutator::MutationParameters& params, Mutator::RNG& rng);
+
         /**
          * \brief Create new root TPGTeam within the TPGGraph.
          *

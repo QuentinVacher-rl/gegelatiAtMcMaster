@@ -157,6 +157,7 @@ bool Learn::LearningAgent::isRootEvalSkipped(
 
             // Reset the memory registers.
             tee.resetAllMemoryRegisters();
+            tee.initSharedRegisterValues(root->cGetSharedRegisterInitHandler(), env.getParams().nbSharedRegisters);
 
             double nbActionUsed = 0;
 

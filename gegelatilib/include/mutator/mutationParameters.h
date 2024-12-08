@@ -226,6 +226,31 @@ namespace Mutator {
             "// \"pEdgeDestinationIsAction\" : 0.5, // Default value";
         /// Probability of the new destination of a TPGEdge to be a TPGAction.
         double pEdgeDestinationIsAction = 0.5;
+
+
+        /// JSon comment
+        inline static const std::string minSharedRegsValueComment =
+            "// Minimum Shared register value possible.\n"
+            "// \"minSharedRegsValue\" : -1, // Default value";
+        /// Minimum constant value possible
+        double minSharedRegsValue = -1;
+
+        /// JSon comment
+        inline static const std::string maxSharedRegsValueComment =
+            "// Maximum Shared regidster value possible.\n"
+            "// \"maxSharedRegsValue\" : 1, // Default value";
+        /// Maximum constant value possible
+        double maxSharedRegsValue = 1;
+
+        /// JSon comment
+        inline static const std::string pSharedRegsValueMutationComment =
+            "// Probability of each init shared register value to be mutated.\n"
+            "// Mutation is to multiply by a random number between 0.5 and 2\n"
+            "// There is also 0.1 probability of multiply by -1.\n"
+            "// \"pSharedRegsValueMutation\" : 0.5, // Default value";
+        /// Probability of each constant to be mutated
+        double pSharedRegsValueMutation = 0.5;
+
     } TPGParameters;
 
     /**
@@ -275,12 +300,6 @@ namespace Mutator {
         /// Probability of swapping two lines of the Program.
         double pSwap = 1.0;
 
-        /// JSon comment
-        inline static const std::string pConstantMutationComment =
-            "// Probability of each constant to be mutated.\n"
-            "// \"pConstantMutation\" : 0.5, // Default value";
-        /// Probability of each constant to be mutated
-        double pConstantMutation = 0.5;
 
         /// JSon comment
         inline static const std::string pNewProgramComment =
@@ -292,16 +311,49 @@ namespace Mutator {
         /// JSon comment
         inline static const std::string minConstValueComment =
             "// Minimum constant value possible.\n"
-            "// \"minConstValue\" : -10, // Default value";
+            "// \"minConstValue\" : -1, // Default value";
         /// Minimum constant value possible
-        double minConstValue = -100;
+        double minConstValue = -1;
 
         /// JSon comment
         inline static const std::string maxConstValueComment =
             "// Maximum constant value possible.\n"
-            "// \"maxConstValue\" : 100, // Default value";
+            "// \"maxConstValue\" : 1, // Default value";
         /// Maximum constant value possible
-        double maxConstValue = 100;
+        double maxConstValue = 1;
+
+        /// JSon comment
+        inline static const std::string pConstantMutationComment =
+            "// Probability of each constant to be mutated.\n"
+            "// Mutation is to multiply by a random number between 0.5 and 2\n"
+            "// There is also 0.1 probability of multiply by -1.\n"
+            "// \"pConstantMutation\" : 0.5, // Default value";
+        /// Probability of each constant to be mutated
+        double pConstantMutation = 0.5;
+
+
+        /// JSon comment
+        inline static const std::string minRegsValueComment =
+            "// Minimum register value possible.\n"
+            "// \"minRegsValue\" : -1, // Default value";
+        /// Minimum constant value possible
+        double minRegsValue = -1;
+
+        /// JSon comment
+        inline static const std::string maxRegsValueComment =
+            "// Maximum constant value possible.\n"
+            "// \"maxRegsValue\" : 1, // Default value";
+        /// Maximum constant value possible
+        double maxRegsValue = 1;
+
+        /// JSon comment
+        inline static const std::string pRegsValueMutationComment =
+            "// Probability of each init register value to be mutated.\n"
+            "// Mutation is to multiply by a random number between 0.5 and 2\n"
+            "// There is also 0.1 probability of multiply by -1.\n"
+            "// \"pRegsValueMutation\" : 0.5, // Default value";
+        /// Probability of each constant to be mutated
+        double pRegsValueMutation = 0.5;
     } ProgramParameters;
 
     /**
