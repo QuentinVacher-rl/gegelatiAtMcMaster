@@ -59,7 +59,8 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     }
 
     if (!prog.getEnvironment().getParams().useMemoryRegisters) {
-        this->registers->resetData();
+        //this->registers->resetData();
+        this->registers = std::make_shared<Data::PrimitiveTypeArray<double>>(prog.cGetRegisterInitHandler());
     }
 
     uint64_t nbSharedRegs = prog.getEnvironment().getParams().nbSharedRegisters;
@@ -70,7 +71,6 @@ void Program::ProgramEngine::setProgram(const Program& prog)
             *(sharedRegisterValues[actionClass]->getDataAt(typeid(double), i).getSharedPointer<const double>())
         );
     }
-
 
     // Set the registers.
     this->dataScsConstsAndRegs.front() = *this->registers;

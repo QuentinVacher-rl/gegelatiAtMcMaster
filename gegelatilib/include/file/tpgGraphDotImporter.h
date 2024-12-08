@@ -365,6 +365,13 @@ namespace File {
         void dumpTPGGraphHeader();
 
         /**
+         * \brief Set the weight on the current line to the shared register of the vertex
+         * 
+         * \param[in] vertex to which weights are set
+         */
+        void readVertexSharedRegValues(const TPG::TPGVertex* vertex);
+
+        /**
          * \brief reads and creates a TPGTeam.
          */
         void readTeam(std::smatch& matches);

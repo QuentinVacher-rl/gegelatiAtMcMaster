@@ -191,6 +191,25 @@ void File::TPGGraphDotImporter::readProgram(std::smatch& matches)
         this->programID.insert(
             std::pair<uint64_t, std::shared_ptr<Program::Program>>(
                 std::stoi(matches[1]), p));
+
+        std::string::size_type pos0;
+        std::string::size_type pos1;
+        // read constants
+        size_t idx = 0;
+        pos0 = this->lastLine.find("//") + 2;
+        pos1 = this->lastLine.find("|", pos0);
+        for (;;) {
+            if (pos1 != std::string::npos) {
+                p->getRegisterInitHandler().setDataAt(typeid(double), idx, 
+                    std::stod(this->lastLine.substr(pos0, pos1 - pos0))); // Convertit la chaîne en double
+                idx++;
+            }
+            else {
+                break;
+            }
+            pos0 = pos1 + 1;
+            pos1 = this->lastLine.find("|", pos0);
+        }
     }
 }
 
@@ -211,11 +230,34 @@ void File::TPGGraphDotImporter::dumpTPGGraphHeader()
     }
 }
 
+void File::TPGGraphDotImporter::readVertexSharedRegValues(const TPG::TPGVertex* vertex){
+    std::string::size_type pos0;
+    std::string::size_type pos1;
+    // read constants
+    size_t idx = 0;
+    pos0 = this->lastLine.find("//") + 2;
+    pos1 = this->lastLine.find("|", pos0);
+    for (;;) {
+        if (pos1 != std::string::npos) {
+            this->tpg.setSharedRegsValue(vertex, idx, 
+                std::stod(this->lastLine.substr(pos0, pos1 - pos0))); // Convertit la chaîne en double
+            idx++;
+        }
+        else {
+            break;
+        }
+        pos0 = pos1 + 1;
+        pos1 = this->lastLine.find("|", pos0);
+    }
+}
+
 void File::TPGGraphDotImporter::readTeam(std::smatch& matches)
 {
     if (!this->lastLine.empty() && !matches.empty()) {
         this->vertexID.insert(std::pair<uint64_t, const TPG::TPGVertex*>(
             std::stoi(matches[1]), &this->tpg.addNewTeam()));
+
+        readVertexSharedRegValues(this->tpg.getVertices().back());
     }
 }
 
@@ -248,6 +290,8 @@ void File::TPGGraphDotImporter::readAction(std::smatch& matches)
         }
         this->actionClasses.insert(
             std::pair<const TPG::TPGVertex*, std::vector<uint64_t>>(this->tpg.getVertices().back(), numbers));
+
+        readVertexSharedRegValues(this->tpg.getVertices().back());
     }
 }
 

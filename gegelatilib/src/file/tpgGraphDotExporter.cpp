@@ -58,8 +58,19 @@ void File::TPGGraphDotExporter::printTPGTeam(const TPG::TPGTeam& team)
         color = "#66ddff";
     }
 
-    fprintf(pFile, "%sT%" PRIu64 " [fillcolor=\"%s\"]\n", this->offset.c_str(),
+    fprintf(pFile, "%sT%" PRIu64 " [fillcolor=\"%s\"] //", this->offset.c_str(),
             name, color.c_str());
+
+    
+    // add next the content of the constant data handler in a comment (//)
+    size_t nbConstInVertex = this->tpg.getEnvironment().getParams().nbSharedRegisters;
+    if(!this->tpg.getEnvironment().getParams().isFullSharedMemory){
+        nbConstInVertex *= tpg.getEnvironment().getNbContinuousActions();
+    }
+    for (size_t idx=0; idx < nbConstInVertex; idx++) {
+        fprintf(pFile, "%f|", team.getSharedRegisterInitAt(idx));
+    }
+    fprintf(pFile, "\n");
 }
 
 uint64_t File::TPGGraphDotExporter::printTPGAction(const TPG::TPGAction& action)
@@ -88,9 +99,21 @@ uint64_t File::TPGGraphDotExporter::printTPGAction(const TPG::TPGAction& action)
     // Write the label into the file
     fprintf(pFile,
             "%sA%" PRIu64 " [fillcolor=\"#ff3366\" shape=box margin=0.03 "
-            "width=0 height=0 label=\"%s\"]\n",
+            "width=0 height=0 label=\"%s\"] //",
             offset.c_str(), actionID, label.c_str());
     
+
+    
+    // add next the content of the constant data handler in a comment (//)
+    size_t nbConstInVertex = this->tpg.getEnvironment().getParams().nbSharedRegisters;
+    if(!this->tpg.getEnvironment().getParams().isFullSharedMemory){
+        nbConstInVertex *= tpg.getEnvironment().getNbContinuousActions();
+    }
+    for (size_t idx=0; idx < nbConstInVertex; idx++) {
+        fprintf(pFile, "%f|", action.getSharedRegisterInitAt(idx));
+    }
+    fprintf(pFile, "\n");
+
     return actionID;
 }
 
@@ -102,8 +125,14 @@ void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
     Program::Program& p = edge.getProgram();
     if (this->findProgramID(edge.getProgram(), progID)) {
         // First time thie Program is encountered
-        fprintf(pFile, "%sP%" PRIu64 " [fillcolor=\"#cccccc\" shape=point]\n",
+        fprintf(pFile, "%sP%" PRIu64 " [fillcolor=\"#cccccc\" shape=point] //",
                 this->offset.c_str(), progID);
+
+        for (size_t idx=0; idx < this->tpg.getEnvironment().getNbRegisters(); idx++) {
+            fprintf(pFile, "%f|", p.getRegisterInitAt(idx));
+        }
+        fprintf(pFile, "\n");
+
 
         // print the program content :
         printProgram(p);

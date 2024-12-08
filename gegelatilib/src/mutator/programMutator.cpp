@@ -58,7 +58,7 @@ void Mutator::ProgramMutator::initRandomProgram(
 
     // insert random constants in the program
     double r_value;
-    for (int i = 0; i < p.getEnvironment().getNbRegisters(); i++) {
+    for (int i = 0; i < p.getEnvironment().getNbRegisters() - p.getEnvironment().getParams().nbSharedRegisters; i++) {
         c_value = {
             rng.getDouble(progParams.minRegsValue, progParams.maxRegsValue)};
         p.getRegisterInitHandler().setDataAt(typeid(double), i, c_value);
@@ -151,7 +151,7 @@ bool Mutator::ProgramMutator::alterRandomConstant(
 
 
     const uint64_t register_idx =
-        rng.getUnsignedInt64(0, p.getEnvironment().getNbRegisters() - 1);
+        rng.getUnsignedInt64(0, p.getEnvironment().getNbRegisters() - p.getEnvironment().getParams().nbSharedRegisters - 1);
 
     // Sample the new value
     double delta = rng.getDouble(
