@@ -174,7 +174,8 @@ namespace TPG {
          * \return true if the action changed
          */
         virtual bool executeAction(const TPG::TPGVertex* currentAction,
-                                   std::vector<double>* actionsTaken);
+                                   std::vector<double>* actionsTaken,
+                                   std::shared_ptr<Program::Program> prog = nullptr);
 
         /**
          * \brief Execute all the Program of the outgoing TPGEdge of the

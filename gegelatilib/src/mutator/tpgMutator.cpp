@@ -73,9 +73,6 @@ void Mutator::TPGMutator::initRandomTPG(
                                  "cannot exceed the number of action");
     }
 
-    if (params.tpg.initNbActions < params.tpg.initNbRoots){
-        throw std::runtime_error("Can't be more root team than action");
-    }
     /*if (nbActions < 2) {
         throw std::runtime_error("A TPG with a single action makes no sense.");
     }*/
@@ -95,6 +92,13 @@ void Mutator::TPGMutator::initRandomTPG(
     std::vector<std::shared_ptr<Program::Program>> contextPrograms;
     std::vector<std::shared_ptr<Program::Program>> actionPrograms;
 
+    uint64_t nbEdgeInit = params.tpg.nbActionEdgeInit;
+    if(!params.tpg.useActionProgram){
+        nbEdgeInit = 0;
+    } else if(!params.tpg.useMultiActionProgram){
+        nbEdgeInit = 1;
+    }
+
 
     for (size_t i = 0; i < params.tpg.initNbActions; i++) {
 
@@ -102,8 +106,9 @@ void Mutator::TPGMutator::initRandomTPG(
         actions.push_back(&(graph.addNewAction(0, 0)));
         initSharedRegsValues(graph, *actions.back(), params, rng);
         
+
         std::set<uint64_t> actionUsed;
-        for(size_t j = 0; j < params.tpg.nbActionEdgeInit; j++){
+        for(size_t j = 0; j < nbEdgeInit; j++){
 
             // Create an action program
             actionPrograms.emplace_back(new Program::Program(graph.getEnvironment(), true));
@@ -124,7 +129,9 @@ void Mutator::TPGMutator::initRandomTPG(
                                 actionClass);
         }
 
-        graph.orderActionEdges(actions.back());
+        if(params.tpg.useMultiActionProgram){
+            graph.orderActionEdges(actions.back());
+        }
     }
 
     for(size_t i = 0; i < params.tpg.initNbRoots; i++){
@@ -141,11 +148,15 @@ void Mutator::TPGMutator::initRandomTPG(
 
         // Connect the team to the action
         graph.addNewEdge(*teams.at(i),
-                         *actions.at(i),
+                         *actions.at(i % params.tpg.initNbActions),
                          contextPrograms.at(i));
     }
 
-    graph.updateAllAssessedActions();
+
+
+    if(params.tpg.useMultiActionProgram){
+        graph.updateAllAssessedActions();
+    }
 
     // Add additional connections to TPG
     // Team-by-Team
@@ -209,8 +220,10 @@ void Mutator::TPGMutator::initRandomTPG(
 
 
         }
-
-        graph.updateAssessedActions(team);
+        
+        if(params.tpg.useMultiActionProgram){
+            graph.updateAssessedActions(team);
+        }
     }
 
 }
@@ -327,14 +340,13 @@ void Mutator::TPGMutator::mutateTPGActionEdge(
     TPG::TPGGraph& graph, const TPG::TPGAction& action, TPG::TPGActionEdge* actionEdge,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
     const Mutator::MutationParameters& params, Mutator::RNG& rng)
-{ 
-
-        
+{
     // copy program
     newPrograms.push_back(actionEdge->getProgramSharedPointer());
 
     // Change action ID randomly if the action do not contain all actions. 
-    if (action.getAssessedActions().size() < graph.getEnvironment().getNbContinuousActions() &&
+    if (params.tpg.useMultiActionProgram &&
+        action.getAssessedActions().size() < graph.getEnvironment().getNbContinuousActions() &&
         params.tpg.pChangeActionClass > rng.getDouble(0.0, 1.0)) {
 
         uint64_t newActionID = rng.getInt32(0, graph.getEnvironment().getNbContinuousActions() - 1);
@@ -345,9 +357,7 @@ void Mutator::TPGMutator::mutateTPGActionEdge(
         actionEdge->setActionClass(newActionID);   
         
         graph.updateAssessedActions(&action);   
-
     }
-
 }
 
 
@@ -359,53 +369,50 @@ void Mutator::TPGMutator::mutateTPGAction(
     const Mutator::MutationParameters& params, Mutator::RNG& rng)
 { 
 
-    // 1. Remove randomly selected edges
-    // Keep at least two edges (otherwise the team is useless)
-    double proba = params.tpg.pActionEdgeDeletion;
-    while (action.getOutgoingEdges().size() > 1 &&
-        proba > rng.getDouble(0.0, 1.0)) {
-        removeRandomActionEdge(graph, action, rng);
-
-        // Decrement the proba of removing another edge
-        proba *= params.tpg.pActionEdgeDeletion;
-
-        // Update assessed actions    
-        graph.updateAssessedActions(&action);
-        
-    }
-    
-
-    // 2. Add random duplicated edge with the team as its source
-    proba = params.tpg.pActionEdgeAddition;
-    while (action.getOutgoingEdges().size() < graph.getEnvironment().getNbContinuousActions() &&
-           proba > rng.getDouble(0.0, 1.0)) {
-
-        // Add an edge (by duplication of an existing one)
-        addRandomActionEdge(graph, action, preExistingActionEdges, rng);
-
-        // Decrement the proba of adding another edge
-        proba *= params.tpg.pActionEdgeAddition;
-
-        // Update assessed actions    
-        graph.updateAssessedActions(&action);
-                
-    }
-    
-
-
-
-    // 3. swap randomly selected edges
-    // With at least two edges
-    proba = params.tpg.pSwapActionProgram;
-    while (action.getOutgoingEdges().size() > 2 &&
+    if(params.tpg.useMultiActionProgram){
+        // 1. Remove randomly selected edges
+        // Keep at least two edges (otherwise the team is useless)
+        double proba = params.tpg.pActionEdgeDeletion;
+        while (action.getOutgoingEdges().size() > 1 &&
             proba > rng.getDouble(0.0, 1.0)) {
-        swapActionEdges(graph, action, rng);
+            removeRandomActionEdge(graph, action, rng);
 
-        // Decrement the proba of swapping two edges
-        proba *= params.tpg.pSwapActionProgram;
+            // Decrement the proba of removing another edge
+            proba *= params.tpg.pActionEdgeDeletion;
 
-        
+            // Update assessed actions    
+            graph.updateAssessedActions(&action);
+            
+        }
+
+        // 2. Add random duplicated edge with the team as its source
+        proba = params.tpg.pActionEdgeAddition;
+        while (action.getOutgoingEdges().size() < graph.getEnvironment().getNbContinuousActions() &&
+            proba > rng.getDouble(0.0, 1.0)) {
+
+            // Add an edge (by duplication of an existing one)
+            addRandomActionEdge(graph, action, preExistingActionEdges, rng);
+
+            // Decrement the proba of adding another edge
+            proba *= params.tpg.pActionEdgeAddition;
+
+            // Update assessed actions    
+            graph.updateAssessedActions(&action);
+                    
+        }
+
+        // 3. swap randomly selected edges
+        // With at least two edges
+        proba = params.tpg.pSwapActionProgram;
+        while (action.getOutgoingEdges().size() > 2 &&
+                proba > rng.getDouble(0.0, 1.0)) {
+            swapActionEdges(graph, action, rng);
+
+            // Decrement the proba of swapping two edges
+            proba *= params.tpg.pSwapActionProgram;
+        }
     }
+
 
 
     bool anyMutationDone = false;
@@ -413,7 +420,7 @@ void Mutator::TPGMutator::mutateTPGAction(
         std::vector<uint64_t> indexUsed;
         uint64_t index;
         // 4. mutate randomly selected program on action Edge. 
-        proba = params.tpg.pMutateActionProgram;
+        double proba = params.tpg.pMutateActionProgram;
         while(indexUsed.size() < action.getOutgoingEdges().size()  && proba > rng.getDouble(0.0, 1.0)){
             
             do {
@@ -568,10 +575,9 @@ void Mutator::TPGMutator::mutateTPGTeam(
             proba *= params.tpg.pEdgeDeletion;
 
             // Update assessed actions    
-            graph.updateAssessedActions(&team);
-                    
-
-            
+            if(!params.tpg.useMultiActionProgram){
+                graph.updateAssessedActions(&team);
+            }
         }
     }
 
@@ -587,8 +593,10 @@ void Mutator::TPGMutator::mutateTPGTeam(
             // Decrement the proba of adding another edge
             proba *= params.tpg.pEdgeAddition;
 
-            // Update assessed actions    
-            graph.updateAssessedActions(&team);
+            // Update assessed actions
+            if(params.tpg.useMultiActionProgram){
+                graph.updateAssessedActions(&team);
+            }
                     
         }
     }
@@ -605,9 +613,6 @@ void Mutator::TPGMutator::mutateTPGTeam(
             // Decrement the proba of adding another edge
             proba *= params.tpg.pEdgeAddition;
 
-            // Update assessed actions    
-            graph.updateAssessedActions(&team);
-                    
         }
     }
 
@@ -629,7 +634,8 @@ void Mutator::TPGMutator::mutateTPGTeam(
 
                     // If destination is action, and probability win, mutate the action program
                     if(dynamic_cast<const TPG::TPGAction*>(edge->getDestination()) != nullptr &&
-                        rng.getDouble(0.0, 1.0) > params.tpg.probaContextOverActionProgram){
+                       params.tpg.useActionProgram && 
+                       rng.getDouble(0.0, 1.0) > params.tpg.probaContextOverActionProgram){
 
                         // Clone the randomly selected action
                         const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(*edge->getDestination());
@@ -651,9 +657,11 @@ void Mutator::TPGMutator::mutateTPGTeam(
                                         rng);
                     }
 
-                    // Update assessed actions    
-                    graph.updateAssessedActions(&team);
-                    
+                    // Update assessed actions
+                    if(params.tpg.useMultiActionProgram){
+                        graph.updateAssessedActions(&team);
+                    }
+                            
                     anyMutationDone = true;
                 //}
             //}
@@ -984,6 +992,10 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         } else {
 
             if(currentNumberOfActionRoot < nbActionsWanted || currentNumberOfTeamRoot >= nbTeamWanted){
+
+                if(!params.tpg.useActionProgram){
+                    throw std::runtime_error("Action should not be root when no action program is used");
+                }
 
                 // clone it (the vertex and all its outgoing edges)
                 const TPG::TPGAction& newAction = (const TPG::TPGAction&)graph.cloneVertex(

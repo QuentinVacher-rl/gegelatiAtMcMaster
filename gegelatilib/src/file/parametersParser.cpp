@@ -122,10 +122,15 @@ void File::ParametersParser::setParameterFromString(
         return;
     }
 
-    if (param == "multiActionProg") {
-        params.mutation.tpg.multiActionProg = value.asBool();
+    if (param == "useMultiActionProgram") {
+        params.mutation.tpg.useMultiActionProgram = value.asBool();
         return;
     }
+    if (param == "useActionProgram") {
+        params.mutation.tpg.useActionProgram = value.asBool();
+        return;
+    }
+
     if (param == "selectAllActions") {
         params.mutation.tpg.selectAllActions = value.asBool();
         return;
@@ -329,6 +334,13 @@ void File::ParametersParser::setParameterFromString(
         params.nbIterationsPerPolicyEvaluation = value.asUInt64();
         return;
     }
+    if (param == "nbIterationsPerPolicyValidation") {
+        params.nbIterationsPerPolicyValidation = value.asUInt64();
+        return;
+    }
+
+
+    
     if (param == "useMSE") {
         params.useMSE = value.asBool();;
         return;
@@ -405,6 +417,10 @@ void File::ParametersParser::setParameterFromString(
         params.doValidation = value.asBool();
         return;
     }
+    if (param == "stepValidation") {
+        params.stepValidation = (size_t)value.asUInt();
+        return;
+    }
     
     if (param == "activationFunction") {
         params.activationFunction = value.asString();
@@ -444,6 +460,9 @@ void File::ParametersParser::writeParametersToJson(
     root["doValidation"] = params.doValidation;
     root["doValidation"].setComment(
         Learn::LearningParameters::doValidationComment, Json::commentBefore);
+    root["stepValidation"] = params.stepValidation;
+    root["stepValidation"].setComment(
+        Learn::LearningParameters::stepValidationComment, Json::commentBefore);
 
     root["activationFunction"] = params.activationFunction;
     root["activationFunction"].setComment(
@@ -473,6 +492,14 @@ void File::ParametersParser::writeParametersToJson(
     root["nbIterationsPerPolicyEvaluation"].setComment(
         Learn::LearningParameters::nbIterationsPerPolicyEvaluationComment,
         Json::commentBefore);
+    root["nbIterationsPerPolicyValidation"] =
+        params.nbIterationsPerPolicyValidation;
+    root["nbIterationsPerPolicyValidation"].setComment(
+        Learn::LearningParameters::nbIterationsPerPolicyValidationComment,
+        Json::commentBefore);
+
+
+
     root["useMSE"] = params.useMSE;
     root["useMSE"].setComment(
         Learn::LearningParameters::useMSEComment,
@@ -546,9 +573,13 @@ void File::ParametersParser::writeParametersToJson(
         Mutator::TPGParameters::forceProgramBehaviorChangeOnMutationComment,
         Json::commentBefore);
 
-    root["mutation"]["tpg"]["multiActionProg"] = params.mutation.tpg.multiActionProg;
-    root["mutation"]["tpg"]["multiActionProg"].setComment(
-        Mutator::TPGParameters::multiActionProgComment,
+    root["mutation"]["tpg"]["useMultiActionProgram"] = params.mutation.tpg.useMultiActionProgram;
+    root["mutation"]["tpg"]["useMultiActionProgram"].setComment(
+        Mutator::TPGParameters::useMultiActionProgramComment,
+        Json::commentBefore);
+    root["mutation"]["tpg"]["useActionProgram"] = params.mutation.tpg.useActionProgram;
+    root["mutation"]["tpg"]["useActionProgram"].setComment(
+        Mutator::TPGParameters::useActionProgramComment,
         Json::commentBefore);
 
 

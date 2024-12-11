@@ -137,7 +137,7 @@ double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
 }
 
 bool TPG::TPGExecutionEngine::executeAction(
-    const TPGVertex* currentAction, std::vector<double>* actionsTaken)
+    const TPGVertex* currentAction, std::vector<double>* actionsTaken, std::shared_ptr<Program::Program> prog)
 {
 
     auto action = (const TPGAction*)(currentAction);
@@ -146,7 +146,7 @@ bool TPG::TPGExecutionEngine::executeAction(
     if(env.getNbContinuousActions() == 0){
         (*actionsTaken)[action->getActionClass()] = (double)action->getActionID();
 
-    } else if (env.getParams().mutation.tpg.multiActionProg) {
+    } else if (env.getParams().mutation.tpg.useMultiActionProgram) {
 
         for(auto edge: currentAction->getOutgoingEdges()){
             auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
@@ -164,15 +164,14 @@ bool TPG::TPGExecutionEngine::executeAction(
             }
         }
 
-    } else {
+    } else if (env.getParams().mutation.tpg.useActionProgram) {
 
         auto edge = *currentAction->getOutgoingEdges().begin();
 
-        this->evaluateEdge(*edge);
-
-
         // Set the current action class for shared registers
         this->progExecutionEngine.setActionClass(0);
+
+        this->evaluateEdge(*edge);
 
         auto result = this->progExecutionEngine.getRegisterValues(edge->getProgramSharedPointer(), this->getEnvironment().getNbContinuousActions());
 
@@ -181,8 +180,14 @@ bool TPG::TPGExecutionEngine::executeAction(
         if(env.getParams().isActionSharedMem && env.getParams().nbSharedRegisters > 0){
             progExecutionEngine.setSharedRegisterValues(edge->getProgram(), 0);
         }
+    } else {
+        std::vector<double> result = this->progExecutionEngine.getRegisterValues(prog, this->getEnvironment().getNbContinuousActions()+1);
+        
+        /*for(auto r: result){
+            std::cout<<r<<" ";
+        }std::cout<<std::endl;*/
 
-
+        actionsTaken->assign(result.begin() + 1, result.end());
     }
     return true;
 
@@ -213,13 +218,15 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
         
         // Set the current action class for shared registers
         // If full shared memory, just consider always action class 0
-        uint64_t usedActionClass = (env.getParams().isFullSharedMemory) ? 0:*edge->getDestination()->getAssessedActions().begin();
-        this->progExecutionEngine.setActionClass(usedActionClass);
+        if(!env.getParams().isFullSharedMemory && env.getParams().mutation.tpg.useMultiActionProgram){
+            this->progExecutionEngine.setActionClass(*edge->getDestination()->getAssessedActions().begin());
+        }
+
         // Calcul program bid.
         double bid = this->evaluateEdge(*edge);
         resultsBid.push_back(std::make_pair(edge, bid));
 
-        if(env.getParams().nbSharedRegisters > 0 && env.getParams().isFullSharedMemory){
+        if(env.getParams().isFullSharedMemory && env.getParams().nbSharedRegisters > 0){
             progExecutionEngine.setSharedRegisterValues(edge->getProgram(), 0);
         }
     };
@@ -237,14 +244,14 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
     size_t i = 0;
     // For all TPGEdge evaluated.
-    while (i < resultsBid.size() && actionAssessed.size() < actionsTaken->size()) {
+    do {
 
         // Get the pair with the edge and the bid.
         auto destination = resultsBid[i].first->getDestination();
 
         //std::cout<<"Team "<<currentTeam<<"  | Case "<<i<<"  | Bid "<<resultsBid[i].second<<"  | ";
 
-        if(!destination->hasSameAssessedActions(actionAssessed)){
+        if(!env.getParams().mutation.tpg.useMultiActionProgram || !destination->hasSameAssessedActions(actionAssessed)){
 
             /*std::cout<<"Choose for actions :";
             for(auto a: destination->getAssessedActions()){
@@ -259,7 +266,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
             // If edge destination is an action
             if (dynamic_cast<const TPGAction*>(destination)) {
-                executeAction(destination, actionsTaken);
+                executeAction(destination, actionsTaken, resultsBid[i].first->getProgramSharedPointer());
 
 
                 // Add the action the the visited vertices and the edge to the
@@ -297,7 +304,7 @@ std::vector<const TPG::TPGEdge*> TPG::TPGExecutionEngine::executeTeam(
 
 
         i++;
-    }
+    } while (i < resultsBid.size() && actionAssessed.size() < actionsTaken->size() && env.getParams().mutation.tpg.useMultiActionProgram);
 
     return traversedEdges;
 }
@@ -307,6 +314,7 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
         const TPGVertex& root, const std::vector<uint64_t>& initActions,
         uint64_t nbEdgesActivated)
 {
+    //std::cout<<"Start Root Inf"<<std::endl;
 
     // Reset the shared memory
     if(!env.getParams().useMemoryRegisters){
@@ -332,6 +340,9 @@ std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
                     visitedVertices, &actionsTaken, nbEdgesActivated);
     }
     else {
+        if(!env.getParams().mutation.tpg.useActionProgram){
+            throw std::runtime_error("Action should not be root if no action program");
+        }
         executeAction(currentVertex, &actionsTaken);
     }
 

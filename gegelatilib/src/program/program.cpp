@@ -181,9 +181,14 @@ uint64_t Program::Program::identifyIntrons()
         }
     } 
 
-    if(actionProgram && !environment.getParams().mutation.tpg.multiActionProg){
+    if(actionProgram && !environment.getParams().mutation.tpg.useMultiActionProgram){
         for(int i = 0; i < environment.getNbContinuousActions(); i++){
             usefulRegisters.insert(i);
+        }
+    }
+    if(!environment.getParams().mutation.tpg.useActionProgram){
+        for(int i = 0; i < environment.getNbContinuousActions(); i++){
+            usefulRegisters.insert(i+1);
         }
     }
 

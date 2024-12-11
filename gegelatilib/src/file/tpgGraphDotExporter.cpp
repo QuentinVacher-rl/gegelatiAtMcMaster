@@ -85,13 +85,19 @@ uint64_t File::TPGGraphDotExporter::printTPGAction(const TPG::TPGAction& action)
     std::ostringstream labelStream;
 
     // Iterate through outgoingEdges and extract actionClass
-    for (auto it = outgoingEdges.begin(); it != outgoingEdges.end(); ++it) {
-        if (it != outgoingEdges.begin()) {
-            labelStream << "-"; // Add separator between actionClasses
+    if(tpg.getEnvironment().getParams().mutation.tpg.useMultiActionProgram){
+        for (auto it = outgoingEdges.begin(); it != outgoingEdges.end(); ++it) {
+            if (it != outgoingEdges.begin()) {
+                labelStream << "-"; // Add separator between actionClasses
+            }
+            auto actionClass = dynamic_cast<const TPG::TPGActionEdge*>(*it)->getActionClass();
+            labelStream << actionClass;
         }
-        auto actionClass = dynamic_cast<const TPG::TPGActionEdge*>(*it)->getActionClass();
-        labelStream << actionClass;
+    } else {
+        labelStream << actionID;
     }
+
+
 
     // Get the complete label as a string
     std::string label = labelStream.str();

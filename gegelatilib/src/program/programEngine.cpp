@@ -61,6 +61,8 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     if (!prog.getEnvironment().getParams().useMemoryRegisters) {
         //this->registers->resetData();
         this->registers = std::make_shared<Data::PrimitiveTypeArray<double>>(prog.cGetRegisterInitHandler());
+        this->mapMemoryRegisters[&prog] =
+            std::make_shared<Data::PrimitiveTypeArray<double>>(prog.cGetRegisterInitHandler());
     }
 
     uint64_t nbSharedRegs = prog.getEnvironment().getParams().nbSharedRegisters;
@@ -120,7 +122,7 @@ void Program::ProgramEngine::setProgram(const Program& prog)
     this->programCounter = 0;
 
     // Update line usage
-    if(!errorWeights.empty() && false){
+    if(false && !errorWeights.empty()){
         for(size_t idx = 0; idx < this->program->getNbLines(); idx++){
             if(!this->program->isIntron(idx)){
 
@@ -364,6 +366,10 @@ std::vector<double> Program::ProgramEngine::getRegisterValues(std::shared_ptr<Pr
         registerValues.push_back(*(this->registers->getDataAt(typeid(double), i)
                         .getSharedPointer<const double>()));
     }
+    /*for(int i=0; i < nbRegisters; i++){
+        std::cout<<*prog->cGetRegisterInitHandler().getDataAt(typeid(double), i)
+                        .getSharedPointer<const double>()<<" ";
+    }std::cout<<std::endl;*/
 
     return registerValues;
 }

@@ -204,12 +204,20 @@ namespace Mutator {
         bool forceProgramBehaviorChangeOnMutation = false;
 
         /// JSon comment
-        inline static const std::string multiActionProgComment =
-            "// Create multiple action program, instead of one outputting multiple action"
+        inline static const std::string useMultiActionProgramComment =
+            "// Create multiple action program, instead of one outputting multiple action in a single program"
             ".\n"
-            "// \"multiActionProg\" : false, // Default value";
-        /// Boolean indicating if the action programs changed the shared memory
-        bool multiActionProg = false;
+            "// \"useMultiActionProgram\" : false, // Default value";
+        /// Create multiple action program, instead of one outputting multiple action in a single program
+        bool useMultiActionProgram = false;
+
+        /// JSon comment
+        inline static const std::string useActionProgramComment =
+            "// Create action program, instead of using context program to select actions"
+            ".\n"
+            "// \"useActionProgram\" : false, // Default value";
+        /// Create action program, instead of using context program to select actions
+        bool useActionProgram = false;
 
 
         /// JSon comment

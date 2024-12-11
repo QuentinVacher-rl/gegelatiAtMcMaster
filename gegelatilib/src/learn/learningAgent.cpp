@@ -144,9 +144,11 @@ bool Learn::LearningAgent::isRootEvalSkipped(
 
         double meanNbActionUsed = 0.0;
 
+        uint64_t nbEvaluation = (mode == LearningMode::TRAINING) ? this->params.nbIterationsPerPolicyEvaluation:this->params.nbIterationsPerPolicyValidation;
+
         // Evaluate  nbIteration times
         for (auto iterationNumber = 0;
-            iterationNumber < this->params.nbIterationsPerPolicyEvaluation;
+            iterationNumber < nbEvaluation;
             iterationNumber++) {
             // Compute a Hash
             Data::Hash<uint64_t> hasher;
@@ -192,14 +194,14 @@ bool Learn::LearningAgent::isRootEvalSkipped(
             resultMSE +=  (le.getScore() > 0) ? std::pow(le.getScore(), 2) : -std::pow(le.getScore(), 2);
         }
 
-        meanNbActionUsed /= (double)params.nbIterationsPerPolicyEvaluation;
-        result /= (double)params.nbIterationsPerPolicyEvaluation;
-        resultMSE /= (double)params.nbIterationsPerPolicyEvaluation * 1000;
+        meanNbActionUsed /= (double)nbEvaluation;
+        result /= (double)nbEvaluation;
+        resultMSE /= (double)nbEvaluation;
 
         // Create the EvaluationResult
         auto evaluationResult =
             std::shared_ptr<EvaluationResult>(new EvaluationResult(
-                (this->params.useMSE) ? resultMSE : result, params.nbIterationsPerPolicyEvaluation, {meanNbActionUsed}, result));
+                (this->params.useMSE) ? resultMSE : result, nbEvaluation, {meanNbActionUsed}, result));
 
         // Combine it with previous one if any
         if (previousEval != nullptr) {
@@ -299,11 +301,17 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
 
     // Does a validation or not according to the parameter doValidation
     if (params.doValidation) {
-        auto validationResults =
-            evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
+
+        std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex*> validationResults;
+
+        if(generationNumber % params.stepValidation == 0 || generationNumber == params.nbGenerations - 1){
+            validationResults = evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
+        }
+
         for (auto logger : loggers) {
             logger.get().logAfterValidate(validationResults);
         }
+
     }
 
     for (auto logger : loggers) {
