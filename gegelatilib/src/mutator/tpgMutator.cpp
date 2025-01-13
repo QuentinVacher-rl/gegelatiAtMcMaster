@@ -811,24 +811,37 @@ void Mutator::TPGMutator::mutateSharedRegsValues(TPG::TPGGraph& graph, const TPG
     double proba = params.tpg.pSharedRegsValueMutation;
     while(nbSharedRegs > 0
           && proba > rng.getDouble(0, 1)){
+
         
         // Sample random index and get the value
         size_t idx = rng.getUnsignedInt64(0, nbSharedRegs - 1);
         double currentValue = vertex.getSharedRegisterInitAt(idx);
 
-        // Sample the modification factor
-        double delta = rng.getDouble(
-            0.5, 1.5
-        );
-        if(delta > 1) delta = delta * 2 - 1;
+        if(currentValue == 0.0){
+            // Init the value
+            currentValue = rng.getDouble(params.tpg.minSharedRegsValue, params.tpg.maxSharedRegsValue);
 
-        // 10% chance of swapping
-        if(0.1 > rng.getDouble(0, 1)) delta *= -1;
+        } else if (0.5 > rng.getDouble(0.0, 1.0)){
 
-        // Compute the new value
-        double newConstantValue = currentValue * delta;
-        graph.setSharedRegsValue(&vertex, idx, newConstantValue);
+            // Sample the modification factor
+            double delta = rng.getDouble(
+                0.5, 1.5
+            );
+            if(delta > 1) delta = delta * 2 - 1;
 
+            // 10% chance of swapping
+            if(0.1 > rng.getDouble(0.0, 1.0)) delta *= -1;
+
+            // Compute the new value
+            currentValue = currentValue * delta;
+
+        } else {
+            currentValue = 0.0;
+        }
+
+
+
+        graph.setSharedRegsValue(&vertex, idx, currentValue);
         proba *= params.tpg.pSharedRegsValueMutation;
 
     }
@@ -847,14 +860,13 @@ void Mutator::TPGMutator::initSharedRegsValues(TPG::TPGGraph& graph, const TPG::
     // Generate random values
     std::vector<double> values;
     for(size_t idx = 0; idx <nbSharedRegs; idx++){
-        values.push_back(rng.getDouble(params.tpg.minSharedRegsValue, params.tpg.maxSharedRegsValue));
+        values.push_back(0.0);
     }
 
     // Init the values
     graph.initSharedRegValues(&vertex, values);
 
 }
-
 
 void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                                       const Archive& archive,

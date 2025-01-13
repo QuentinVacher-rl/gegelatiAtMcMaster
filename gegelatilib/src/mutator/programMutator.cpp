@@ -59,9 +59,7 @@ void Mutator::ProgramMutator::initRandomProgram(
     // insert random constants in the program
     double r_value;
     for (int i = 0; i < p.getEnvironment().getNbRegisters() - p.getEnvironment().getParams().nbSharedRegisters; i++) {
-        c_value = {
-            rng.getDouble(progParams.minRegsValue, progParams.maxRegsValue)};
-        p.getRegisterInitHandler().setDataAt(typeid(double), i, c_value);
+        p.getRegisterInitHandler().setDataAt(typeid(double), i, 0.0);
     }
 
     // Select the number of line randomly
@@ -152,24 +150,35 @@ bool Mutator::ProgramMutator::alterRandomConstant(
 
     const uint64_t register_idx =
         rng.getUnsignedInt64(0, p.getEnvironment().getNbRegisters() - p.getEnvironment().getParams().nbSharedRegisters - 1);
+    double currentValue = p.getRegisterInitAt(register_idx);
 
-    // Sample the new value
-    double delta = rng.getDouble(
-        0.5, 1.5
-    );
-    if(delta > 1) delta = delta * 2 - 1;
 
-    double currentConstantValue = p.getRegisterInitAt(register_idx);
+    if(currentValue == 0.0){
+        // Init the value
+        currentValue = rng.getDouble(params.tpg.minSharedRegsValue, params.tpg.maxSharedRegsValue);
 
-    double newConstantValue = currentConstantValue * delta;
+    } else if (0.5 > rng.getDouble(0.0, 1.0)){
 
-    if(0.1 > rng.getDouble(0, 1)){
-        newConstantValue = -newConstantValue;
+        // Sample the modification factor
+        double delta = rng.getDouble(
+            0.5, 1.5
+        );
+        if(delta > 1) delta = delta * 2 - 1;
+
+        // 10% chance of swapping
+        if(0.1 > rng.getDouble(0.0, 1.0)) delta *= -1;
+
+        // Compute the new value
+        currentValue = currentValue * delta;
+
+    } else {
+        currentValue = 0.0;
     }
+
     // Set it
     p.getRegisterInitHandler().setDataAt(
         typeid(Data::Constant), register_idx,
-        {newConstantValue});
+        {currentValue});
 
     return true;
 }

@@ -69,6 +69,8 @@ double Program::ProgramExecutionEngine::executeProgram(
         std::cout<<*this->registers->getDataAt(typeid(double), i).getSharedPointer<const double>()<<"-";
     }std::cout<<std::endl;;*/
 
+    this->mapMemoryRegisters[program] = this->registers;
+
     // Returns the 0-indexed register.
     // cast to primitiveType<double> to enable cast to double.
     return *(this->registers->getDataAt(typeid(double), 0)
