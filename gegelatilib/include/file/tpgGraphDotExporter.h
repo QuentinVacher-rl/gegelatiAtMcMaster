@@ -45,10 +45,10 @@
 #include "program/line.h"
 #include "program/program.h"
 #include "tpg/tpgAbstractEngine.h"
-#include "tpg/tpgAction.h"
+#include "tpg/tpgActivationVertex.h"
 #include "tpg/tpgEdge.h"
 #include "tpg/tpgGraph.h"
-#include "tpg/tpgTeam.h"
+#include "tpg/tpgDecisionVertex.h"
 #include "tpg/tpgVertex.h"
 
 namespace File {
@@ -70,18 +70,28 @@ namespace File {
          */
         std::string offset;
 
+        
         /**
-         * \brief Print the dot content for the given TPGTeam.
+         * \brief Integer number used during export to associate a unique
+         * integer identifier to each TPGAction.
+         *
+         * Identifier associated to TPGAction are NOT preserved during multiple
+         * printing of a TPGGraph.
+         */
+        uint64_t nbActions;
+
+        /**
+         * \brief Print the dot content for the given TPGVertex.
          *
          * Content is printed directly into the file opened by the class
          * constructor, or by a call to setNewFilePath.
          *
-         * \param[in] team the TPGTeam being printed.
+         * \param[in] vertex the TPGVertex being printed.
          */
-        void printTPGTeam(const TPG::TPGTeam& team);
+        void printTPGVertex(const TPG::TPGVertex& vertex);
 
         /**
-         * \brief Print the dot content for the given TPGAction.
+         * \brief Print the dot content for the given Action.
          *
          * Content is printed directly into the file opened by the class
          * constructor, or by a call to setNewFilePath.
@@ -90,10 +100,10 @@ namespace File {
          * contrary to TPGTeam which have a unique ID, each action is printed on
          * the fly, with a unique ID, when a TPGEdge is targetting this action.
          *
-         * \param[in] action the TPGTeam being printed.
+         * \param[in] actionID ID of the action printed.
          * \return the identifier associated to this action.
          */
-        uint64_t printTPGAction(const TPG::TPGAction& action);
+        uint64_t printTPGAction(uint64_t actionID);
 
         /**
          * \brief Prints the dot content for the given TPGEdge.
@@ -216,20 +226,6 @@ namespace File {
          */
         void print();
 
-        /**
-         * \brief Print a sub-tree of the TPGGraph given when constructing the
-         * TPGGraphDotExporter into a dot file.
-         *
-         * Contrary to the print() method, which prints the whole TPG, this
-         * method only prints the TPG stemming from the TPG::TPGVertex passed as
-         * a parameter. Hence, only vertices and programs connected to this
-         * TPGVertex will be printed in the file, and all others will be
-         * ignored.
-         *
-         * \param[in] root The vertex used as a starting point to print a
-         * connected TPG.
-         */
-        void printSubGraph(const TPG::TPGVertex* root);
     };
 }; // namespace File
 

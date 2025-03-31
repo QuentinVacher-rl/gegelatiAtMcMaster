@@ -44,9 +44,9 @@
 
 #include "program/program.h"
 
-#include "tpg/tpgAction.h"
 #include "tpg/tpgGraph.h"
-#include "tpg/tpgTeam.h"
+#include <tpg/tpgActivationVertex.h>
+#include <tpg/tpgDecisionVertex.h>
 
 namespace TPG {
 
@@ -96,7 +96,7 @@ namespace TPG {
          * When analyzing a policy, this number corresponds to
          * the number of times this TPGTeam is the destination of a TPGEdge.
          */
-        std::map<const TPGTeam*, size_t> nbUsePerTPGTeam;
+        std::map<const TPGDecisionVertex*, size_t> nbUsePerTPGTeam;
 
         /**
          * \brief Number of time a TPGAction was analyzed.
@@ -104,7 +104,7 @@ namespace TPG {
          * When analyzing a policy, this number corresponds to
          * the number of times this TPGAction is the destination of a TPGEdge.
          */
-        std::map<const TPGAction*, size_t> nbUsePerTPGAction;
+        std::map<const TPGActivationVertex*, size_t> nbUsePerTPGAction;
 
         /// Number of lines of analyzed Program.
         std::vector<size_t> nbLinesPerProgram;
@@ -236,7 +236,7 @@ namespace TPG {
          * If a TPGTeam was already analyzed, it will not be analyzed again and
          * only the number of use per TPGTeam will be updated.
          */
-        void analyzeTPGTeam(const TPG::TPGTeam* team);
+        void analyzeTPGTeam(const TPG::TPGDecisionVertex* team);
 
         /**
          * Analyze the given TPGAction.
@@ -248,7 +248,7 @@ namespace TPG {
          * If a TPGAction was already analyzed, it will not be analyzed again
          * and only the number of use per TPGAction will be updated.
          */
-        void analyzeTPGAction(const TPG::TPGAction* action);
+        void analyzeTPGAction(const TPG::TPGActivationVertex* action);
 
         /**
          * Analyze the policy starting from the given TPGVertex.

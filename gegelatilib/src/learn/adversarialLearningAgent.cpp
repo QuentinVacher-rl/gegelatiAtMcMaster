@@ -153,7 +153,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::AdversarialLearningAgent::
 
             // Get the actions
             std::vector<double> actionsID =
-                tee.executeFromRoot(*((const TPG::TPGTeam*)*rootsIterator),
+                tee.executeFromRoot(*(*rootsIterator),
                                     le.getInitActions())
                     .second; // TODO
 

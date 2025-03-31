@@ -40,6 +40,8 @@
 #include <set>
 #include <cinttypes>
 
+#include <tpg/tpgActionEdge.h>
+
 
 namespace TPG {
     // Declare class to make it usable as an attribute.
@@ -60,7 +62,7 @@ namespace TPG {
         const std::list<TPGEdge*>& getIncomingEdges() const;
 
         /**
-         * \brief Get a const reference to outgoing edges of this TPGVertex.
+         * \brief Get a const reference to outgoing decision edges of this TPGVertex.
          */
         const std::list<TPGEdge*>& getOutgoingEdges() const;
 
@@ -121,7 +123,7 @@ namespace TPG {
         /**
          * \brief Update the assessed actions
          */
-        virtual void updateAssessedActions();
+        virtual void updateAssessedActions() = 0;
 
         /**
          * \brief compare the set given and the assessed actions of the vertex
@@ -158,7 +160,7 @@ namespace TPG {
         std::list<TPG::TPGEdge*> incomingEdges;
 
         /**
-         * \brief Set of outgoing TPGEdge of the TPGVertex.
+         * \brief Set of outgoing TPGEdge of the TPGVertex, used for decision.
          */
         std::list<TPG::TPGEdge*> outgoingEdges;
 

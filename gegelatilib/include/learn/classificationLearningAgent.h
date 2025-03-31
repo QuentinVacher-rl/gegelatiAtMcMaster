@@ -334,7 +334,7 @@ namespace Learn {
             [&rootsToKeep, &tpgRef, &resultsPerRootRef,
              &results](const TPG::TPGVertex* vert) {
                 // Do not remove actions
-                if (dynamic_cast<const TPG::TPGAction*>(vert) == nullptr &&
+                if (dynamic_cast<const TPG::TPGDecisionVertex*>(vert) == nullptr &&
                     std::find(rootsToKeep.begin(), rootsToKeep.end(), vert) ==
                         rootsToKeep.end()) {
                     tpgRef->removeVertex(*vert);

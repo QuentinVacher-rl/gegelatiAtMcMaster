@@ -48,10 +48,10 @@
 #include <string>
 
 #include "learn/learningEnvironment.h"
-#include "tpg/tpgAction.h"
+#include "tpg/tpgActivationVertex.h"
 #include "tpg/tpgEdge.h"
 #include "tpg/tpgGraph.h"
-#include "tpg/tpgTeam.h"
+#include "tpg/tpgDecisionVertex.h"
 #include "tpg/tpgVertex.h"
 
 namespace File {

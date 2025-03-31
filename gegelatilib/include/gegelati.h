@@ -104,30 +104,17 @@
 
 #include <tpg/policyStats.h>
 #include <tpg/tpgAbstractEngine.h>
-#include <tpg/tpgAction.h>
 #include <tpg/tpgActionEdge.h>
+#include <tpg/tpgConnectionEdge.h>
+#include <tpg/tpgDecisionEdge.h>
 #include <tpg/tpgEdge.h>
 #include <tpg/tpgExecutionEngine.h>
 #include <tpg/tpgFactory.h>
 #include <tpg/tpgGraph.h>
-#include <tpg/tpgTeam.h>
+#include <tpg/tpgActivationVertex.h>
+#include <tpg/tpgDecisionVertex.h>
 #include <tpg/tpgVertex.h>
 
-#include <tpg/instrumented/executionStats.h>
-#include <tpg/instrumented/tpgActionInstrumented.h>
-#include <tpg/instrumented/tpgEdgeInstrumented.h>
-#include <tpg/instrumented/tpgExecutionEngineInstrumented.h>
-#include <tpg/instrumented/tpgInstrumentedFactory.h>
-#include <tpg/instrumented/tpgTeamInstrumented.h>
-#include <tpg/instrumented/tpgVertexInstrumentation.h>
-
-#ifdef CODE_GENERATION
-#include <codeGen/programGenerationEngine.h>
-#include <codeGen/tpgGenerationEngine.h>
-#include <codeGen/tpgGenerationEngineFactory.h>
-#include <codeGen/tpgStackGenerationEngine.h>
-#include <codeGen/tpgSwitchGenerationEngine.h>
-#endif
 
 #include <archive.h>
 #include <environment.h>

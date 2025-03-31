@@ -1,9 +1,8 @@
 /**
- * Copyright or © or Copr. IETR/INSA - Rennes (2021 - 2022) :
+ * Copyright or © or Copr. IETR/INSA - Rennes (2019 - 2020) :
  *
- * Karol Desnos <kdesnos@insa-rennes.fr> (2022)
- * Mickaël Dardaillon <mdardail@insa-rennes.fr> (2022)
- * Thomas Bourgoin <tbourgoi@insa-rennes.fr> (2021)
+ * Karol Desnos <kdesnos@insa-rennes.fr> (2019)
+ * Nicolas Sourbier <nsourbie@insa-rennes.fr> (2020)
  *
  * GEGELATI is an open-source reinforcement learning framework for training
  * artificial intelligence based on Tangled Program Graphs (TPGs).
@@ -35,35 +34,50 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
-#ifdef CODE_GENERATION
+#include "tpg/tpgDecisionVertex.h"
+#include "tpg/tpgDecisionEdge.h"
+#include "tpg/tpgConnectionEdge.h"
+#include "tpg/tpgActionEdge.h"
+#include <stdexcept>
 
-#include "codeGen/tpgGenerationEngineFactory.h"
-#include "codeGen/tpgStackGenerationEngine.h"
-#include "codeGen/tpgSwitchGenerationEngine.h"
 
-CodeGen::TPGGenerationEngineFactory::TPGGenerationEngineFactory()
-    : TPGGenerationEngineFactory(switchMode){};
-
-CodeGen::TPGGenerationEngineFactory::TPGGenerationEngineFactory(
-    enum generationEngineMode mode)
+void TPG::TPGDecisionVertex::addIncomingEdge(TPGEdge* edge)
 {
-    this->mode = mode;
-}
-
-std::unique_ptr<CodeGen::TPGGenerationEngine> CodeGen::
-    TPGGenerationEngineFactory::create(const std::string& filename,
-                                       const TPG::TPGGraph& tpg,
-                                       const std::string& path)
-{
-    if (this->mode == stackMode) {
-        return std::make_unique<TPGStackGenerationEngine>(filename, tpg, path);
-    }
-    else if (this->mode == switchMode) {
-        return std::make_unique<TPGSwitchGenerationEngine>(filename, tpg, path);
+    if (dynamic_cast<TPGDecisionEdge*>(edge) != nullptr) {
+        throw std::runtime_error(
+            "Can only add an incomming DecisionEdge to a DecisionVertex.");
     }
     else {
-        return nullptr;
+        TPGVertex::addIncomingEdge(edge);
     }
 }
 
-#endif // CODE_GENERATION
+void TPG::TPGDecisionVertex::addOutgoingEdge(TPGEdge* edge)
+{
+    if (dynamic_cast<TPGConnectionEdge*>(edge) != nullptr || dynamic_cast<TPGActionEdge*>(edge) != nullptr) {
+        throw std::runtime_error(
+            "Can only add an outgoing DecisionEdge to a DecisionVertex.");
+    }
+    else {
+        TPGVertex::addOutgoingEdge(edge);
+    }
+}
+
+
+void TPG::TPGDecisionVertex::updateAssessedActions()
+{std::cout<<"dec"<<std::endl;
+    assessedActions.clear();
+
+    for (TPGEdge* edge : this->outgoingEdges) {
+
+        // Insert all assessed actions from the destination
+        const auto& destinationActions = edge->getDestination()->getAssessedActions();
+        assessedActions.insert(destinationActions.begin(), destinationActions.end());
+
+
+        // If all actions are stored, no need to search for more
+        if(assessedActions.size() == edge->getProgram().getEnvironment().getNbContinuousActions()){
+            return;
+        }
+    }
+}

@@ -80,7 +80,7 @@ void Log::CycleDetectionLALogger::logAfterPopulateTPG()
         visitedVertices.insert(vertex);
 
         // Scan outgoing edges
-        const TPG::TPGTeam* team = dynamic_cast<const TPG::TPGTeam*>(vertex);
+        const TPG::TPGDecisionVertex* team = dynamic_cast<const TPG::TPGDecisionVertex*>(vertex);
         if (team != nullptr) {
             // Push vertex in path
             currentPath.push_back(vertex);

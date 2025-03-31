@@ -44,28 +44,34 @@ std::shared_ptr<TPG::TPGGraph> TPG::TPGFactory::createTPGGraph(
     return std::make_shared<TPG::TPGGraph>(env, std::make_unique<TPGFactory>());
 }
 
-TPG::TPGTeam* TPG::TPGFactory::createTPGTeam() const
+TPG::TPGDecisionVertex* TPG::TPGFactory::createTPGDecisionVertex() const
 {
-    return new TPG::TPGTeam();
+    return new TPG::TPGDecisionVertex();
 }
 
-TPG::TPGAction* TPG::TPGFactory::createTPGAction(const uint64_t id) const
+TPG::TPGActivationVertex* TPG::TPGFactory::createTPGActivationVertex() const
 {
-    return new TPG::TPGAction(id);
+    return new TPG::TPGActivationVertex();
 }
 
-std::unique_ptr<TPG::TPGEdge> TPG::TPGFactory::createTPGEdge(
+std::unique_ptr<TPG::TPGDecisionEdge> TPG::TPGFactory::createTPGDecisionEdge(
     const TPGVertex* src, const TPGVertex* dest,
     const std::shared_ptr<Program::Program> prog) const
 {
-    return std::make_unique<TPG::TPGEdge>(src, dest, prog);
+    return std::make_unique<TPG::TPGDecisionEdge>(src, dest, prog);
 }
 
-std::unique_ptr<TPG::TPGEdge> TPG::TPGFactory::createTPGActionEdge(
+std::unique_ptr<TPG::TPGActionEdge> TPG::TPGFactory::createTPGActionEdge(
     const TPGVertex* src, const std::shared_ptr<Program::Program> prog,
     uint64_t actionClass) const
 {
     return std::make_unique<TPG::TPGActionEdge>(src, prog, actionClass);
+}
+
+std::unique_ptr<TPG::TPGConnectionEdge> TPG::TPGFactory::createTPGConnectionEdge(
+    const TPGVertex* src, const TPGVertex* dest) const
+{
+    return std::make_unique<TPG::TPGConnectionEdge>(src, dest);
 }
 
 std::unique_ptr<TPG::TPGExecutionEngine> TPG::TPGFactory::

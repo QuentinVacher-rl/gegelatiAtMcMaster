@@ -42,16 +42,16 @@ const std::list<TPG::TPGEdge*>& TPG::TPGVertex::getIncomingEdges() const
 {
     return this->incomingEdges;
 }
-
 const std::list<TPG::TPGEdge*>& TPG::TPGVertex::getOutgoingEdges() const
 {
     return this->outgoingEdges;
 }
 
+
 void TPG::TPGVertex::addIncomingEdge(TPG::TPGEdge* edge)
 {
     // Do nothing on NULL pointer
-    if (edge != NULL) {
+    if (edge != NULL && dynamic_cast<TPG::TPGActionEdge*>(edge) == nullptr) {
         // Add only if not already there
         if (std::find(this->incomingEdges.begin(), this->incomingEdges.end(),
                       edge) == this->incomingEdges.end()) {
@@ -71,10 +71,7 @@ void TPG::TPGVertex::addOutgoingEdge(TPG::TPGEdge* edge)
 {
     // Do nothing on NULL pointer
     if (edge != NULL) {
-        if (std::find(this->outgoingEdges.begin(), this->outgoingEdges.end(),
-                      edge) == this->outgoingEdges.end()) {
-            this->outgoingEdges.push_back(edge);
-        }
+        this->outgoingEdges.push_back(edge);
     }
 }
 
@@ -88,25 +85,7 @@ const std::set<uint64_t>& TPG::TPGVertex::getAssessedActions() const
     return this->assessedActions;
 }
 
-void TPG::TPGVertex::updateAssessedActions()
-{
-    assessedActions.clear();
-    for (TPGEdge* edge : this->outgoingEdges) {
-        if (auto* actionEdge = dynamic_cast<TPGActionEdge*>(edge)) {
-            // If the edge is an action edge, insert its action class
-            assessedActions.insert(actionEdge->getActionClass());
-        } else {
-            // Otherwise, insert all assessed actions from the destination
-            const auto& destinationActions = edge->getDestination()->getAssessedActions();
-            assessedActions.insert(destinationActions.begin(), destinationActions.end());
-        }
 
-        // If all actions are stored, no need to search for more
-        if(assessedActions.size() == edge->getProgram().getEnvironment().getNbContinuousActions()){
-            return;
-        }
-    }
-}
 
 bool TPG::TPGVertex::hasSameAssessedActions(std::set<uint64_t> actions) const {
     
@@ -130,3 +109,5 @@ void TPG::TPGVertex::setToBeDeleted(bool status){
 bool TPG::TPGVertex::isToBeDeleted() const{
     return this->toBeDeleted;
 }
+
+

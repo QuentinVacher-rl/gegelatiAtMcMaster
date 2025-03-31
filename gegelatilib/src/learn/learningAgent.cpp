@@ -252,6 +252,7 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
     // Remove worst performing roots
     decimateWorstRoots(results);
     // Update the best
+    
     this->updateEvaluationRecords(results);
 
     for (auto logger : loggers) {
@@ -352,7 +353,7 @@ void Learn::LearningAgent::decimateWorstRoots(
 
         // If the root is an action, do not remove it in discrete environment!
         const TPG::TPGVertex* root = results.begin()->second;
-        if (dynamic_cast<const TPG::TPGAction*>(root) != nullptr && !this->params.mutation.tpg.useActionProgram) {
+        if (dynamic_cast<const TPG::TPGActivationVertex*>(root) != nullptr && !this->params.mutation.tpg.useActionProgram) {
             preservedRoots.insert(*results.begin());
             i--; // no vertex was actually removed
         }
@@ -448,14 +449,9 @@ void Learn::LearningAgent::updateEvaluationRecords(
         const TPG::TPGVertex* candidate = iterator->second;
         // Test the three replacement cases
         // from the simpler to the most complex to test
-        if (this->bestRoot.first == nullptr         // NULL case
-            || *this->bestRoot.second < *evaluation // new high-score case
-            || !this->tpg->hasVertex(
-                   *this->bestRoot.first) // bestRoot disappearance
-        ) {
-            // Replace the best root
-            this->bestRoot = {candidate, evaluation};
-        }
+
+        // Replace the best root
+        this->bestRoot = {candidate, evaluation};
 
         // Otherwise do nothing
     }
@@ -487,13 +483,10 @@ void Learn::LearningAgent::keepBestPolicy()
     if (this->tpg->hasVertex(*this->bestRoot.first)) {
         auto bestRootVertex = this->bestRoot.first;
 
-        // Remove all but the best root from the tpg
-        while (this->tpg->getNbRootVertices() != 1) {
-            auto roots = this->tpg->getRootVertices();
-            for (auto root : roots) {
-                if (root != bestRootVertex) {
-                    tpg->removeVertex(*root);
-                }
+        auto roots = this->tpg->getRootVertices();
+        for (auto root : roots) {
+            if (root != bestRootVertex) {
+                tpg->removeVertex(*root);
             }
         }
     }

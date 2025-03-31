@@ -40,10 +40,12 @@
 #include <memory>
 
 #include "archive.h"
-#include "tpg/tpgAction.h"
 #include "tpg/tpgActionEdge.h"
+#include "tpg/tpgDecisionEdge.h"
+#include "tpg/tpgConnectionEdge.h"
 #include "tpg/tpgEdge.h"
-#include "tpg/tpgTeam.h"
+#include "tpg/tpgDecisionVertex.h"
+#include "tpg/tpgActivationVertex.h"
 
 namespace TPG {
 
@@ -83,33 +85,31 @@ namespace TPG {
             const Environment& env) const;
 
         /**
-         * \brief Create a TPGTeam for a TPGGraph.
+         * \brief Create a TPGDecisionVertex for a TPGGraph.
          *
-         * This method allocates and returns a new TPGTeam.
+         * This method allocates and returns a new TPGDecisionVertex.
          */
-        virtual TPGTeam* createTPGTeam() const;
+        virtual TPGDecisionVertex* createTPGDecisionVertex() const;
 
         /**
-         * \brief Create a TPGAction for a TPGGraph.
+         * \brief Create a TPGActivationVertex for a TPGGraph.
          *
-         * This method allocates and returns a new TPGAction.
-         *
-         * \param[in] id integer stored as the actionID of the TPGAction.
+         * This method allocates and returns a new TPGActivationVertex.
          */
-        virtual TPGAction* createTPGAction(const uint64_t id) const;
+        virtual TPGActivationVertex* createTPGActivationVertex() const;
 
         /**
-         * \brief Create a TPGEdge for a TPGGraph.
+         * \brief Create a TPGDecisionEdge for a TPGGraph.
          *
-         * This method allocates and returns a new TPGEdge.
-         * The TPGEdge is returned as a unique_ptr.
+         * This method allocates and returns a new TPGDecisionEdge.
+         * The TPGDecisionEdge is returned as a unique_ptr.
          *
          * \param[in] src pointer to the source TPGVertex of the edge.
          * \param[in] dest pointer to the destination TPGVertex of the edge.
          * \param[in] prog the shared pointer to the Program associated to the
          *            edge.
          */
-        virtual std::unique_ptr<TPGEdge> createTPGEdge(
+        virtual std::unique_ptr<TPGDecisionEdge> createTPGDecisionEdge(
             const TPGVertex* src, const TPGVertex* dest,
             const std::shared_ptr<Program::Program> prog) const;
 
@@ -117,15 +117,27 @@ namespace TPG {
          * \brief Create a TPGActionEdge for a TPGGraph.
          *
          * This method allocates and returns a new TPGActionEdge cat into a
-         * TPGEdge. The TPGEdge is returned as a unique_ptr.
+         * TPGActionEdge. The TPGActionEdge is returned as a unique_ptr.
          *
          * \param[in] src pointer to the source TPGVertex of the edge. It must
          * be an action \param[in] prog the shared pointer to the Program
          * associated to the edge. \param[in] actionClass of the actionEdge
          */
-        virtual std::unique_ptr<TPGEdge> createTPGActionEdge(
+        virtual std::unique_ptr<TPGActionEdge> createTPGActionEdge(
             const TPGVertex* src, const std::shared_ptr<Program::Program> prog,
             uint64_t actionClass) const;
+
+        /**
+         * \brief Create a TPGConnectionEdge for a TPGGraph.
+         *
+         * This method allocates and returns a new TPGConnectionEdge.
+         * The TPGConnectionEdge is returned as a unique_ptr.
+         *
+         * \param[in] src pointer to the source TPGVertex of the edge.
+         * \param[in] dest pointer to the destination TPGVertex of the edge.
+         */
+        virtual std::unique_ptr<TPGConnectionEdge> createTPGConnectionEdge(
+            const TPGVertex* src, const TPGVertex* dest) const;
 
         /**
          * \brief Create a TPGExecutionEngine for a TPGGraph produced by this

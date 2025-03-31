@@ -1,7 +1,7 @@
 /**
- * Copyright or © or Copr. IETR/INSA - Rennes (2022) :
+ * Copyright or © or Copr. IETR/INSA - Rennes (2019) :
  *
- * Karol Desnos <kdesnos@insa-rennes.fr> (2022)
+ * Karol Desnos <kdesnos@insa-rennes.fr> (2019)
  *
  * GEGELATI is an open-source reinforcement learning framework for training
  * artificial intelligence based on Tangled Program Graphs (TPGs).
@@ -33,21 +33,43 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
-#ifndef TPG_TEAM_INSTRUMENTED_H
-#define TPG_TEAM_INSTRUMENTED_H
+#ifndef TPG_DECISION_VERTEX_H
+#define TPG_DECISION_VERTEX_H
 
-#include "tpg/instrumented/tpgVertexInstrumentation.h"
-#include "tpg/tpgTeam.h"
+#include "tpg/tpgVertex.h"
 
 namespace TPG {
-
     /**
-     * \brief Instrumented TPGTeam
+     * Class used to represent an decision vertex of the TPGGraph.
+     *
+     * A decision vertex is a vertex with only decision edges.
      */
-    class TPGTeamInstrumented : public TPG::TPGTeam,
-                                public TPG::TPGVertexInstrumentation
+    class TPGDecisionVertex : public TPGVertex
     {
+        public: 
+            /**
+             * \brief Specialisation of TPGVertex method to accept only ConnectionEdges
+             *
+             * \param[in] edge the TPGEdge pointer to be added to the outgoingEdges
+             *                 Set.
+             */
+            virtual void addIncomingEdge(TPG::TPGEdge* edge);
+
+            /**
+             * \brief Specialisation of TPGVertex method to accept only DecisionEdges
+             *
+             * \param[in] edge the TPGEdge pointer to be added to the outgoingEdges
+             *                 Set.
+             */
+            virtual void addOutgoingEdge(TPG::TPGEdge* edge) override;
+
+            /**
+             * \brief Update the assessed actions
+             */
+            virtual void updateAssessedActions();
+
     };
-} // namespace TPG
+
+}; // namespace TPG
 
 #endif

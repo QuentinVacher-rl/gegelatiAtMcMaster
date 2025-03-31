@@ -159,7 +159,7 @@ void TPG::PolicyStats::analyzeProgram(const Program::Program* prog)
     }
 }
 
-void TPG::PolicyStats::analyzeTPGTeam(const TPG::TPGTeam* team)
+void TPG::PolicyStats::analyzeTPGTeam(const TPG::TPGDecisionVertex* team)
 {
     // Number of use per team
     size_t nbUse = ++this->nbUsePerTPGTeam[team];
@@ -171,13 +171,13 @@ void TPG::PolicyStats::analyzeTPGTeam(const TPG::TPGTeam* team)
     }
 }
 
-void TPG::PolicyStats::analyzeTPGAction(const TPG::TPGAction* action)
+void TPG::PolicyStats::analyzeTPGAction(const TPG::TPGActivationVertex* action)
 {
     // Number of use per TPGAction
     this->nbUsePerTPGAction[action]++;
 
     // Nb use per action id
-    this->nbUsagePerActionID[action->getActionID()]++;
+    this->nbUsagePerActionID[0]++;
 }
 
 void TPG::PolicyStats::analyzePolicy(const TPG::TPGVertex* root)
@@ -198,12 +198,12 @@ void TPG::PolicyStats::analyzePolicy(const TPG::TPGVertex* root)
 
         // scan current stage
         for (const TPG::TPGVertex* vertex : stage[depth % 2]) {
-            if (dynamic_cast<const TPG::TPGTeam*>(vertex) != nullptr) {
-                this->analyzeTPGTeam((const TPG::TPGTeam*)vertex);
+            if (dynamic_cast<const TPG::TPGDecisionVertex*>(vertex) != nullptr) {
+                this->analyzeTPGTeam((const TPG::TPGDecisionVertex*)vertex);
                 // Unless it was already analysed more than once,
                 // add successors to the next stage and analyze their
                 // Program.
-                if (this->nbUsePerTPGTeam[(const TPG::TPGTeam*)vertex] == 1) {
+                if (this->nbUsePerTPGTeam[(const TPG::TPGDecisionVertex*)vertex] == 1) {
                     // Analyze outgoing edges
                     for (const TPG::TPGEdge* edge :
                          vertex->getOutgoingEdges()) {
@@ -213,12 +213,12 @@ void TPG::PolicyStats::analyzePolicy(const TPG::TPGVertex* root)
                 }
             }
 
-            if (dynamic_cast<const TPG::TPGAction*>(vertex) != nullptr) {
-                const TPG::TPGAction* action = (const TPG::TPGAction*)vertex;
+            if (dynamic_cast<const TPG::TPGActivationVertex*>(vertex) != nullptr) {
+                const TPG::TPGActivationVertex* action = (const TPG::TPGActivationVertex*)vertex;
                 this->analyzeTPGAction(action);
 
 
-                for(auto edge: action->getOutgoingEdges()){
+                for(auto edge: action->getOutgoingActionEdges()){
                     this->analyzeProgram(&edge->getProgram());
                 }
             }

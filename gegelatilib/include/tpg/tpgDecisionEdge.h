@@ -1,7 +1,7 @@
 /**
- * Copyright or © or Copr. IETR/INSA - Rennes (2022) :
+ * Copyright or © or Copr. IETR/INSA - Rennes (2019 - 2022) :
  *
- * Karol Desnos <kdesnos@insa-rennes.fr> (2022)
+ * Karol Desnos <kdesnos@insa-rennes.fr> (2019 - 2022)
  *
  * GEGELATI is an open-source reinforcement learning framework for training
  * artificial intelligence based on Tangled Program Graphs (TPGs).
@@ -33,19 +33,35 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
-#include "tpg/instrumented/tpgVertexInstrumentation.h"
+ #ifndef TPG_DECISION_EDGE_H
+ #define TPG_DECISION_EDGE_H
+ 
+#include "tpg/tpgEdge.h"
+ 
+namespace TPG {
 
-uint64_t TPG::TPGVertexInstrumentation::getNbVisits() const
-{
-    return this->nbVisits;
-}
+    /**
+     * \brief Class representing connection edges of the Tangled Program Graphs.
+     */
+    class TPGDecisionEdge : public TPGEdge
+    {
+        public: 
+            /**
+             * \brief Main constructor of the TPGEdge class.
+             *
+             * This constructor does not register the created TPGEdge in the
+             * list of incoming or outgoing edges of the given TPGVertex.
+             *
+             * \param[in] src pointer to the source TPGVertex of the edge.
+             * \param[in] dest pointer to the destination TPGVertex of the edge.
+             * \param[in] prog the shared pointer to the Program associated to the
+             *            edge.
+             */
+            TPGDecisionEdge(const TPGVertex* src, const TPGVertex* dest,
+                const std::shared_ptr<Program::Program> prog)
+            : TPGEdge(src, dest, prog) {};
+    };
+}; // namespace TPG
 
-void TPG::TPGVertexInstrumentation::incrementNbVisits() const
-{
-    this->nbVisits++;
-}
-
-void TPG::TPGVertexInstrumentation::reset() const
-{
-    this->nbVisits = 0;
-}
+#endif
+ 

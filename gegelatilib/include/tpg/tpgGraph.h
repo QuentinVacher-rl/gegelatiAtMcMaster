@@ -41,11 +41,12 @@
 #include <list>
 
 #include "environment.h"
-#include "tpg/tpgAction.h"
-#include "tpg/tpgEdge.h"
+#include "tpg/tpgActionEdge.h"
+#include "tpg/tpgDecisionEdge.h"
+#include "tpg/tpgConnectionEdge.h"
 #include "tpg/tpgFactory.h"
-#include "tpg/tpgTeam.h"
-#include "tpg/tpgVertex.h"
+#include "tpg/tpgDecisionVertex.h"
+#include "tpg/tpgActivationVertex.h"
 
 namespace TPG {
     /**
@@ -123,27 +124,26 @@ namespace TPG {
         const TPGFactory& getFactory() const;
 
         /**
-         * \brief Create a new TPGTeam and add it to the vertices of the
+         * \brief Create a new TPGDecisionVertex and add it to the vertices of the
          * TPGGraph.
          *
-         * The new TPGTeam is added to the back of the vertices list.
-         * The TPGTeam is created using the TPGFactory of the TPGGraph.
+         * The new TPGDecisionVertex is added to the back of the vertices list.
+         * The TPGDecisionVertex is created using the TPGFactory of the TPGGraph.
          *
-         * \return a const reference to the newly created TPGTeam.
+         * \return a const reference to the newly created TPGDecisionVertex.
          */
-        const TPGTeam& addNewTeam();
+        const TPGDecisionVertex& addNewDecisionVertex();
 
         /**
-         * \brief Create a new TPGAction and add it to the vertices of the
+         * \brief Create a new TPGActivationVertex and add it to the vertices of the
          * TPGGraph.
          *
-         * The new TPGAction is added to the back of the vertices list.
-         * The TPGAction is created using the TPGFactory of the TPGGraph.
+         * The new TPGActivationVertex is added to the back of the vertices list.
+         * The TPGActivationVertex is created using the TPGFactory of the TPGGraph.
          *
-         * \param[in] actionID the identifier to associate to the TPGAction.
          * \return a const reference to the newly created TPGAction.
          */
-        const TPGAction& addNewAction(uint64_t actionID);
+        const TPGActivationVertex& addNewActivationVertex();
 
         /**
          * \brief Get the number of TPGVertex contained in the TPGGraph.
@@ -213,26 +213,23 @@ namespace TPG {
         const TPGVertex& cloneVertex(const TPGVertex& vertex);
 
         /**
-         * \brief Add a new TPGEdge to the TPGGraph.
+         * \brief Add a new TPGDecisionEdge to the TPGGraph.
          *
-         * Add a new TPGEdge to the TPGGraph, between the two given TPGVertex
-         * and associated with the given Program. The newly created TPGEdge is
+         * Add a new TPGDecisionEdge to the TPGGraph, between the two given TPGVertex
+         * and associated with the given Program. The newly created TPGDecisionEdge is
          * inserted in the incoming and outgoing edges lists of the connected
          * TPGVertex.
-         * The TPGEdge is created using the TPGFactory of the TPGGraph.
+         * The TPGDecisionEdge is created using the TPGFactory of the TPGGraph.
          *
-         * \param[in] src the source TPGVertex of the newly created TPGEdge.
+         * \param[in] src the source TPGVertex of the newly created TPGDecisionEdge.
          * \param[in] dest the destination TPGVertex of the newly created
-         *                TPGEdge.
+         *                TPGDecisionEdge.
          * \param[in] prog shared pointer to the Program associated to the newly
-         *                 created TPGEdge.
-         * \return a const reference to the created TPGEdge.
-         * \throw std::runtime_error In case one of the TPGVertex does not
-         *                           exist in the TPGGraph, or if the
-         *							destination is a TPGAction.
+         *                 created TPGDecisionEdge.
+         * \return a const reference to the created TPGDecisionEdge.
          */
-        const TPGEdge& addNewEdge(const TPGVertex& src, const TPGVertex& dest,
-                                  const std::shared_ptr<Program::Program> prog);
+        const TPGDecisionEdge& addNewDecisionEdge(const TPGVertex& src, const TPGVertex& dest,
+                                          const std::shared_ptr<Program::Program> prog);
         /**
          * \brief Add a new TPGActionEdge to the TPGGraph.
          *
@@ -251,9 +248,24 @@ namespace TPG {
          *                           exist in the TPGGraph, or if the
          *							             source is a TPGTeam.
          */
-        const TPGEdge& addNewActionEdge(
+        const TPGActionEdge& addNewActionEdge(
             const TPGVertex& src, const std::shared_ptr<Program::Program> prog,
             uint64_t actionClass);
+
+        /**
+         * \brief Add a new TPGConnectionEdge to the TPGGraph.
+         *
+         * Add a new TPGConnectionEdge to the TPGGraph, between the two given TPGVertex.
+         *  The newly created TPGConnectionEdge is inserted in the incoming and outgoing edges lists of the connected
+         * TPGVertex.
+         * The TPGConnectionEdge is created using the TPGFactory of the TPGGraph.
+         *
+         * \param[in] src the source TPGVertex of the newly created TPGConnectionEdge.
+         * \param[in] dest the destination TPGVertex of the newly created
+         *                TPGConnectionEdge.
+         * \return a const reference to the created TPGConnectionEdge.
+         */
+        const TPGConnectionEdge& addNewConnectionEdge(const TPGVertex& src, const TPGVertex& dest);
 
         /**
          * \brief Get a const reference to the edges of the TPGGraph.
@@ -274,19 +286,6 @@ namespace TPG {
          *                           exist in the TPGGraph.
          */
         void removeEdge(const TPGEdge& edge);
-
-        /**
-         * \brief Remove a TPGActionEdge from the TPGGraph.
-         *
-         * If the edge is connected to TPGVertex within the graph, they are
-         * updated.
-         *
-         * \param[in] edge a const reference to the TPGActionEdge to remove.
-         *
-         * \throw std::runtime_error In case one of the TPGEdges does not
-         *                           exist in the TPGGraph.
-         */
-        void removeActionEdge(const TPGEdge& edge);
 
         /**
          * Duplicate a TPGEdge from the TPGGraph.
@@ -361,13 +360,6 @@ namespace TPG {
          */
         void updateAllAssessedActions();
     
-
-        /**
-         * Order the ActionEdge of the given action
-         * 
-         * \param[in] action TPGAction to order
-         */
-        void orderActionEdges(const TPG::TPGAction* action);
 
         /**
          * Set the vertex to be deleted (during reproduction process)

@@ -1,7 +1,7 @@
 /**
- * Copyright or © or Copr. IETR/INSA - Rennes (2022) :
+ * Copyright or © or Copr. IETR/INSA - Rennes (2019) :
  *
- * Karol Desnos <kdesnos@insa-rennes.fr> (2022)
+ * Karol Desnos <kdesnos@insa-rennes.fr> (2019)
  *
  * GEGELATI is an open-source reinforcement learning framework for training
  * artificial intelligence based on Tangled Program Graphs (TPGs).
@@ -33,51 +33,22 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
-#ifndef TPG_VERTEX_INSTRUMENTATION_H
-#define TPG_VERTEX_INSTRUMENTATION_H
+#include "tpg/tpgConnectionEdge.h"
 
-#include <atomic>
-#include <cstddef>
+Program::Program& TPG::TPGConnectionEdge::getProgram() const
+{
+    throw std::runtime_error("ConnectionEdge cannot have a program");
+}
 
-namespace TPG {
-    /**
-     * \brief Instrumentation code for TPGVertex class for instrumented
-     * execution.
-     */
-    class TPGVertexInstrumentation
-    {
-      public:
-        /**
-         * \brief Get the number of time a TPGVertexInstrumentation was visited.
-         */
-        uint64_t getNbVisits() const;
+void TPG::TPGConnectionEdge::setProgram(
+    const std::shared_ptr<Program::Program> prog) const
+{
+    throw std::runtime_error("ConnectionEdge cannot have a program");
+}
 
-        /**
-         * \brief Add one to the number of visits for this
-         * TPGVertexInstrumented.
-         */
-        void incrementNbVisits() const;
+std::shared_ptr<Program::Program> TPG::TPGConnectionEdge::getProgramSharedPointer()
+{
+    throw std::runtime_error("ConnectionEdge cannot have a program");
+}
 
-        /**
-         *  \brief Reset the instrumentation attributes.
-         */
-        void reset() const;
 
-      protected:
-        /**
-         * \brief Protected default constructor to forbid instanciation.
-         *
-         * This constructor initializes the instrumentation attributes.
-         */
-        TPGVertexInstrumentation() : nbVisits{0}
-        {
-        }
-
-        /// Number of a time a TPGVertex has been visited
-        /// Attribute is mutable because all TPGVertex are seen as const outside
-        /// from their TPGGraph.
-        mutable std::atomic_uint64_t nbVisits;
-    };
-} // namespace TPG
-
-#endif // !TPG_VERTEX_INSTRUMENTATION_H

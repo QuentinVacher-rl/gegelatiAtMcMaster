@@ -104,7 +104,7 @@ double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
     return result;
 }
 
-const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateTeam(const TPGTeam& team)
+const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateDecisionVertex(const TPGDecisionVertex& team)
 {
     // Copy outgoing edge list
     const std::list<TPG::TPGEdge*>& outgoingEdges = team.getOutgoingEdges();
@@ -126,7 +126,7 @@ const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateTeam(const TPGTeam& team)
     // Others
     for (auto iter = ++outgoingEdges.begin(); iter != outgoingEdges.end();
          iter++) {
-        TPGEdge* edge = *iter;
+            TPGEdge* edge = *iter;
         double bid = this->evaluateEdge(*edge);
 #ifdef DEBUG
         std::cout << "R = " << bid;
@@ -152,72 +152,67 @@ const std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     TPGExecutionEngine::executeFromRoot(
         const TPGVertex& root, const std::vector<uint64_t>& initActions)
 {
-    const TPGVertex* currentVertex = &root;
+    const TPGVertex* currentActivationVertex = &root;
+    const TPGVertex* currentDecisionVertex;
     const TPGEdge* edge = nullptr;
 
     std::vector<const TPGVertex*> visitedVertices;
-    visitedVertices.push_back(currentVertex);
-    // Browse the TPG until a TPGAction is reached.
-    while (dynamic_cast<const TPG::TPGTeam*>(currentVertex)) {
-        // Get the next edge
-        edge = &this->evaluateTeam(*(const TPGTeam*)currentVertex);
-        Program::Program p =
-            currentVertex->getOutgoingEdges().front()->getProgram();
-        // update currentVertex and backup in visitedVertex.
-        currentVertex = edge->getDestination();
-        visitedVertices.push_back(currentVertex);
-    }
+    visitedVertices.push_back(currentActivationVertex);
 
     // An action value must be positive, so -1 for an action mean that no action
     // value is choosen yet.
     std::vector<double> actionsTaken(env.getNbContinuousActions(), 0.0);
-    // If continuous action are used, the n actions taken are the value 1 to n+1
-    // in the last executed register.
-    if (env.getNbContinuousActions() > 0) {
 
-        // True if the action contain multiple TPGActionEdge
-        if (currentVertex->getOutgoingEdges().size() > 1 || env.getParams().mutation.tpg.useMultiActionProgram) {
+    // Vector of the decisionVertex to evaluate
+    std::vector<const TPG::TPGVertex*> decisionVertexToEvaluate;
 
-            for(auto edge: currentVertex->getOutgoingEdges()){
+    // Get the actions of the init root and the decision vertex to evaluate.
+    for(auto edge: currentActivationVertex->getOutgoingEdges()){
+        if (dynamic_cast<TPG::TPGActionEdge*>(edge)){
+            auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
+            // Evaluate the edge and set the action value
+            actionsTaken[actionEdge->getActionClass()] = this->evaluateEdge(*edge);
+        } else if(dynamic_cast<TPG::TPGConnectionEdge*>(edge)) {
+            decisionVertexToEvaluate.push_back(edge->getDestination());
+        } else {
+            throw std::runtime_error("This vertex should be a activation vertex, with no DecisionEdge");
+        }
+    }
+
+    while (decisionVertexToEvaluate.size() != 0){
+
+        // Get the first element in the decision vertex to evaluate and erase it from the list
+        currentDecisionVertex = decisionVertexToEvaluate.front();
+        decisionVertexToEvaluate.erase(decisionVertexToEvaluate.begin());
+        visitedVertices.push_back(currentDecisionVertex);
+
+        // Get the next edge
+        edge = &this->evaluateDecisionVertex(*(const TPGDecisionVertex*)currentDecisionVertex);
+        Program::Program p = currentDecisionVertex->getOutgoingEdges().front()->getProgram();
+        // update currentActivationVertex and backup in visitedVertex.
+        currentActivationVertex = edge->getDestination();
+        visitedVertices.push_back(currentActivationVertex);
+
+        // Get the actions of the init root and the decision vertex to evaluate.
+        for(auto edge: currentActivationVertex->getOutgoingEdges()){
+            if (dynamic_cast<TPG::TPGActionEdge*>(edge)){
                 auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
-
                 // Evaluate the edge and set the action value
                 actionsTaken[actionEdge->getActionClass()] = this->evaluateEdge(*edge);
+            } else if(dynamic_cast<TPG::TPGConnectionEdge*>(edge)) {
+                decisionVertexToEvaluate.push_back(edge->getDestination());
+            } else {
+                throw std::runtime_error("This vertex should be a activation vertex, with no DecisionEdge");
             }
-
         }
-        // True if the action contain one TPGActionEdge
-        else if (currentVertex->getOutgoingEdges().size() == 1) {
-            this->evaluateEdge(*currentVertex->getOutgoingEdges().front());
-
-            Program::Program p =
-                currentVertex->getOutgoingEdges().front()->getProgram();
-
-            // Get the register values
-            actionsTaken = progExecutionEngine.getRegisterValues(
-                env.getNbContinuousActions());
-        }
-        else {
-            // Re-evaluate the last edge to get the register values.
-            // TODO Wont work if memory is added
-            this->evaluateEdge(*edge);
-
-            // Get the register values + the bid and erase the bid
-            actionsTaken = progExecutionEngine.getRegisterValues(
-                env.getNbContinuousActions() + 1);
-            actionsTaken.erase(actionsTaken.begin());
-        }
-
-        this->applyActivationFunctionOnActions(actionsTaken);
-
-        return std::make_pair(visitedVertices, actionsTaken);
-        
     }
-    else {
-        return std::make_pair(
-            visitedVertices,
-            std::vector<double>{static_cast<double>(
-                dynamic_cast<const TPG::TPGAction*>(currentVertex)
-                    ->getActionID())});
-    }
+
+
+
+
+    this->applyActivationFunctionOnActions(actionsTaken);
+    
+
+    return std::make_pair(visitedVertices, actionsTaken);
+
 }
