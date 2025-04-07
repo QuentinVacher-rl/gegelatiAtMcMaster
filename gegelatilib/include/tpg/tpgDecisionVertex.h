@@ -47,6 +47,15 @@ namespace TPG {
     class TPGDecisionVertex : public TPGVertex
     {
         public: 
+
+        
+            /**
+             * \brief Constructor of Decision vertex
+             * 
+             * \param[in] path of the vertex.
+             */
+            TPGDecisionVertex(const std::vector<uint64_t>& path) : TPGVertex(path) {}
+    
             /**
              * \brief Specialisation of TPGVertex method to accept only ConnectionEdges
              *

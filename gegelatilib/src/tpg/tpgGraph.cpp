@@ -76,15 +76,15 @@ const TPG::TPGFactory& TPG::TPGGraph::getFactory() const
     return *this->factory;
 }
 
-const TPG::TPGDecisionVertex& TPG::TPGGraph::addNewDecisionVertex()
+const TPG::TPGDecisionVertex& TPG::TPGGraph::addNewDecisionVertex(const std::vector<uint64_t>& path)
 {
-    this->vertices.push_back(factory->createTPGDecisionVertex());
+    this->vertices.push_back(factory->createTPGDecisionVertex(path));
     return (const TPGDecisionVertex&)(*this->vertices.back());
 }
 
-const TPG::TPGActivationVertex& TPG::TPGGraph::addNewActivationVertex()
+const TPG::TPGActivationVertex& TPG::TPGGraph::addNewActivationVertex(const std::vector<uint64_t>& path)
 {
-    this->vertices.push_back(factory->createTPGActivationVertex());
+    this->vertices.push_back(factory->createTPGActivationVertex(path));
     return (const TPGActivationVertex&)(*this->vertices.back());
 }
 
@@ -168,10 +168,10 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
     // Create a new Vertex
     // (at the end of the vertices list)
     if (dynamic_cast<const TPG::TPGDecisionVertex*>(&vertex) != nullptr) {
-        this->addNewDecisionVertex();
+        this->addNewDecisionVertex(vertex.getPath());
     }
     else if (dynamic_cast<const TPG::TPGActivationVertex*>(&vertex) != nullptr) {
-        this->addNewActivationVertex();
+        this->addNewActivationVertex(vertex.getPath());
     }
 
     // Get the new vertex
@@ -181,36 +181,23 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
     for (auto edge : vertex.getOutgoingEdges()) {
 
         if(dynamic_cast<TPG::TPGDecisionEdge*>(edge) != nullptr){
-            std::cout<<1<<std::endl;
             const TPGVertex& destinationVertex = this->cloneVertex(*edge->getDestination());
-            std::cout<<2<<std::endl;
             this->addNewDecisionEdge(*newVertex, destinationVertex, std::make_shared<Program::Program>(edge->getProgram()));
-            std::cout<<3<<std::endl;
         } else if (dynamic_cast<TPG::TPGConnectionEdge*>(edge) != nullptr) {
-            std::cout<<4<<std::endl;
             const TPGVertex& destinationVertex = this->cloneVertex(*edge->getDestination());
-            std::cout<<5<<std::endl;
             this->addNewConnectionEdge(*newVertex, destinationVertex);
-            std::cout<<6<<std::endl;
         } else {
-            std::cout<<7<<std::endl;
             TPG::TPGActionEdge* actionEdge = dynamic_cast<TPGActionEdge*>(edge);
-            std::cout<<8<<std::endl;
             this->addNewActionEdge(*newVertex,
                                    std::make_shared<Program::Program>(actionEdge->getProgram()),
                                    actionEdge->getActionClass());
-                                   std::cout<<9<<std::endl;
         }
-        
-    std::cout<<11<<std::endl;
 
     }
-    std::cout<<12<<std::endl;
 
     newVertex->updateAssessedActions();
+    this->orderOutgoingEdges(newVertex);
 
-    
-    std::cout<<10<<std::endl;
     return *newVertex;
 }
 
@@ -342,7 +329,11 @@ void TPG::TPGGraph::removeEdge(const TPGEdge& edge)
 
         auto destination = iterator->get()->getDestination();
         (*this->findVertex(destination))->removeIncomingEdge(iterator->get());
-        this->removeVertex(*destination);
+
+        // If destination has 0 incomming edge, remove destination
+        if(destination->getIncomingEdges().size() == 0){
+            this->removeVertex(*destination);
+        }
     }
 
 
@@ -513,6 +504,72 @@ void TPG::TPGGraph::setToBeDeleted(const TPG::TPGVertex* vertex){
     if (it != this->vertices.end()) {
         // Found the vertex, modify it as needed
         (*it)->setToBeDeleted(true);
+    } else {
+        throw std::runtime_error(
+            "Vertex not in the graph.");
+    }
+}
+
+std::vector<const TPG::TPGVertex*> TPG::TPGGraph::getVerticesOfRoot(const TPG::TPGVertex* root){
+
+
+	std::vector<const TPG::TPGVertex*> verticesSearch = {root};
+    std::vector<const TPG::TPGVertex*> vertices = {root};
+
+    // Search while there is still vertices
+	while(verticesSearch.size() > 0){
+
+        // Get the first one, then erase it
+		auto currVertex = verticesSearch.front();
+		verticesSearch.erase(verticesSearch.begin());
+
+        // For each edge in this vertex
+		for(auto edge: currVertex->getOutgoingEdges()){
+			if(dynamic_cast<TPG::TPGActionEdge*>(edge) == nullptr){
+				verticesSearch.push_back(edge->getDestination());
+				vertices.push_back(edge->getDestination());
+			}
+		}
+	}
+
+    return vertices;
+}
+
+std::vector<TPG::TPGEdge*> TPG::TPGGraph::getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge){
+    std::vector<TPG::TPGEdge*> edges;
+
+    // Get all the vertices of this root
+    std::vector<const TPG::TPGVertex*> vertices = getVerticesOfRoot(root);
+
+    // Get all the edges.
+    for(auto vertex: vertices){
+        for(auto edge: vertex->getOutgoingEdges()){
+
+            // If connection edge are collected, or if edge is not a connection edge, collect the edge
+            if(getConnectionEdge || dynamic_cast<TPG::TPGConnectionEdge*>(edge) == nullptr){
+                edges.push_back(edge);
+            }
+        }
+    }
+    return edges;
+}
+
+void TPG::TPGGraph::orderOutgoingEdges(const TPG::TPGVertex* vertex){
+    auto it = this->findVertex(vertex);
+
+    if (it != this->vertices.end()) {
+        
+        // Found the vertex, modify it as needed
+        (*it)->orderOutgoingEdges();
+
+        // Get all the outgoing vertices (remove begin to remove current vertex)
+        std::vector<const TPG::TPGVertex*> outgoingVertices = this->getVerticesOfRoot(vertex);
+        outgoingVertices.erase(outgoingVertices.begin());
+
+        // Order outgoing vertex
+        for(auto outgoingVertex: outgoingVertices){
+            this->orderOutgoingEdges(outgoingVertex);
+        }
     } else {
         throw std::runtime_error(
             "Vertex not in the graph.");

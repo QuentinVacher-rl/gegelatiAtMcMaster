@@ -130,9 +130,11 @@ namespace TPG {
          * The new TPGDecisionVertex is added to the back of the vertices list.
          * The TPGDecisionVertex is created using the TPGFactory of the TPGGraph.
          *
+         * \param[in] path of the vertex.
+         * 
          * \return a const reference to the newly created TPGDecisionVertex.
          */
-        const TPGDecisionVertex& addNewDecisionVertex();
+        const TPGDecisionVertex& addNewDecisionVertex(const std::vector<uint64_t>& path = {0});
 
         /**
          * \brief Create a new TPGActivationVertex and add it to the vertices of the
@@ -140,10 +142,12 @@ namespace TPG {
          *
          * The new TPGActivationVertex is added to the back of the vertices list.
          * The TPGActivationVertex is created using the TPGFactory of the TPGGraph.
+         * 
+         * \param[in] path of the vertex.
          *
          * \return a const reference to the newly created TPGAction.
          */
-        const TPGActivationVertex& addNewActivationVertex();
+        const TPGActivationVertex& addNewActivationVertex(const std::vector<uint64_t>& path = {0});
 
         /**
          * \brief Get the number of TPGVertex contained in the TPGGraph.
@@ -367,6 +371,31 @@ namespace TPG {
          * \param[in] vertex to set to delete
          */
         void setToBeDeleted(const TPG::TPGVertex* vertex);
+
+        /**
+         * \brief compute and return all the vertices activable by this root.
+         * 
+         * \param[in] root root used.
+         */
+        std::vector<const TPG::TPGVertex*> getVerticesOfRoot(const TPG::TPGVertex* root);
+
+
+        
+        /**
+         * \brief compute and return all the edges activable by this root.
+         * 
+         * \param[in] root root used.
+         * \param[in] getConnectionEdge boolean to indicate if connectionEdge must be collected too.
+         */
+        std::vector<TPG::TPGEdge*> getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge = true);
+
+
+        /**
+         * \brief Order the outgoing edges of the vertex and recursively its outgoing vertex.
+         * 
+         * \param[in] vertex TPG::TPGVertex whose edges are ordered.
+         */
+        void orderOutgoingEdges(const TPG::TPGVertex* vertex);
 
       protected:
         /// Environment of the TPGGraph

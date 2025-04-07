@@ -59,10 +59,8 @@ void File::TPGGraphDotExporter::printTPGVertex(const TPG::TPGVertex& vertex)
         type = "AV";
     }
 
-    std::cout<<"bah"<<std::endl;
     fprintf(pFile, "%s%s%" PRIu64 " [fillcolor=\"%s\"]\n", this->offset.c_str(),
             type.c_str(), name, color.c_str());
-            std::cout<<"bah"<<std::endl;
 
     for(auto edge: vertex.getOutgoingEdges()){
         this->printTPGEdge(*edge);
@@ -235,7 +233,6 @@ void File::TPGGraphDotExporter::printTPGGraphFooter()
 
 void File::TPGGraphDotExporter::print()
 {
-    std::cout<<"ah"<<std::endl;
     nbActions = 0;
     programID.clear();
 
@@ -244,7 +241,6 @@ void File::TPGGraphDotExporter::print()
 
     // Print all vertices
     auto vertices = this->tpg.getRootVertices();
-    std::cout<<"kll "<<vertices.size()<<std::endl;
     for (const TPG::TPGVertex* vertex : vertices) {
         this->printTPGVertex(*vertex);
     }
@@ -253,7 +249,6 @@ void File::TPGGraphDotExporter::print()
     // Print footer
     this->printTPGGraphFooter();
 
-    std::cout<<"ah2"<<std::endl;
 
     // flush file
     fflush(pFile);

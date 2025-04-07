@@ -111,3 +111,14 @@ bool TPG::TPGVertex::isToBeDeleted() const{
 }
 
 
+const std::vector<uint64_t>& TPG::TPGVertex::getPath() const {
+    return path;
+}
+
+void TPG::TPGVertex::orderOutgoingEdges() {
+
+    outgoingEdges.sort([](TPG::TPGEdge* edge1, TPG::TPGEdge* edge2) {
+        // Compare last path value
+        return edge1->getDestination()->getPath().back() < edge2->getDestination()->getPath().back();
+    });
+}

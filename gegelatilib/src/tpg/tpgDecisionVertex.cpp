@@ -65,7 +65,7 @@ void TPG::TPGDecisionVertex::addOutgoingEdge(TPGEdge* edge)
 
 
 void TPG::TPGDecisionVertex::updateAssessedActions()
-{std::cout<<"dec"<<std::endl;
+{
     assessedActions.clear();
 
     for (TPGEdge* edge : this->outgoingEdges) {

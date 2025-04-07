@@ -124,7 +124,7 @@ namespace Mutator {
          * \param[in,out] graph the TPGGraph within which the team and edge are
          *                stored.
          * \param[in] vertex the TPGVertex whose actionEdges will be altered.
-         * \param[in] actionEdge the TPGActionEdge mutated
+         * \param[in] edge the TPGActionEdge mutated
          * \param[in,out] newPrograms List of new Program created during
          *                mutations of the TPGTeam. The behavior of these
          *                Program must be mutated to complete the mutation
@@ -132,8 +132,8 @@ namespace Mutator {
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        void mutateTPGActionEdge(
-            TPG::TPGGraph& graph, const TPG::TPGVertex& vertex, TPG::TPGActionEdge* actionEdge,
+        void mutateTPGEdge(
+            TPG::TPGGraph& graph, const TPG::TPGVertex& vertex, TPG::TPGEdge* edge,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
 
@@ -298,15 +298,15 @@ namespace Mutator {
          * 
          * \param[in] graph current Graph
          * \param[in] childs new vertices
-         * \param[in] actionID ID of the edges copied
+         * \param[in] edges TPGEdges copied
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          * 
          */
         void crossProgram(
             TPG::TPGGraph& graph,
-            std::vector<const TPG::TPGActivationVertex*> childs,
-            size_t actionID,
+            std::vector<const TPG::TPGVertex*>& childs,
+            std::vector<TPG::TPGEdge*>& edges,
             const Mutator::MutationParameters& params,
             Mutator::RNG& rng);
 
@@ -315,15 +315,15 @@ namespace Mutator {
          * 
          * \param[in] graph current Graph
          * \param[in] childs new vertices
-         * \param[in] actionID ID of the edges copied
+         * \param[in] edges TPGEdges copied
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          * 
          */
         void crossEdges(
             TPG::TPGGraph& graph,
-            std::vector<const TPG::TPGActivationVertex*> childs,
-            size_t actionID,
+            std::vector<const TPG::TPGVertex*>& childs,
+            std::vector<TPG::TPGEdge*>& edges,
             const Mutator::MutationParameters& params,
             Mutator::RNG& rng);
 
@@ -338,7 +338,7 @@ namespace Mutator {
          */
         void crossTPGVertices(
             TPG::TPGGraph& graph,
-            std::vector<const TPG::TPGActivationVertex*> childs,
+            std::vector<const TPG::TPGVertex*>& childs,
             const Mutator::MutationParameters& params,
             Mutator::RNG& rng);
 

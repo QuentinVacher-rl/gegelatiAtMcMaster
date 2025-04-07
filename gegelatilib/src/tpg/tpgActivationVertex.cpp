@@ -89,30 +89,28 @@ std::list<TPG::TPGEdge*> TPG::TPGActivationVertex::getOutgoingActionEdges() cons
     return actionEdges;
 }
 
-std::list<TPG::TPGEdge*> TPG::TPGActivationVertex::getOrderedActionEdges() const{
 
+void TPG::TPGActivationVertex::orderOutgoingEdges() {
 
+    outgoingEdges.sort([](TPG::TPGEdge* edge1, TPG::TPGEdge* edge2) {
 
-    std::list<TPG::TPGEdge*> actionEdges;
-    std::for_each(outgoingEdges.begin(), outgoingEdges.end(),
-                  [&actionEdges](TPG::TPGEdge* edge) {
-                      if (dynamic_cast<TPG::TPGActionEdge*>(edge) !=
-                          nullptr) {
-                            actionEdges.push_back(edge);
-                      }
-                  });
+        if(dynamic_cast<TPG::TPGActionEdge*>(edge1) != nullptr){
+            // both edge are action edge
+            if(dynamic_cast<TPG::TPGActionEdge*>(edge2) != nullptr){
+                return dynamic_cast<TPG::TPGActionEdge*>(edge1)->getActionClass() < dynamic_cast<TPG::TPGActionEdge*>(edge2)->getActionClass();
 
-
-    actionEdges.sort([](TPG::TPGEdge* edge1, TPG::TPGEdge* edge2) {
-        // Utiliser static_cast pour convertir TPGEdge* en TPGActionEdge*
-        TPG::TPGActionEdge* actionEdge1 = static_cast<TPG::TPGActionEdge*>(edge1);
-        TPG::TPGActionEdge* actionEdge2 = static_cast<TPG::TPGActionEdge*>(edge2);
-
-        // Comparer actionClass
-        return actionEdge1->getActionClass() < actionEdge2->getActionClass();
+            // Edge1 is action edge and edge2 is ConnectionEdge
+            } else {
+                return false;
+            } 
+            // both edge are connection edge
+        } else if (dynamic_cast<TPG::TPGConnectionEdge*>(edge2) != nullptr){
+            return edge1->getDestination()->getPath().back() < edge2->getDestination()->getPath().back();
+            // Edge1 is connection edge and edge2 is ActionEdge
+        } else {
+            return true;
+        }
     });
-    
-    return actionEdges;
 }
 
 TPG::TPGActionEdge* TPG::TPGActivationVertex::getEdgeOfAction(uint64_t actionClass) const {
@@ -138,7 +136,6 @@ TPG::TPGActionEdge* TPG::TPGActivationVertex::getEdgeOfAction(uint64_t actionCla
 
 void TPG::TPGActivationVertex::updateAssessedActions()
 {
-    std::cout<<"activ"<<std::endl;
     assessedActions.clear();
     auto actionEdges = this->getOutgoingActionEdges();
     for (TPGEdge* actionEdge : actionEdges) {
@@ -154,5 +151,4 @@ void TPG::TPGActivationVertex::updateAssessedActions()
         const auto& destinationActions = connectionEdge->getDestination()->getAssessedActions();
         assessedActions.insert(destinationActions.begin(), destinationActions.end());
     }
-    std::cout<<"activ"<<std::endl;
 }
