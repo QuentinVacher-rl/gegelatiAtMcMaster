@@ -152,7 +152,7 @@ namespace Mutator {
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        void duplicateEdgeSpecies(TPG::TPGGraph& graph, 
+        bool addEdgeSpecies(TPG::TPGGraph& graph, 
             std::vector<const TPG::TPGVertex*> species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
@@ -170,7 +170,7 @@ namespace Mutator {
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        void deleteEdgeSpecies(TPG::TPGGraph& graph, 
+        bool deleteEdgeSpecies(TPG::TPGGraph& graph, 
             std::vector<const TPG::TPGVertex*> species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
