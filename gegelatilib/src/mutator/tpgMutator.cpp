@@ -270,6 +270,7 @@ bool Mutator::TPGMutator::addEdgeSpecies(TPG::TPGGraph& graph,
 
     std::set<uint64_t> rootAvailableActions;
 
+    // Get the actions assessed by the root
     const std::set<uint64_t>& actionAssessedByRoot = species.front()->getAssessedActions();
     for (uint64_t i = 0; i < graph.getEnvironment().getNbContinuousActions(); ++i) {
         // If action not assessed by the root, it is available.
@@ -278,8 +279,8 @@ bool Mutator::TPGMutator::addEdgeSpecies(TPG::TPGGraph& graph,
         }
     }
 
-    // Get all the vertex with available actions
-    std::map<const TPG::TPGVertex*, std::set<uint64_t>> mapAvailableActions;
+    // Get all the vertex with available actions, take a vector for keeping track of the order
+    std::vector<std::pair<const TPG::TPGVertex*, std::set<uint64_t>>> availableActionsAllVertices;
     for(auto vertex: verticesUsed){
 
         std::set<uint64_t> availableActionOfVertex = rootAvailableActions;
@@ -320,23 +321,30 @@ bool Mutator::TPGMutator::addEdgeSpecies(TPG::TPGGraph& graph,
         }
     
         if(availableActionOfVertex.size() > 0){
-            mapAvailableActions.insert(std::make_pair(vertex, availableActionOfVertex));
+            availableActionsAllVertices.push_back(std::make_pair(vertex, availableActionOfVertex));
         }
     }
 
-    if(mapAvailableActions.size() == 0){
+    if(availableActionsAllVertices.size() == 0){
         return false;
     }
 
+
+    uint64_t val = rng.getUnsignedInt64(0, availableActionsAllVertices.size() - 1);
+
     // Select randomly the vertex.
-    auto itMap = mapAvailableActions.begin();
-    std::advance(itMap, rng.getUnsignedInt64(0, mapAvailableActions.size() - 1));
+    auto itMap = availableActionsAllVertices.begin();
+    std::advance(itMap, val);
     auto pair = *itMap;
 
+
+
+    
 
     // Fing the corresponding index in the original vector.
     auto itVertex = std::find(verticesOfExemple.begin(), verticesOfExemple.end(), (*itMap).first);
     uint64_t indexChoosenVertex = std::distance(verticesOfExemple.begin(), itVertex);
+
 
     // Randomly select an action
     auto actionSetChoosen = (*itMap).second;
@@ -565,7 +573,7 @@ void Mutator::TPGMutator::mutateSpecies(TPG::TPGGraph& graph,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
     const Mutator::MutationParameters& params, Mutator::RNG& rng)
 {
-    double probaAddEdge = 0.0;
+    double probaAddEdge = 1.0;
     double probaDeletionEdge = 1.0;
     double probaChangeActionClass = 0.0;
     double probaExtension = 0.5;
