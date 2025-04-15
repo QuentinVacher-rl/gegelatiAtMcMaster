@@ -145,9 +145,6 @@ void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
                 this->offset.c_str(), srcID, destID);
     }
 
-    if(dynamic_cast<const TPG::TPGActionEdge*>(&edge) == nullptr){
-        this->printTPGVertex(*edge.getDestination());
-    }
 
 
 
@@ -240,7 +237,7 @@ void File::TPGGraphDotExporter::print()
     this->printTPGGraphHeader();
 
     // Print all vertices
-    auto vertices = this->tpg.getRootVertices();
+    auto vertices = this->tpg.getVertices();
     for (const TPG::TPGVertex* vertex : vertices) {
         this->printTPGVertex(*vertex);
     }

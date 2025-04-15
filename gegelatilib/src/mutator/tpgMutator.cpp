@@ -247,6 +247,9 @@ bool Mutator::TPGMutator::addEdgeSpecies(TPG::TPGGraph& graph,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
     const Mutator::MutationParameters& params, Mutator::RNG& rng)
 {
+    double probaActivationOverDecisionVertex = 1;
+    double randomValue = rng.getDouble(0, 1);
+
     std::vector<const TPG::TPGVertex *> verticesOfExemple = graph.getVerticesOfRoot(species.front());
     std::vector<const TPG::TPGVertex *> verticesUsed = verticesOfExemple;
 
@@ -254,115 +257,140 @@ bool Mutator::TPGMutator::addEdgeSpecies(TPG::TPGGraph& graph,
     verticesUsed.erase(
         std::remove_if(
             verticesUsed.begin(), verticesUsed.end(),
-            [](const TPG::TPGVertex* vertex) -> bool {
-                if(dynamic_cast<const TPG::TPGDecisionVertex*>(vertex) != nullptr) // TODO CHANGE
-                {
-                    return true;
-                } else {
-                    return false;
-                }
-                
+            [probaActivationOverDecisionVertex, randomValue](const TPG::TPGVertex* vertex) -> bool {
+                // If proba > random, keep only activation vertices, else keep only decision vertices.
+                return (probaActivationOverDecisionVertex > randomValue) ^ dynamic_cast<const TPG::TPGActivationVertex*>(vertex) != nullptr;
             }
         ),
         verticesUsed.end()
     );
 
+    if(probaActivationOverDecisionVertex > randomValue){
+        std::set<uint64_t> rootAvailableActions;
 
-    std::set<uint64_t> rootAvailableActions;
-
-    // Get the actions assessed by the root
-    const std::set<uint64_t>& actionAssessedByRoot = species.front()->getAssessedActions();
-    for (uint64_t i = 0; i < graph.getEnvironment().getNbContinuousActions(); ++i) {
-        // If action not assessed by the root, it is available.
-        if (actionAssessedByRoot.find(i) == actionAssessedByRoot.end()) {
-            rootAvailableActions.insert(i);
-        }
-    }
-
-    // Get all the vertex with available actions, take a vector for keeping track of the order
-    std::vector<std::pair<const TPG::TPGVertex*, std::set<uint64_t>>> availableActionsAllVertices;
-    for(auto vertex: verticesUsed){
-
-        std::set<uint64_t> availableActionOfVertex = rootAvailableActions;
-
-        const TPG::TPGActivationVertex* currentVertex = (const TPG::TPGActivationVertex*)vertex;
-        while(currentVertex->getIncomingEdges().size() > 0){
-            if(dynamic_cast<const TPG::TPGDecisionVertex*>(currentVertex->getIncomingEdges().front()->getSource()) == nullptr){
-                throw std::runtime_error("Should be a decision vertex (addEdgeSpecies)");
+        // Get the actions assessed by the root
+        const std::set<uint64_t>& actionAssessedByRoot = species.front()->getAssessedActions();
+        for (uint64_t i = 0; i < graph.getEnvironment().getNbContinuousActions(); ++i) {
+            // If action not assessed by the root, it is available.
+            if (actionAssessedByRoot.find(i) == actionAssessedByRoot.end()) {
+                rootAvailableActions.insert(i);
             }
+        }
     
-            // Get the incomming decision vertex
-            const TPG::TPGVertex* decisionVertex = currentVertex->getIncomingEdges().front()->getSource();
+        // Get all the vertex with available actions, take a vector for keeping track of the order
+        std::vector<std::pair<const TPG::TPGVertex*, std::set<uint64_t>>> availableActionsAllVertices;
+        for(auto vertex: verticesUsed){
     
-            auto avSet = currentVertex->getAssessedActions();
-            auto dvSet = decisionVertex->getAssessedActions();
-
+            std::set<uint64_t> availableActionOfVertex = rootAvailableActions;
     
-            if(dvSet.size() < avSet.size()){
-                throw std::runtime_error("Size of the decision vertex assessed actions should be equal or bigger (addEdgeSpecies)");
+            const TPG::TPGActivationVertex* currentVertex = (const TPG::TPGActivationVertex*)vertex;
+            while(currentVertex->getIncomingEdges().size() > 0){
+                if(dynamic_cast<const TPG::TPGDecisionVertex*>(currentVertex->getIncomingEdges().front()->getSource()) == nullptr){
+                    throw std::runtime_error("Should be a decision vertex (addEdgeSpecies)");
+                }
+        
+                // Get the incomming decision vertex
+                const TPG::TPGVertex* decisionVertex = currentVertex->getIncomingEdges().front()->getSource();
+        
+                auto avSet = currentVertex->getAssessedActions();
+                auto dvSet = decisionVertex->getAssessedActions();
+    
+        
+                if(dvSet.size() < avSet.size()){
+                    throw std::runtime_error("Size of the decision vertex assessed actions should be equal or bigger (addEdgeSpecies)");
+                }
+        
+                // Add the set difference in the available action set.
+                std::set_difference(
+                    dvSet.begin(), dvSet.end(),
+                    avSet.begin(), avSet.end(),
+                    std::inserter(availableActionOfVertex, availableActionOfVertex.begin())
+                );
+    
+    
+                
+        
+                if(dynamic_cast<const TPG::TPGActivationVertex*>(decisionVertex->getIncomingEdges().front()->getSource()) == nullptr){
+                    throw std::runtime_error("Should be an action vertex (addEdgeSpecies)");
+                }
+        
+                // Get back to thr root
+                currentVertex = (const TPG::TPGActivationVertex*)decisionVertex->getIncomingEdges().front()->getSource();
             }
-    
-            // Add the set difference in the available action set.
-            std::set_difference(
-                dvSet.begin(), dvSet.end(),
-                avSet.begin(), avSet.end(),
-                std::inserter(availableActionOfVertex, availableActionOfVertex.begin())
-            );
-
-
-            
-    
-            if(dynamic_cast<const TPG::TPGActivationVertex*>(decisionVertex->getIncomingEdges().front()->getSource()) == nullptr){
-                throw std::runtime_error("Should be an action vertex (addEdgeSpecies)");
+        
+            if(availableActionOfVertex.size() > 0){
+                availableActionsAllVertices.push_back(std::make_pair(vertex, availableActionOfVertex));
             }
-    
-            // Get back to thr root
-            currentVertex = (const TPG::TPGActivationVertex*)decisionVertex->getIncomingEdges().front()->getSource();
         }
     
-        if(availableActionOfVertex.size() > 0){
-            availableActionsAllVertices.push_back(std::make_pair(vertex, availableActionOfVertex));
+        if(availableActionsAllVertices.size() == 0){
+            return false;
         }
-    }
-
-    if(availableActionsAllVertices.size() == 0){
-        return false;
-    }
-
-
-    uint64_t val = rng.getUnsignedInt64(0, availableActionsAllVertices.size() - 1);
-
-    // Select randomly the vertex.
-    auto itMap = availableActionsAllVertices.begin();
-    std::advance(itMap, val);
-    auto pair = *itMap;
-
-
-
     
+        // Select randomly the vertex.
+        auto itMap = availableActionsAllVertices.begin();
+        std::advance(itMap, rng.getUnsignedInt64(0, availableActionsAllVertices.size() - 1));
+        auto pair = *itMap;
 
-    // Fing the corresponding index in the original vector.
-    auto itVertex = std::find(verticesOfExemple.begin(), verticesOfExemple.end(), (*itMap).first);
-    uint64_t indexChoosenVertex = std::distance(verticesOfExemple.begin(), itVertex);
+        // Fing the corresponding index in the original vector.
+        auto itVertex = std::find(verticesOfExemple.begin(), verticesOfExemple.end(), (*itMap).first);
+        uint64_t indexChoosenVertex = std::distance(verticesOfExemple.begin(), itVertex);
 
-
-    // Randomly select an action
-    auto actionSetChoosen = (*itMap).second;
-    auto itAction = actionSetChoosen.begin();
-    std::advance(itAction, rng.getUnsignedInt64(0, actionSetChoosen.size() - 1));
-    uint64_t actionChoosen = (*itAction);
-
-    for(auto rootVertex: species){
-        if(dynamic_cast<const TPG::TPGActivationVertex*>(rootVertex) == nullptr){
-            throw std::runtime_error("A root should always be an activation vertex");
+        // Randomly select an action
+        auto actionSetChoosen = (*itMap).second;
+        auto itAction = actionSetChoosen.begin();
+        std::advance(itAction, rng.getUnsignedInt64(0, actionSetChoosen.size() - 1));
+        uint64_t actionChoosen = (*itAction);
+    
+        for(auto rootVertex: species){
+            if(dynamic_cast<const TPG::TPGActivationVertex*>(rootVertex) == nullptr){
+                throw std::runtime_error("A root should always be an activation vertex");
+            }
+            auto currentVertex = graph.getVerticesOfRoot(rootVertex).at(indexChoosenVertex);
+    
+            // Create a random program
+            std::shared_ptr<Program::Program> program = std::make_shared<Program::Program>(graph.getEnvironment(), true);
+            Mutator::ProgramMutator::initRandomProgram(*program, params, rng);
+            graph.addNewActionEdge(*currentVertex, program, actionChoosen);
         }
-        auto currentVertex = graph.getVerticesOfRoot(rootVertex).at(indexChoosenVertex);
+    } else {
+    
+        if(verticesUsed.size() == 0){
+            return false;
+        }
+        // Select randomly the vertex.
+        auto itUsed = verticesUsed.begin();
+        std::advance(itUsed, rng.getUnsignedInt64(0, verticesUsed.size() - 1));
+        const TPG::TPGVertex* vertexChoosen = *itUsed;
 
-        // Create a random program
-        std::shared_ptr<Program::Program> program = std::make_shared<Program::Program>(graph.getEnvironment(), true);
-        Mutator::ProgramMutator::initRandomProgram(*program, params, rng);
-        graph.addNewActionEdge(*currentVertex, program, actionChoosen);
+        // Fing the corresponding index in the original vector.
+        auto itVertex = std::find(verticesOfExemple.begin(), verticesOfExemple.end(), vertexChoosen);
+        uint64_t indexChoosenVertex = std::distance(verticesOfExemple.begin(), itVertex);
+        // Randomly select an edge, whose vertex will be duplicated.
+        uint64_t indexEdgeChoosen = rng.getUnsignedInt64(0, vertexChoosen->getOutgoingEdges().size() - 1);
+    
+        for(auto rootVertex: species){
+            if(dynamic_cast<const TPG::TPGActivationVertex*>(rootVertex) == nullptr){
+                throw std::runtime_error("A root should always be an activation vertex");
+            }
+            auto currentVertex = graph.getVerticesOfRoot(rootVertex).at(indexChoosenVertex);
+
+            if(dynamic_cast<const TPG::TPGDecisionVertex*>(currentVertex) == nullptr){
+                throw std::runtime_error("The vertex here should always be a decision vertex");
+            }
+
+            auto itEdge = currentVertex->getOutgoingEdges().begin();
+            std::advance(itEdge, indexEdgeChoosen);
+            const TPG::TPGVertex* vertexDestination = &graph.cloneVertex(*(*itEdge)->getDestination());
+
+
+            // Create a random program
+            std::shared_ptr<Program::Program> program = std::make_shared<Program::Program>(graph.getEnvironment(), false);
+            Mutator::ProgramMutator::initRandomProgram(*program, params, rng);
+            graph.addNewDecisionEdge(*currentVertex, *vertexDestination, program);
+        }
     }
+    
 
     return true;
     
@@ -373,25 +401,20 @@ bool Mutator::TPGMutator::deleteEdgeSpecies(TPG::TPGGraph& graph,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
     const Mutator::MutationParameters& params, Mutator::RNG& rng)
 {
+
     std::vector<const TPG::TPGVertex *> verticesOfExemple = graph.getVerticesOfRoot((const TPG::TPGActivationVertex*)species.front());
     std::vector<const TPG::TPGVertex *> verticesUsed = verticesOfExemple;
 
-    // Remove vertices with only one action for activation vertex or one edge for decision vertex
+    // Remove activation vertices with only one edge and decision vertices with two edges or less.
     verticesUsed.erase(
         std::remove_if(
             verticesUsed.begin(), verticesUsed.end(),
             [](const TPG::TPGVertex* vertex) -> bool {
-                if(dynamic_cast<const TPG::TPGDecisionVertex*>(vertex) != nullptr
-                   && vertex->getOutgoingEdges().size() != 0) // TODO CHANGE
-                {
-                    return true;
-                } else if (dynamic_cast<const TPG::TPGActivationVertex*>(vertex) != nullptr
-                           && dynamic_cast<const TPG::TPGActivationVertex*>(vertex)->getOutgoingActionEdges().size() < 2){
-                    return true;
+                if(dynamic_cast<const TPG::TPGActivationVertex*>(vertex) != nullptr){
+                    return vertex->getOutgoingEdges().size() < 2;
                 } else {
-                    return false;
+                    return vertex->getOutgoingEdges().size() < 3;
                 }
-                
             }
         ),
         verticesUsed.end()
@@ -401,18 +424,16 @@ bool Mutator::TPGMutator::deleteEdgeSpecies(TPG::TPGGraph& graph,
         return false;
     }
 
-
-
     // Select randomly the vertex.
     auto it = verticesUsed.begin();
     std::advance(it, rng.getUnsignedInt64(0, verticesUsed.size() - 1));
     auto vertex = (const TPG::TPGActivationVertex*)*it;
 
-    // Fing the corresponding index in the original vector.
+    // Find the corresponding index in the original vector.
     auto itVertex = std::find(verticesOfExemple.begin(), verticesOfExemple.end(), (*it));
     uint64_t indexChoosenVertex = std::distance(verticesOfExemple.begin(), itVertex);
 
-    auto actionEdgesIndex = rng.getUnsignedInt64(0, vertex->getOutgoingActionEdges().size() - 1);
+    auto edgeIndex = rng.getUnsignedInt64(0, vertex->getOutgoingEdges().size() - 1);
 
     for(auto rootVertex: species){
         if(dynamic_cast<const TPG::TPGActivationVertex*>(rootVertex) == nullptr){
@@ -421,9 +442,9 @@ bool Mutator::TPGMutator::deleteEdgeSpecies(TPG::TPGGraph& graph,
         auto currentVertex = (const TPG::TPGActivationVertex*)graph.getVerticesOfRoot(rootVertex).at(indexChoosenVertex);
 
         // Get the edge to remove
-        auto edges = currentVertex->getOutgoingActionEdges();
+        auto edges = currentVertex->getOutgoingEdges();
         auto itEdges = edges.begin();
-        std::advance(itEdges, actionEdgesIndex);
+        std::advance(itEdges, edgeIndex);
         graph.removeEdge(*(*itEdges));
     }
 
@@ -445,10 +466,12 @@ void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph,
 {
 
 
+    double probaExtendActionEdge = 0.7;
+
     if(dynamic_cast<const TPG::TPGActivationVertex*>(species.front()) == nullptr){
         throw std::runtime_error("A root should always be an activation vertex");
     }
-
+    std::cout<<"0"<<std::endl;
     // All individual of a species should have the exact same structure.
     // Get the first individual to know the shape of the agent
     std::vector<const TPG::TPGVertex *> verticesOfExemple = graph.getVerticesOfRoot((const TPG::TPGActivationVertex*)species.front());
@@ -463,26 +486,26 @@ void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph,
         }
     }
 
+    std::cout<<"1"<<std::endl;
+
     // Randomly select an activation vertex to do the extension on based on the weight
     uint64_t indexChoosenWeightedVertex = rng.getUnsignedInt64(0, weightedVerticesOfExemple.size() - 1);
 
     // Fing the corresponding index in the original vector.
     auto it = std::find(verticesOfExemple.begin(), verticesOfExemple.end(), weightedVerticesOfExemple.at(indexChoosenWeightedVertex));
     uint64_t indexChoosenVertex = std::distance(verticesOfExemple.begin(), it);
-
+    std::cout<<"2"<<std::endl;
     // Get the vertex and the path
     const TPG::TPGActivationVertex* vertexExemple = (const TPG::TPGActivationVertex*)verticesOfExemple.at(indexChoosenVertex);
     std::vector<uint64_t> path = vertexExemple->getPath();
 
-
-    double probaExtendActionEdge = 0.7;
     double proba = 1;
     std::vector<uint64_t> indexActionEdges;
     uint64_t index;
     std::list<TPG::TPGEdge *> actionEdgesExemple = vertexExemple->getOutgoingActionEdges();
     while(indexActionEdges.size() < actionEdgesExemple.size() 
           && proba > rng.getDouble(0, 1)){
-        
+            std::cout<<"3"<<std::endl;
         do {
             index = rng.getUnsignedInt64(0, actionEdgesExemple.size()-1);
         } while(std::find(indexActionEdges.begin(), indexActionEdges.end(), index) != indexActionEdges.end()) ;
@@ -494,14 +517,14 @@ void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph,
 
     // Sort the indexes for complexity later.
     std::sort(indexActionEdges.begin(), indexActionEdges.end());
-
+    std::cout<<"4"<<std::endl;
     for(auto rootVertex: species){
         if(dynamic_cast<const TPG::TPGActivationVertex*>(rootVertex) == nullptr){
             throw std::runtime_error("A root should always be an activation vertex");
         }
         auto currentVertex = graph.getVerticesOfRoot(rootVertex).at(indexChoosenVertex);
         uint64_t indexGraph = 0;
-        
+        std::cout<<"5"<<std::endl;
 
         // Create two context program
         std::shared_ptr<Program::Program> program1 = std::make_shared<Program::Program>(graph.getEnvironment(), false);
@@ -511,7 +534,7 @@ void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph,
         std::vector<uint64_t> decPath = currentVertex->getPath();
         decPath.push_back(currentVertex->getOutgoingEdges().size() - actionEdgesExemple.size());
         const TPG::TPGDecisionVertex& decVertex = graph.addNewDecisionVertex(decPath);
-
+        std::cout<<"6"<<std::endl;
         // Create two activation vertex and a decision vertex
         decPath.push_back(0);
         const TPG::TPGActivationVertex& actVertex1 = graph.addNewActivationVertex(decPath);
@@ -531,37 +554,54 @@ void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph,
         if(dynamic_cast<const TPG::TPGActivationVertex*>(currentVertex) == nullptr){
             throw std::runtime_error("The current vertex should be an activation vertex");
         }
-
+        std::cout<<"7"<<std::endl;
         auto actionEdges = ((const TPG::TPGActivationVertex*)currentVertex)->getOutgoingActionEdges();
         auto iterActionEdges = actionEdges.begin();
         std::advance(iterActionEdges, indexActionEdges[0]);
         listEdgesExtended.push_back(*iterActionEdges);
 
+        std::cout<<"Size "<<actionEdges.size()<<std::endl;
+        std::cout<<indexActionEdges[0]<<std::endl;
 
         size_t currentIndex = 0;
         while(listEdgesExtended.size() < indexActionEdges.size()){
+            std::cout<<indexActionEdges[currentIndex+1]<<std::endl;
             std::advance(iterActionEdges, indexActionEdges[currentIndex+1] - indexActionEdges[currentIndex]);
             listEdgesExtended.push_back(*iterActionEdges);
             currentIndex++;
         }
-
+        std::cout<<"8 "<<listEdgesExtended.size()<<std::endl;
         for(auto actionEdge: listEdgesExtended){
-            uint64_t actionClass = ((TPG::TPGActionEdge*)actionEdge)->getActionClass();
+            std::cout<<"test started"<<std::endl;
+            if(actionEdge == nullptr){
+                std::cout<<"roh"<<std::endl;
+            }
+            std::cout<<"910"<<std::endl;
+            if(dynamic_cast<TPG::TPGActionEdge*>(actionEdge) == nullptr){
+                std::cout<<"roooh"<<std::endl;
+            }
+            std::cout<<"911"<<std::endl;
+            uint64_t actionClass = dynamic_cast<TPG::TPGActionEdge*>(actionEdge)->getActionClass();
 
+            std::cout<<"912"<<std::endl;
             // For one team, just add an edge with the same shared_ptr
             graph.addNewActionEdge(actVertex1, actionEdge->getProgramSharedPointer(), actionClass);
 
+            std::cout<<"913"<<std::endl;
             // For the other team, duplicate the program and add it to the newPrograms list
+            std::cout<<"914"<<std::endl;
             std::shared_ptr<Program::Program> newProg(new Program::Program(*actionEdge->getProgramSharedPointer(), true));
             newPrograms.push_back(newProg);
+            std::cout<<"915"<<std::endl;
             graph.addNewActionEdge(actVertex2, newProg, actionClass);
-
+            std::cout<<"9"<<std::endl;
             // remove the action edges duplicated from the original team
             graph.removeEdge(*actionEdge);
-        }
+            std::cout<<"91"<<std::endl;
+        }std::cout<<"a=b"<<std::endl;
 
 
-    }
+    }std::cout<<"a"<<std::endl;
 
     
 
@@ -576,7 +616,7 @@ void Mutator::TPGMutator::mutateSpecies(TPG::TPGGraph& graph,
     double probaAddEdge = 1.0;
     double probaDeletionEdge = 1.0;
     double probaChangeActionClass = 0.0;
-    double probaExtension = 0.5;
+    double probaExtension = 1.0;
 
 
     bool success = false;
@@ -585,14 +625,14 @@ void Mutator::TPGMutator::mutateSpecies(TPG::TPGGraph& graph,
 
 
         if(probaAddEdge > mutationValue){
-            std::cout<<" Add  ";
+            std::cout<<" Add  "<<std::endl;
             success = addEdgeSpecies(graph, species, newPrograms, params, rng);
 
             if(!success){
                 probaAddEdge = 0.0;
             }
         } else if(probaAddEdge + probaDeletionEdge > mutationValue){
-            std::cout<<" Delete  ";
+            std::cout<<" Delete  "<<std::endl;
             success = deleteEdgeSpecies(graph, species, newPrograms, params, rng);
             if(!success){
                 probaDeletionEdge = 0.0;
@@ -600,7 +640,7 @@ void Mutator::TPGMutator::mutateSpecies(TPG::TPGGraph& graph,
         } else if(probaAddEdge + probaDeletionEdge + probaChangeActionClass > mutationValue){
             changeActionClassSpecies(graph, species, newPrograms, params, rng);
         } else {
-            std::cout<<" Extend  ";
+            std::cout<<" Extend  "<<std::endl;
             extendSpecies(graph, species, newPrograms, params, rng);
             success = true;
         }
