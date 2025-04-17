@@ -64,38 +64,8 @@ namespace TPG {
          * \param[in] prog the shared pointer to the Program associated to the
          *            edge.
          */
-        TPGEdge(const TPGVertex* src, const TPGVertex* dest,
-                const std::shared_ptr<Program::Program> prog)
-            : source{src}, destination{dest}, program{prog} {};
-
-        /**
-         * \brief Get a const reference to the Program of the TPGEdge.
-         *
-         * \return a const reference to the Program of the TPGEdge.
-         */
-        virtual Program::Program& getProgram() const;
-
-        /**
-         * \brief Set a new Program for the TPGEdge.
-         *
-         * This method is const to enable use outside of the TPGGraph which is
-         * the only class accessing the non-const TPGEdge. Since the program
-         * pointer attribute is mutable, this method can successfully be used to
-         * alter the program.
-         *
-         * \param[in] prog the new shared pointer to a Program.
-         */
-        virtual void setProgram(const std::shared_ptr<Program::Program> prog) const;
-
-        /**
-         * \brief Get the shared_pointer to the Program.
-         *
-         * This method is voluntarily non-const to make sure that only the
-         * TPGGraph containing the edge can use it.
-         *
-         * \return a copy of the program attribute.
-         */
-        virtual std::shared_ptr<Program::Program> getProgramSharedPointer();
+        TPGEdge(const TPGVertex* src, const TPGVertex* dest)
+            : source{src}, destination{dest} {};
 
         /**
          * \brief Get the source TPGVertex of the TPGEdge.
@@ -132,12 +102,6 @@ namespace TPG {
 
         /// Pointer to the destination TPGVertex of this TPGEdge
         const TPGVertex* destination;
-
-        /// Shared pointer to the Program to execute when evaluating the bid
-        /// of this TPGEdge.
-        /// This attribute is mutable to enable its modification during
-        /// mutations.
-        mutable std::shared_ptr<Program::Program> program;
 
         /// Delete the default constructor.
         TPGEdge() = delete;

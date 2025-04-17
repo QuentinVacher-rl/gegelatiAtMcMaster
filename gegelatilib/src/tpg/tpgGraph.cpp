@@ -88,6 +88,77 @@ const TPG::TPGActivationVertex& TPG::TPGGraph::addNewActivationVertex(const std:
     return (const TPGActivationVertex&)(*this->vertices.back());
 }
 
+const TPG::TPGAgent& TPG::TPGGraph::addNewAgent(const TPG::TPGVertex& root)
+{
+    
+    auto vertexIterator = this->findVertex(&root);
+    if (vertexIterator == this->vertices.end()) {
+        throw std::runtime_error(
+            "The root search does not exist in the TPGGraph.");
+    }
+
+    // Get the root of the species
+    TPG::TPGVertex* rootSpecies = *vertexIterator;
+
+
+    // Check that the root is not already in the species map
+    if(this->species.find(rootSpecies) != this->species.end()){
+        TPG::TPGAgent* agent = factory->createTPGAgent(&root);
+        this->species.at(rootSpecies).push_back(agent);
+    } else {
+        throw std::runtime_error(
+            "Can not add a TPGAgent to a species that does not exist.");
+    }
+}
+
+
+void TPG::TPGGraph::addSpecies(const TPG::TPGVertex& root)
+{
+        
+    auto vertexIterator = this->findVertex(&root);
+    if (vertexIterator == this->vertices.end()) {
+        throw std::runtime_error(
+            "The root search does not exist in the TPGGraph.");
+    }
+
+    // Get the root of the species
+    TPG::TPGVertex* rootSpecies = *vertexIterator;
+
+    // Check that the root is not already in the species map
+    if(this->species.find(rootSpecies) == this->species.end()){
+        this->species.insert(std::make_pair(rootSpecies, std::list<TPG::TPGAgent*>()));
+    } else {
+        throw std::runtime_error(
+            "The root species already exist in the map of species");
+    }
+}
+
+void TPG::TPGGraph::removeSpecies(const TPG::TPGVertex& root)
+{
+        
+    auto vertexIterator = this->findVertex(&root);
+    if (vertexIterator == this->vertices.end()) {
+        throw std::runtime_error(
+            "The root search does not exist in the TPGGraph.");
+    }
+
+    // Get the root of the species
+    TPG::TPGVertex* rootSpecies = *vertexIterator;
+
+    // Check that the root exist in the map of species
+    if(this->species.find(rootSpecies) != this->species.end()){
+
+        // Delete the TPGAgents;
+        for(auto agent: this->species.at(rootSpecies)){
+            delete agent;   
+        }
+
+        this->species.erase(rootSpecies);
+    } else {
+        throw std::runtime_error(
+            "Cannot delete a root species that does not exist.");
+    }
+}
 
 size_t TPG::TPGGraph::getNbVertices() const
 {
@@ -117,6 +188,34 @@ const std::vector<const TPG::TPGVertex*> TPG::TPGGraph::getRootVertices() const
                      return vertex->getIncomingEdges().size() == 0;
                  });
     return result;
+}
+
+uint64_t TPG::TPGGraph::getNbAgents() const
+{
+    int totalAgents = 0;
+    for (const auto& pair : species) {
+        totalAgents += pair.second.size();
+    }
+    return totalAgents;
+}
+
+const std::vector<const TPG::TPGAgent*> TPG::TPGGraph::getAgents() const {
+    std::vector<const TPG::TPGAgent*> allAgents;
+
+    for (const auto& pair : species) {
+        std::transform(pair.second.begin(), pair.second.end(), std::back_inserter(allAgents),
+                       [](TPG::TPGAgent* agent) { return static_cast<const TPG::TPGAgent*>(agent); });
+    }
+
+    return allAgents;
+}
+
+const std::list<TPG::TPGAgent*>& TPG::TPGGraph::getAgentsOfSpecies(TPG::TPGVertex* root)
+{
+    if(this->species.find(root) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+    return this->species.at(root);
 }
 
 bool TPG::TPGGraph::hasVertex(const TPG::TPGVertex& vertex) const
@@ -182,14 +281,13 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
 
         if(dynamic_cast<TPG::TPGDecisionEdge*>(edge) != nullptr){
             const TPGVertex& destinationVertex = this->cloneVertex(*edge->getDestination());
-            this->addNewDecisionEdge(*newVertex, destinationVertex, std::make_shared<Program::Program>(edge->getProgram()));
+            this->addNewDecisionEdge(*newVertex, destinationVertex);
         } else if (dynamic_cast<TPG::TPGConnectionEdge*>(edge) != nullptr) {
             const TPGVertex& destinationVertex = this->cloneVertex(*edge->getDestination());
             this->addNewConnectionEdge(*newVertex, destinationVertex);
         } else {
             TPG::TPGActionEdge* actionEdge = dynamic_cast<TPGActionEdge*>(edge);
             this->addNewActionEdge(*newVertex,
-                                   std::make_shared<Program::Program>(actionEdge->getProgram()),
                                    actionEdge->getActionClass());
         }
 
@@ -201,9 +299,77 @@ const TPG::TPGVertex& TPG::TPGGraph::cloneVertex(const TPGVertex& vertex)
     return *newVertex;
 }
 
+bool TPG::TPGGraph::hasAgent(const TPG::TPGAgent& agent)
+{
+    auto root = agent.getRootSpecies();
+    if(this->species.find(root) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+    std::list<TPG::TPGAgent*>& listAgents = this->species.at(root);
+
+    auto iterator = this->findAgent(&agent);
+    return iterator != listAgents.end();
+}
+
+void TPG::TPGGraph::removeAgent(const TPGAgent& agent)
+{
+    auto root = agent.getRootSpecies();
+    if(this->species.find(root) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+    std::list<TPG::TPGAgent*>& listAgents = this->species.at(root);
+
+    auto iterator = this->findAgent(&agent);
+    if(iterator != listAgents.end()){
+        delete *iterator;
+
+        listAgents.erase(iterator);
+    }
+
+}
+
+const TPG::TPGAgent& TPG::TPGGraph::cloneAgent(const TPGAgent& agent)
+{
+
+    auto root = agent.getRootSpecies();
+    if(this->species.find(root) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+    std::list<TPG::TPGAgent*>& listAgents = this->species.at(root);
+
+    auto iterator = this->findAgent(&agent);
+    if(iterator == listAgents.end()){
+        throw std::runtime_error("Cannot clone an agent not in the graph");
+    }
+
+    // Create a new agent and add each program
+    const TPGAgent& newAgent = this->addNewAgent(*root);
+    for(auto pair: (*iterator)->getPrograms()){
+        this->setProgramToAgent(newAgent, pair.first, std::make_shared<Program::Program>(pair.second));
+    }
+
+}
+
+
+void TPG::TPGGraph::setProgramToAgent(const TPGAgent& agent, const TPG::TPGEdge* edge, std::shared_ptr<Program::Program> prog)
+{
+    auto root = agent.getRootSpecies();
+    if(this->species.find(root) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+    std::list<TPG::TPGAgent*>& listAgents = this->species.at(root);
+
+    auto iterator = this->findAgent(&agent);
+    if(iterator == listAgents.end()){
+        throw std::runtime_error("Cannot clone an agent not in the graph");
+    }
+
+    (*iterator)->setProgram(edge, prog);
+}
+
+
 const TPG::TPGDecisionEdge& TPG::TPGGraph::addNewDecisionEdge(
-    const TPGVertex& src, const TPGVertex& dest,
-    const std::shared_ptr<Program::Program> prog)
+    const TPGVertex& src, const TPGVertex& dest)
 {
     // Check the TPGVertex existence within the graph.
     auto srcVertex =
@@ -219,7 +385,7 @@ const TPG::TPGDecisionEdge& TPG::TPGGraph::addNewDecisionEdge(
     }
 
     // Create the edge
-    this->edges.push_back(factory->createTPGDecisionEdge(&src, &dest, prog));
+    this->edges.push_back(factory->createTPGDecisionEdge(&src, &dest));
     TPGDecisionEdge& newEdge = *((TPGDecisionEdge*)this->edges.back().get());
 
     // Add the edged to the Vertices
@@ -239,8 +405,7 @@ const TPG::TPGDecisionEdge& TPG::TPGGraph::addNewDecisionEdge(
 }
 
 const TPG::TPGActionEdge& TPG::TPGGraph::addNewActionEdge(
-    const TPGVertex& src, const std::shared_ptr<Program::Program> prog,
-    uint64_t actionClass)
+    const TPGVertex& src, uint64_t actionClass)
 {
     // Check the TPGVertex existence within the graph.
     auto srcVertex =
@@ -254,7 +419,7 @@ const TPG::TPGActionEdge& TPG::TPGGraph::addNewActionEdge(
 
     // Create the edge
     this->edges.push_back(
-        factory->createTPGActionEdge(&src, prog, actionClass));
+        factory->createTPGActionEdge(&src, actionClass));
     TPGActionEdge& newEdge = *((TPGActionEdge*)this->edges.back().get());
 
     (*srcVertex)->addOutgoingEdge(&newEdge);
@@ -353,7 +518,6 @@ const TPG::TPGEdge& TPG::TPGGraph::cloneEdge(const TPGEdge& edge)
         const TPG::TPGActionEdge* actionEdge =
             dynamic_cast<const TPGActionEdge*>(iterEdge->get());
         return this->addNewActionEdge(*actionEdge->getSource(),
-                                      std::make_shared<Program::Program>(iterEdge->get()->getProgram()),
                                       actionEdge->getActionClass());
     }
     else if (dynamic_cast<const TPGConnectionEdge*>(iterEdge->get()) != nullptr){
@@ -361,8 +525,7 @@ const TPG::TPGEdge& TPG::TPGGraph::cloneEdge(const TPGEdge& edge)
                                 *iterEdge->get()->getDestination());
     } else {
         return this->addNewDecisionEdge(*iterEdge->get()->getSource(),
-                                        *iterEdge->get()->getDestination(),
-                                        std::make_shared<Program::Program>(iterEdge->get()->getProgram()));
+                                        *iterEdge->get()->getDestination());
 
     }
 }
@@ -433,11 +596,25 @@ std::list<std::unique_ptr<TPG::TPGEdge>>::iterator TPG::TPGGraph::findEdge(
                         });
 }
 
+std::list<TPG::TPGAgent*>::iterator TPG::TPGGraph::findAgent(
+    const TPG::TPGAgent* agent)
+{
+    auto root = agent->getRootSpecies();
+    if(this->species.find(agent->getRootSpecies()) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+
+    return std::find(this->species.at(root).begin(), this->species.at(root).end(), agent);
+}
+
+
 void TPG::TPGGraph::clearProgramIntrons()
 {
-    for (auto& edge : this->edges) {
-        if(dynamic_cast<TPG::TPGConnectionEdge*>(edge.get()) == nullptr){
-            edge.get()->getProgram().clearIntrons();
+    for (auto pairSpecies : this->species) {
+        for(TPG::TPGAgent* agent: pairSpecies.second){
+            for(auto pairAgent: agent->getPrograms()){
+                pairAgent.second->clearIntrons();
+            }
         }
     }
 }
@@ -498,12 +675,18 @@ void TPG::TPGGraph::updateAllAssessedActions() {
     }
 }
 
-void TPG::TPGGraph::setToBeDeleted(const TPG::TPGVertex* vertex){
-    auto it = this->findVertex(vertex);
+void TPG::TPGGraph::setToBeDeleted(const TPG::TPGAgent& agent){
+    auto root = agent.getRootSpecies();
+    if(this->species.find(agent.getRootSpecies()) == this->species.end()){
+        throw std::runtime_error("Cannot find the agent of a species not in the graph");
+    }
+    std::list<TPG::TPGAgent*>& listAgents = this->species.at(root);
 
-    if (it != this->vertices.end()) {
+    auto iterator = this->findAgent(&agent);
+
+    if (iterator != listAgents.end()) {
         // Found the vertex, modify it as needed
-        (*it)->setToBeDeleted(true);
+        (*iterator)->setToBeDeleted(true);
     } else {
         throw std::runtime_error(
             "Vertex not in the graph.");

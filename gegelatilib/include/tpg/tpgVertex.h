@@ -164,8 +164,6 @@ namespace TPG {
 
       protected:
 
-        /// True if the vertex should be deleted during evolution process
-        bool toBeDeleted = false;
 
         /**
          * \brief Set of incoming TPGEdge of the TPGVertex.

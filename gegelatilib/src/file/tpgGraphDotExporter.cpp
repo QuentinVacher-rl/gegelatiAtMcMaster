@@ -91,9 +91,10 @@ void File::TPGGraphDotExporter::printTPGEdge(const TPG::TPGEdge& edge)
     uint64_t srcID = this->findVertexID(*edge.getSource());
     if(dynamic_cast<const TPG::TPGConnectionEdge*>(&edge) == nullptr){
         uint64_t progID;
-        Program::Program& p = edge.getProgram();
+        Program::Program* p1 = new Program::Program(tpg.getEnvironment(), true);
+        Program::Program& p = *p1;//edge.getProgram();
 
-        if (this->findProgramID(edge.getProgram(), progID)) {
+        if (this->findProgramID(p, progID)) {
 
             // First time this Program is encountered
             fprintf(pFile, "%sP%" PRIu64 " [fillcolor=\"#cccccc\" shape=point label=\"%d\"] //",

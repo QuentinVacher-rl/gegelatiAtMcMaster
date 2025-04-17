@@ -80,10 +80,10 @@ void TPG::TPGExecutionEngine::applyActivationFunctionOnActions(
     }
 }
 
-double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
+double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge, const TPGAgent& agent)
 {
     // Get the program
-    Program::Program& prog = edge.getProgram();
+    Program::Program& prog = agent.getProgram(edge);
 
     // Set the progExecutionEngine to the program
     this->progExecutionEngine.setProgram(prog);
@@ -104,7 +104,7 @@ double TPG::TPGExecutionEngine::evaluateEdge(const TPGEdge& edge)
     return result;
 }
 
-const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateDecisionVertex(const TPGDecisionVertex& team)
+const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateDecisionVertex(const TPGDecisionVertex& team, const TPGAgent& agent)
 {
     // Copy outgoing edge list
     const std::list<TPG::TPGEdge*>& outgoingEdges = team.getOutgoingEdges();
@@ -112,36 +112,19 @@ const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateDecisionVertex(const TPGDec
     // Note: No need to exclude previously visited edges as the graph is now
     // assumed to be acyclic.
 
-#ifdef DEBUG
-    std::cout << "New team :" << &team << std::endl;
-#endif
 
     // Evaluate all TPGEdge
     // First
     TPGEdge* bestEdge = *outgoingEdges.begin();
-    double bestBid = this->evaluateEdge(*bestEdge);
-#ifdef DEBUG
-    std::cout << "R = " << bestBid << "*" << std::endl;
-#endif
+    double bestBid = this->evaluateEdge(*bestEdge, agent);
     // Others
     for (auto iter = ++outgoingEdges.begin(); iter != outgoingEdges.end();
          iter++) {
             TPGEdge* edge = *iter;
-        double bid = this->evaluateEdge(*edge);
-#ifdef DEBUG
-        std::cout << "R = " << bid;
-#endif
+        double bid = this->evaluateEdge(*edge, agent);
         if (bid >= bestBid) {
-#ifdef DEBUG
-            std::cout << "*" << std::endl;
-#endif
             bestEdge = edge;
             bestBid = bid;
-        }
-        else {
-#ifdef DEBUG
-            std::cout << std::endl;
-#endif
         }
     }
 
@@ -150,9 +133,12 @@ const TPG::TPGEdge& TPG::TPGExecutionEngine::evaluateDecisionVertex(const TPGDec
 
 const std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
     TPGExecutionEngine::executeFromRoot(
-        const TPGVertex& root, const std::vector<uint64_t>& initActions)
+        const TPGAgent& agent, const std::vector<uint64_t>& initActions)
 {
-    const TPGVertex* currentActivationVertex = &root;
+
+
+
+    const TPGVertex* currentActivationVertex = agent.getRootSpecies();
     const TPGVertex* currentDecisionVertex;
     const TPGEdge* edge = nullptr;
 
@@ -171,7 +157,7 @@ const std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
         if (dynamic_cast<TPG::TPGActionEdge*>(edge)){
             auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
             // Evaluate the edge and set the action value
-            actionsTaken[actionEdge->getActionClass()] = this->evaluateEdge(*edge);
+            actionsTaken[actionEdge->getActionClass()] = this->evaluateEdge(*edge, agent);
         } else if(dynamic_cast<TPG::TPGConnectionEdge*>(edge)) {
             decisionVertexToEvaluate.push_back(edge->getDestination());
         } else {
@@ -187,8 +173,8 @@ const std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
         visitedVertices.push_back(currentDecisionVertex);
 
         // Get the next edge
-        edge = &this->evaluateDecisionVertex(*(const TPGDecisionVertex*)currentDecisionVertex);
-        Program::Program p = currentDecisionVertex->getOutgoingEdges().front()->getProgram();
+        edge = &this->evaluateDecisionVertex(*(const TPGDecisionVertex*)currentDecisionVertex, agent);
+
         // update currentActivationVertex and backup in visitedVertex.
         currentActivationVertex = edge->getDestination();
         visitedVertices.push_back(currentActivationVertex);
@@ -198,7 +184,7 @@ const std::pair<std::vector<const TPG::TPGVertex*>, std::vector<double>> TPG::
             if (dynamic_cast<TPG::TPGActionEdge*>(edge)){
                 auto actionEdge = dynamic_cast<TPGActionEdge*>(edge);
                 // Evaluate the edge and set the action value
-                actionsTaken[actionEdge->getActionClass()] = this->evaluateEdge(*edge);
+                actionsTaken[actionEdge->getActionClass()] = this->evaluateEdge(*edge, agent);
             } else if(dynamic_cast<TPG::TPGConnectionEdge*>(edge)) {
                 decisionVertexToEvaluate.push_back(edge->getDestination());
             } else {

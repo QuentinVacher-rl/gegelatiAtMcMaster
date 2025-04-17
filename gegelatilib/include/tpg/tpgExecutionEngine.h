@@ -117,9 +117,10 @@ namespace TPG {
          *
          * \param[in] edge the const ref to the TPGEdge whose Program will be
          * evaluated.
+         * \param[in] agent the TPGAgent evaluated.
          * \return the double value returned by the Program of the TPGEdge.
          */
-        virtual double evaluateEdge(const TPGEdge& edge);
+        virtual double evaluateEdge(const TPGEdge& edge, const TPGAgent& agent);
 
         /**
          * \brief Evaluate all the Program of the outgoing TPGEdge of the
@@ -130,13 +131,14 @@ namespace TPG {
          * largest evaluation.
          *
          * \param[in] team the TPGTeam whose outgoing TPGEdge are evaluated.
+         * \param[in] agent the TPGAgent evaluated.
          * \return the reference to the TPGEdge evaluated with the the highest
          *         double value (and not excluded).
          *
          * \throw std::runtime_error in case the TPGTeam has no outgoing edge.
          * This should not happen in a correctly constructed TPGGraph.
          */
-        virtual const TPG::TPGEdge& evaluateDecisionVertex(const TPGDecisionVertex& team);
+        virtual const TPG::TPGEdge& evaluateDecisionVertex(const TPGDecisionVertex& team, const TPGAgent& agent);
 
         /**
          * \brief Execute the TPGGraph starting from the given TPGVertex.
@@ -144,7 +146,7 @@ namespace TPG {
          * This method browse the graph by successively evaluating Teams and
          * following the TPGEdge proposing the best bids.
          *
-         * \param[in] root the TPGVertex from which the execution will start.
+         * \param[in] agent the TPGAgent evaluated.
          * \param[in] initActions the vector of initial action that can are
          * choosen by default by the root.
          * \return a vector containing all the TPGVertex traversed during the
@@ -153,7 +155,7 @@ namespace TPG {
          */
         virtual const std::pair<std::vector<const TPG::TPGVertex*>,
                                 std::vector<double>>
-        executeFromRoot(const TPGVertex& root,
+        executeFromRoot(const TPGAgent& agent,
                         const std::vector<uint64_t>& initActions = {0});
     };
 }; // namespace TPG

@@ -39,13 +39,13 @@
 #include <cstdint>
 #include <vector>
 
-#include "tpg/tpgVertex.h"
+#include "tpg/tpgAgent.h"
 
 namespace Learn {
     /**
      * \brief This class embeds roots for the simulations.
      *
-     * The goal of the Job is to contain one root, so that each job
+     * The goal of the Job is to contain one agent, so that each job
      * will match with one simulation/evaluation. A basic learning agent will
      * embed one root per job to do as many simulations as there are roots.
      */
@@ -53,9 +53,9 @@ namespace Learn {
     {
       protected:
         /**
-         * The root contained in the job.
+         * The agent contained in the job.
          */
-        const TPG::TPGVertex* root;
+        const TPG::TPGAgent* agent;
 
         /**
          * Index associated to this job.
@@ -75,14 +75,14 @@ namespace Learn {
          * \brief Constructor enabling storing elements in the job so that the
          * Learning Agents will be able to use them later.
          *
-         * @param[in] root The root that will be encapsulated into the job.
+         * @param[in] agent The agent that will be encapsulated into the job.
          * @param[in] archiveSeed The archive seed that will be used with this
          * job.
          * @param[in] idx The index of this job.
          */
-        Job(const TPG::TPGVertex* root, uint64_t archiveSeed = 0,
+        Job(const TPG::TPGAgent* agent, uint64_t archiveSeed = 0,
             uint64_t idx = 0)
-            : root(root), archiveSeed(archiveSeed), idx(idx)
+            : agent(agent), archiveSeed(archiveSeed), idx(idx)
         {
         }
 
@@ -108,7 +108,7 @@ namespace Learn {
          *
          * @return The root embedded by the job.
          */
-        virtual const TPG::TPGVertex* getRoot() const;
+        virtual const TPG::TPGAgent* getAgent() const;
     };
 } // namespace Learn
 

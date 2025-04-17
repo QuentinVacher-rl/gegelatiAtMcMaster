@@ -58,7 +58,7 @@ namespace Log {
          * After each evaluation, the policyStats of a root is printed in the
          * stream only if a new root is marked as the bestRoot.
          */
-        const TPG::TPGVertex* lastBestRoot = nullptr;
+        const TPG::TPGAgent* lastBestAgent = nullptr;
 
         /// Number of the current generation.
         uint64_t generationNumber;
@@ -94,7 +94,7 @@ namespace Log {
         /// Inherited from LALogger
         void logAfterValidate(
             std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                          const TPG::TPGVertex*>& results) override{
+                          const TPG::TPGAgent*>& results) override{
             // nothing to log
         };
 
@@ -106,7 +106,7 @@ namespace Log {
         /// Inherited from LALogger
         void logAfterEvaluate(
             std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                          const TPG::TPGVertex*>& results) override{
+                          const TPG::TPGAgent*>& results) override{
             // nothing to log
         };
     };

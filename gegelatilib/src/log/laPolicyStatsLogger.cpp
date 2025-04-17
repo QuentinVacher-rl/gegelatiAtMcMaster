@@ -44,16 +44,16 @@ void Log::LAPolicyStatsLogger::logNewGeneration(uint64_t& generationNumber)
 
 void Log::LAPolicyStatsLogger::logAfterDecimate()
 {
-    if (this->learningAgent.getBestRoot().first != this->lastBestRoot) {
+    if (this->learningAgent.getBestAgent().first != this->lastBestAgent) {
         // Update the best root befor loggin it PolicyStats
-        this->lastBestRoot = this->learningAgent.getBestRoot().first;
+        this->lastBestAgent = this->learningAgent.getBestAgent().first;
         *this << "Generation " << this->generationNumber << " - Score "
-              << this->learningAgent.getBestRoot().second->getResult()
+              << this->learningAgent.getBestAgent().second->getResult()
               << std::endl
               << std::endl;
         TPG::PolicyStats ps;
         ps.setEnvironment(this->learningAgent.getTPGGraph()->getEnvironment());
-        ps.analyzePolicy(this->lastBestRoot);
+        //ps.analyzePolicy(this->lastBestAgent); TODO
         *this << ps << std::endl;
         *this << std::endl
               << std::endl

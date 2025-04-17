@@ -299,7 +299,7 @@ void File::TPGGraphDotImporter::readLinkActionProgram(std::smatch& matches)
                 uint64_t actionClass = this->actionClasses.at(action).at(action->getOutgoingEdges().size());
                 std::shared_ptr<Program::Program> p = p_it->second;
 
-                this->tpg.addNewActionEdge(*action, p, actionClass);
+                this->tpg.addNewActionEdge(*action, actionClass);
             }
         }
     }
@@ -324,7 +324,7 @@ void File::TPGGraphDotImporter::readLinkTeamProgramAction(std::smatch& matches)
                 const TPG::TPGVertex* team = team_it->second;
                 const TPG::TPGVertex* action = action_it->second;
                 std::shared_ptr<Program::Program> p = p_it->second;
-                this->tpg.addNewDecisionEdge(*team, *action, p);
+                this->tpg.addNewDecisionEdge(*team, *action);
             }
         }
     }
@@ -350,7 +350,7 @@ void File::TPGGraphDotImporter::readLinkTeamProgramTeam(std::smatch& matches)
                 t2_it != this->vertexID.end()) {
                 const TPG::TPGVertex* team_i = t1_it->second;
                 const TPG::TPGVertex* team_o = t2_it->second;
-                this->tpg.addNewDecisionEdge(*team_i, *team_o, p);
+                this->tpg.addNewDecisionEdge(*team_i, *team_o);
             }
         }
     }
@@ -374,7 +374,7 @@ void File::TPGGraphDotImporter::readLinkTeamProgram(std::smatch& matches)
             auto edge_it =
                 std::find_if(edges.begin(), edges.end(),
                              [p](const std::unique_ptr<TPG::TPGEdge>& other) {
-                                 return (&(other->getProgram()) == p.get());
+                                 return false;//TODO CHANGE (&(other->getProgram()) == p.get());
                              });
             if (edge_it != edges.end()) // we got the corresponding edge :
             {
@@ -383,7 +383,7 @@ void File::TPGGraphDotImporter::readLinkTeamProgram(std::smatch& matches)
                 if (team_it != this->vertexID.end()) {
                     const TPG::TPGVertex* team = team_it->second;
                     this->tpg.addNewDecisionEdge(
-                        *team, *(edge_it->get()->getDestination()), p);
+                        *team, *(edge_it->get()->getDestination()));
                 }
             }
         }

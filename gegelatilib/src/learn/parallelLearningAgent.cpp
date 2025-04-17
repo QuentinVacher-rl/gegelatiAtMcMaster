@@ -48,11 +48,11 @@
 #include "learn/evaluationResult.h"
 #include "learn/parallelLearningAgent.h"
 
-std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex*>
+std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGAgent*>
 Learn::ParallelLearningAgent::evaluateAllRoots(uint64_t generationNumber,
                                                Learn::LearningMode mode)
 {
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>
         results;
 
     if (this->maxNbThreads <= 1 || !this->learningEnvironment.isCopyable()) {
@@ -65,15 +65,15 @@ Learn::ParallelLearningAgent::evaluateAllRoots(uint64_t generationNumber,
                 (mode == LearningMode::TRAINING) ? &this->archive : NULL);
 
         // Execute for all root
-        auto roots = this->tpg->getRootVertices();
-        for (int i = 0; i < roots.size(); i++) {
-            auto job = makeJob(roots.at(i), mode);
+        auto agents = this->tpg->getAgents();
+        for (int i = 0; i < agents.size(); i++) {
+            auto job = makeJob(agents.at(i), mode);
 
             this->archive.setRandomSeed(job->getArchiveSeed());
 
             std::shared_ptr<EvaluationResult> avgScore = this->evaluateJob(
                 *tee, *job, generationNumber, mode, this->learningEnvironment);
-            results.emplace(avgScore, (*job).getRoot());
+            results.emplace(avgScore, (*job).getAgent());
         }
     }
     else {
@@ -215,7 +215,7 @@ void Learn::ParallelLearningAgent::mergeArchiveMap(
 
 void Learn::ParallelLearningAgent::evaluateAllRootsInParallel(
     uint64_t generationNumber, LearningMode mode,
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>&
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results)
 {
     // Create Archive Map
@@ -272,14 +272,14 @@ void Learn::ParallelLearningAgent::evaluateAllRootsInParallelExecute(
 void Learn::ParallelLearningAgent::evaluateAllRootsInParallelCompileResults(
     std::map<uint64_t, std::pair<std::shared_ptr<EvaluationResult>,
                                  std::shared_ptr<Job>>>& resultsPerJobMap,
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>&
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results,
     std::map<uint64_t, Archive*>& archiveMap)
 {
     // Merge the results
     for (auto& resultPerRoot : resultsPerJobMap) {
         results.emplace(resultPerRoot.second.first,
-                        (*resultPerRoot.second.second).getRoot());
+                        (*resultPerRoot.second.second).getAgent());
     }
 
     // Merge the archives

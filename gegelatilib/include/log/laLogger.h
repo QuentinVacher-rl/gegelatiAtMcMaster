@@ -175,7 +175,7 @@ namespace Log {
 
         virtual void logAfterEvaluate(
             std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                          const TPG::TPGVertex*>& results) = 0;
+                          const TPG::TPGAgent*>& results) = 0;
 
         /**
          * \brief Method called by the Learning Agent right after the decimation
@@ -191,7 +191,7 @@ namespace Log {
          */
         virtual void logAfterValidate(
             std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                          const TPG::TPGVertex*>& results) = 0;
+                          const TPG::TPGAgent*>& results) = 0;
 
         /**
          * \brief Method called by the Learning Agent when the training is done

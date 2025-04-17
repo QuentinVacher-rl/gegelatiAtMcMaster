@@ -51,6 +51,7 @@
 #include "learn/learningEnvironment.h"
 #include "learn/learningParameters.h"
 
+
 namespace Learn {
     /**
      * \brief  Class used to control the learning steps of a TPGGraph within
@@ -80,7 +81,7 @@ namespace Learn {
         virtual void evaluateAllRootsInParallel(
             uint64_t generationNumber, LearningMode mode,
             std::multimap<std::shared_ptr<EvaluationResult>,
-                          const TPG::TPGVertex*>& results);
+                          const TPG::TPGAgent*>& results);
 
         /**
          * \brief Subfunction of evaluateAllRootsInParallel which handles the
@@ -123,7 +124,7 @@ namespace Learn {
                                          std::shared_ptr<Job>>>&
                 resultsPerJobMap,
             std::multimap<std::shared_ptr<EvaluationResult>,
-                          const TPG::TPGVertex*>& results,
+                          const TPG::TPGAgent*>& results,
             std::map<uint64_t, Archive*>& archiveMap);
 
         /**
@@ -210,7 +211,7 @@ namespace Learn {
          * generation. \param[in] mode the LearningMode to use during the policy
          * evaluation.
          */
-        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>
+        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>
         evaluateAllRoots(uint64_t generationNumber, LearningMode mode) override;
     };
 } // namespace Learn

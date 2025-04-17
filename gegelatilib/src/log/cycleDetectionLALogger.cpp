@@ -122,7 +122,7 @@ void Log::CycleDetectionLALogger::logAfterPopulateTPG()
 
 void Log::CycleDetectionLALogger::logAfterEvaluate(
     std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                  const TPG::TPGVertex*>& results)
+                  const TPG::TPGAgent*>& results)
 {
     // nothing to log
 }
@@ -134,7 +134,7 @@ void Log::CycleDetectionLALogger::logAfterDecimate()
 
 void Log::CycleDetectionLALogger::logAfterValidate(
     std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                  const TPG::TPGVertex*>& results)
+                  const TPG::TPGAgent*>& results)
 {
     // nothing to log
 }

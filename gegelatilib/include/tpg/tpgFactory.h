@@ -46,6 +46,7 @@
 #include "tpg/tpgEdge.h"
 #include "tpg/tpgDecisionVertex.h"
 #include "tpg/tpgActivationVertex.h"
+#include "tpg/tpgAgent.h"
 
 namespace TPG {
 
@@ -102,6 +103,16 @@ namespace TPG {
          */
         virtual TPGActivationVertex* createTPGActivationVertex(const std::vector<uint64_t>& path) const;
 
+
+        /**
+         * \brief Create a TPGAgent for a TPGGraph.
+         * 
+         * This method allocates and returns a new TPGAgent.
+         * 
+         * \param[in] rootSpecies pointer to the root species TPGVertex of the agent.
+         */
+        virtual TPGAgent* createTPGAgent(const TPGVertex* rootSpecies) const;
+
         /**
          * \brief Create a TPGDecisionEdge for a TPGGraph.
          *
@@ -110,12 +121,9 @@ namespace TPG {
          *
          * \param[in] src pointer to the source TPGVertex of the edge.
          * \param[in] dest pointer to the destination TPGVertex of the edge.
-         * \param[in] prog the shared pointer to the Program associated to the
-         *            edge.
          */
         virtual std::unique_ptr<TPGDecisionEdge> createTPGDecisionEdge(
-            const TPGVertex* src, const TPGVertex* dest,
-            const std::shared_ptr<Program::Program> prog) const;
+            const TPGVertex* src, const TPGVertex* dest) const;
 
         /**
          * \brief Create a TPGActionEdge for a TPGGraph.
@@ -124,12 +132,10 @@ namespace TPG {
          * TPGActionEdge. The TPGActionEdge is returned as a unique_ptr.
          *
          * \param[in] src pointer to the source TPGVertex of the edge. It must
-         * be an action \param[in] prog the shared pointer to the Program
-         * associated to the edge. \param[in] actionClass of the actionEdge
+         * be an action. \param[in] actionClass of the actionEdge
          */
         virtual std::unique_ptr<TPGActionEdge> createTPGActionEdge(
-            const TPGVertex* src, const std::shared_ptr<Program::Program> prog,
-            uint64_t actionClass) const;
+            const TPGVertex* src, uint64_t actionClass) const;
 
         /**
          * \brief Create a TPGConnectionEdge for a TPGGraph.

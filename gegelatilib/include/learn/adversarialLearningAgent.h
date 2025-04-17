@@ -116,7 +116,7 @@ namespace Learn {
                                          std::shared_ptr<Job>>>&
                 resultsPerJobMap,
             std::multimap<std::shared_ptr<EvaluationResult>,
-                          const TPG::TPGVertex*>& results,
+                          const TPG::TPGAgent*>& results,
             std::map<uint64_t, Archive*>& archiveMap) override;
 
       public:
@@ -159,7 +159,7 @@ namespace Learn {
          * evaluation.
          */
         std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                      const TPG::TPGVertex*>
+                      const TPG::TPGAgent*>
         evaluateAllRoots(uint64_t generationNumber,
                          Learn::LearningMode mode) override;
 
@@ -236,7 +236,7 @@ namespace Learn {
          * AdversarialLearningAgent. For this reason, this overrides throws an
          * exception when called.
          */
-        std::shared_ptr<Learn::Job> makeJob(const TPG::TPGVertex* vertex,
+        std::shared_ptr<Learn::Job> makeJob(const TPG::TPGAgent* vertex,
                                             Learn::LearningMode mode, int idx,
                                             TPG::TPGGraph* tpgGraph) override;
     };

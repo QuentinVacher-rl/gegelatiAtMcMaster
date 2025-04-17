@@ -34,6 +34,7 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
+ #include "tpg/tpgDecisionVertex.h"
 #include "learn/adversarialJob.h"
 
 void Learn::AdversarialJob::addRoot(const TPG::TPGVertex* root)
@@ -50,9 +51,9 @@ std::vector<const TPG::TPGVertex*> Learn::AdversarialJob::getRoots() const
     return roots;
 }
 
-const TPG::TPGVertex* Learn::AdversarialJob::getRoot() const
+const TPG::TPGAgent* Learn::AdversarialJob::getAgent() const
 {
-    return roots[0];
+    return nullptr;
 }
 
 const TPG::TPGVertex* Learn::AdversarialJob::operator[](int i) const

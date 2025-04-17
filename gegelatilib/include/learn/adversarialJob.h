@@ -124,7 +124,7 @@ namespace Learn {
          *
          * @return The first root embedded by the job.
          */
-        const TPG::TPGVertex* getRoot() const override;
+        const TPG::TPGAgent* getAgent() const override;
 
         /**
          * \brief Getter of a single root in the list.

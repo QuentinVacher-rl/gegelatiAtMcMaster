@@ -46,7 +46,7 @@ uint64_t Learn::Job::getArchiveSeed() const
     return archiveSeed;
 }
 
-const TPG::TPGVertex* Learn::Job::getRoot() const
+const TPG::TPGAgent* Learn::Job::getAgent() const
 {
-    return root;
+    return agent;
 }

@@ -81,7 +81,7 @@ void Learn::LearningAgent::init(uint64_t seed)
     this->archive.clear();
 
     // Clear the best root
-    this->bestRoot = {nullptr, nullptr};
+    this->bestAgent = {nullptr, nullptr};
 }
 
 void Learn::LearningAgent::addLogger(Log::LALogger& logger)
@@ -91,14 +91,14 @@ void Learn::LearningAgent::addLogger(Log::LALogger& logger)
     loggers.push_back(std::reference_wrapper<Log::LALogger>(logger));
 }
 
-bool Learn::LearningAgent::isRootEvalSkipped(
-    const TPG::TPGVertex& root,
+bool Learn::LearningAgent::isAgentEvalSkipped(
+    const TPG::TPGAgent& agent,
     std::shared_ptr<Learn::EvaluationResult>& previousResult) const
 {
     // Has the root already been evaluated more times than
     // params.maxNbEvaluationPerPolicy
-    const auto& iter = this->resultsPerRoot.find(&root);
-    if (iter != this->resultsPerRoot.end()) {
+    const auto& iter = this->resultsPerAgent.find(&agent);
+    if (iter != this->resultsPerAgent.end()) {
         // The root has already been evaluated
         previousResult = iter->second;
         return iter->second->getNbEvaluation() >=
@@ -115,13 +115,13 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
     Learn::LearningMode mode, LearningEnvironment& le) const
 {
     // Only consider the first root of jobs as we are not in adversarial mode
-    const TPG::TPGVertex* root = job.getRoot();
+    const TPG::TPGAgent* agent = job.getAgent();
 
     // Skip the root evaluation process if enough evaluations were already
     // performed. In the evaluation mode only.
     std::shared_ptr<Learn::EvaluationResult> previousEval;
     if (mode == LearningMode::TRAINING &&
-        this->isRootEvalSkipped(*root, previousEval)) {
+        this->isAgentEvalSkipped(*agent, previousEval)) {
         return previousEval;
     }
 
@@ -145,7 +145,7 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
                nbActions < this->params.maxNbActionsPerEval) {
             // Get the actions
             std::vector<double> actionsID =
-                tee.executeFromRoot(*root, le.getInitActions()).second;
+                tee.executeFromRoot(*agent, le.getInitActions()).second;
             // Do it
             le.doActions(actionsID);
             // Count actions
@@ -169,11 +169,11 @@ std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateJob(
     return evaluationResult;
 }
 
-std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex*>
+std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGAgent*>
 Learn::LearningAgent::evaluateAllRoots(uint64_t generationNumber,
                                        Learn::LearningMode mode)
 {
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>
         result;
 
     // Create the TPGExecutionEngine for this evaluation.
@@ -183,27 +183,27 @@ Learn::LearningAgent::evaluateAllRoots(uint64_t generationNumber,
             this->env,
             (mode == LearningMode::TRAINING) ? &this->archive : NULL);
 
-    auto roots = tpg->getRootVertices();
-    for (int i = 0; i < roots.size(); i++) {
-        auto job = makeJob(roots.at(i), mode);
+    auto agents = tpg->getAgents();
+    for (int i = 0; i < agents.size(); i++) {
+        auto job = makeJob(agents.at(i), mode);
         this->archive.setRandomSeed(job->getArchiveSeed());
         std::shared_ptr<EvaluationResult> avgScore = this->evaluateJob(
             *tee, *job, generationNumber, mode, this->learningEnvironment);
-        result.emplace(avgScore, (*job).getRoot());
+        result.emplace(avgScore, (*job).getAgent());
     }
 
     return result;
 }
 
-std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateOneRoot(
+std::shared_ptr<Learn::EvaluationResult> Learn::LearningAgent::evaluateOneAgent(
     uint64_t generationNumber, Learn::LearningMode mode,
-    const TPG::TPGVertex* root)
+    const TPG::TPGAgent* agent)
 {
     // Retrieve the index of the root TPGVertex
-    const std::vector<const TPG::TPGVertex*> vertices = tpg->getVertices();
-    std::vector<const TPG::TPGVertex*>::const_iterator iterator =
-        std::find(vertices.begin(), vertices.end(), root);
-    if (iterator == vertices.end()) {
+    const std::vector<const TPG::TPGAgent*> agents = tpg->getAgents();
+    std::vector<const TPG::TPGAgent*>::const_iterator iterator =
+        std::find(agents.begin(), agents.end(), agent);
+    if (iterator == agents.end()) {
         throw std::runtime_error("The vertex to evaluate does not exist in the "
                                  "TPGGraph of the LearningAgent.");
     }
@@ -261,7 +261,7 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
 
     // Does a validation or not according to the parameter doValidation
     if (params.doValidation) {
-        std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex*> validationResults;
+        std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGAgent*> validationResults;
 
         if(generationNumber % params.stepValidation == 0 || generationNumber == params.nbGenerations - 1){
             validationResults = evaluateAllRoots(generationNumber, Learn::LearningMode::VALIDATION);
@@ -277,21 +277,21 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
 }
 
 void Learn::LearningAgent::decimateWithTournament(
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>&
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results)
 {
 
     size_t nbAgentsInTournament = results.size() - (params.mutation.tpg.nbRoots * (1-params.ratioDeletedRoots));
 
     // Create subVector of results without the best agents.
-    std::vector<std::pair<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>> elements;
+    std::vector<std::pair<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>> elements;
     auto it = results.begin();
     for (size_t i = 0; i < nbAgentsInTournament && it != results.end(); ++i) {
         elements.push_back(*it++);
     }
 
     for (size_t i = 0; i < nbAgentsInTournament; i += params.sizeTournament) {
-        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*> subMap;
+        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*> subMap;
         
         // Fill subMap with a size corresponding to the hardness of the tournament.
         for (size_t j = i; j < i + params.sizeTournament && j < nbAgentsInTournament; ++j) {
@@ -305,7 +305,7 @@ void Learn::LearningAgent::decimateWithTournament(
 
         // After the subMap is filled, erased the worse results from it, from the graph, and from the original results.
         while(subMap.size() != 1){
-            tpg->removeVertex(*subMap.begin()->second);
+            tpg->removeAgent(*subMap.begin()->second);
 
 
             auto itRes = results.find(subMap.begin()->first);
@@ -315,20 +315,20 @@ void Learn::LearningAgent::decimateWithTournament(
             
         }
         
-        tpg->setToBeDeleted(subMap.begin()->second);
+        tpg->setToBeDeleted(*subMap.begin()->second);
     }
 
     // Delete from results and resultsPerRoot
     auto itDel = results.begin();
     for (size_t i = 0; i < nbAgentsInTournament && it != results.end(); ++i) {
-        this->resultsPerRoot.erase(itDel->second);
+        this->resultsPerAgent.erase(itDel->second);
         results.erase(itDel++);
         
     }
 }
 
 void Learn::LearningAgent::decimateWorstRoots(
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>&
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results)
 {
 
@@ -336,12 +336,6 @@ void Learn::LearningAgent::decimateWorstRoots(
         return decimateWithTournament(results);
     }
 
-    // Some actions may be encountered but not removed while scanning the
-    // results map they should be re-inserted to the list before leaving the
-    // method.
-    // Teams and actions are not removed also if there is 1% of teams or actions
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>
-        preservedRoots;
 
 
     // Estimate the number of expected roots to keep
@@ -352,24 +346,17 @@ void Learn::LearningAgent::decimateWorstRoots(
     while (i < nbExpectedRoots && results.size() > 0) {
 
         // If the root is an action, do not remove it in discrete environment!
-        const TPG::TPGVertex* root = results.begin()->second;
-        if (dynamic_cast<const TPG::TPGActivationVertex*>(root) != nullptr && !this->params.mutation.tpg.useActionProgram) {
-            preservedRoots.insert(*results.begin());
-            i--; // no vertex was actually removed
-        }
-        else {
-            tpg->removeVertex(*results.begin()->second);
-            // Removed stored result (if any)
-            this->resultsPerRoot.erase(results.begin()->second);
-        }
+        const TPG::TPGAgent* root = results.begin()->second;
+
+        tpg->removeAgent(*results.begin()->second);
+        // Removed stored result (if any)
+        this->resultsPerAgent.erase(results.begin()->second);
+
         results.erase(results.begin());
 
         // Increment loop counter
         i++;
     }
-
-    // Restore root actions
-    results.insert(preservedRoots.begin(), preservedRoots.end());
 }
 
 uint64_t Learn::LearningAgent::train(volatile bool& altTraining,
@@ -418,14 +405,14 @@ uint64_t Learn::LearningAgent::train(volatile bool& altTraining,
 
 void Learn::LearningAgent::updateEvaluationRecords(
     const std::multimap<std::shared_ptr<EvaluationResult>,
-                        const TPG::TPGVertex*>& results)
+                        const TPG::TPGAgent*>& results)
 {
     { // Update resultsPerRoot
         for (auto result : results) {
-            auto mapIterator = this->resultsPerRoot.find(result.second);
-            if (mapIterator == this->resultsPerRoot.end()) {
+            auto mapIterator = this->resultsPerAgent.find(result.second);
+            if (mapIterator == this->resultsPerAgent.end()) {
                 // First time this root is evaluated
-                this->resultsPerRoot.emplace(result.second, result.first);
+                this->resultsPerAgent.emplace(result.second, result.first);
             }
             else if (result.first != mapIterator->second) {
                 // This root has already been evaluated.
@@ -436,8 +423,8 @@ void Learn::LearningAgent::updateEvaluationRecords(
                 mapIterator->second = result.first;
                 // If the received result is associated to the current bestRoot,
                 // update it.
-                if (result.second == this->bestRoot.first) {
-                    this->bestRoot.second = result.first;
+                if (result.second == this->bestAgent.first) {
+                    this->bestAgent.second = result.first;
                 }
             }
         }
@@ -446,27 +433,27 @@ void Learn::LearningAgent::updateEvaluationRecords(
     { // Update bestRoot
         auto iterator = --results.end();
         const std::shared_ptr<EvaluationResult> evaluation = iterator->first;
-        const TPG::TPGVertex* candidate = iterator->second;
+        const TPG::TPGAgent* candidate = iterator->second;
         // Test the three replacement cases
         // from the simpler to the most complex to test
 
         // Replace the best root
-        this->bestRoot = {candidate, evaluation};
+        this->bestAgent = {candidate, evaluation};
 
         // Otherwise do nothing
     }
 }
 
-const std::pair<const TPG::TPGVertex*,
+const std::pair<const TPG::TPGAgent*,
                 std::shared_ptr<Learn::EvaluationResult>>&
-Learn::LearningAgent::getBestRoot() const
+Learn::LearningAgent::getBestAgent() const
 {
-    return this->bestRoot;
+    return this->bestAgent;
 }
 
 void Learn::LearningAgent::updateBestScoreLastGen(
     std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                  const TPG::TPGVertex*>& results)
+                  const TPG::TPGAgent*>& results)
 {
     auto iterator = --results.end();
     bestScoreLastGen = iterator->first->getResult();
@@ -480,20 +467,20 @@ double Learn::LearningAgent::getBestScoreLastGen() const
 void Learn::LearningAgent::keepBestPolicy()
 {
     // Evaluate all roots
-    if (this->tpg->hasVertex(*this->bestRoot.first)) {
-        auto bestRootVertex = this->bestRoot.first;
+    if (this->tpg->hasAgent(*this->bestAgent.first)) {
+        auto bestRootVertex = this->bestAgent.first;
 
-        auto roots = this->tpg->getRootVertices();
-        for (auto root : roots) {
-            if (root != bestRootVertex) {
-                tpg->removeVertex(*root);
+        auto agents = this->tpg->getAgents();
+        for (auto agent : agents) {
+            if (agent != bestRootVertex) {
+                tpg->removeAgent(*agent);
             }
         }
     }
 }
 
 std::shared_ptr<Learn::Job> Learn::LearningAgent::makeJob(
-    const TPG::TPGVertex* vertex, Learn::LearningMode mode, int idx,
+    const TPG::TPGAgent* agent, Learn::LearningMode mode, int idx,
     TPG::TPGGraph* tpgGraph)
 {
     // sets the tpg to the Learning Agent's one if no one was specified
@@ -508,7 +495,7 @@ std::shared_ptr<Learn::Job> Learn::LearningAgent::makeJob(
 
     if (tpgGraph->getNbRootVertices() > 0) {
         return std::make_shared<Learn::Job>(
-            Learn::Job({vertex}, archiveSeed, idx));
+            Learn::Job(agent, archiveSeed, idx));
     }
     return nullptr;
 }
@@ -520,9 +507,9 @@ std::queue<std::shared_ptr<Learn::Job>> Learn::LearningAgent::makeJobs(
     tpgGraph = tpgGraph == nullptr ? tpg.get() : tpgGraph;
 
     std::queue<std::shared_ptr<Learn::Job>> jobs;
-    auto roots = tpgGraph->getRootVertices();
-    for (int i = 0; i < roots.size(); i++) {
-        auto job = makeJob(roots.at(i), mode, i);
+    auto agents = tpgGraph->getAgents();
+    for (int i = 0; i < agents.size(); i++) {
+        auto job = makeJob(agents.at(i), mode, i);
         jobs.push(job);
     }
     return jobs;
@@ -530,7 +517,7 @@ std::queue<std::shared_ptr<Learn::Job>> Learn::LearningAgent::makeJobs(
 
 void Learn::LearningAgent::forgetPreviousResults()
 {
-    resultsPerRoot.clear();
-    bestRoot.first = nullptr;
-    bestRoot.second = nullptr;
+    resultsPerAgent.clear();
+    bestAgent.first = nullptr;
+    bestAgent.second = nullptr;
 }

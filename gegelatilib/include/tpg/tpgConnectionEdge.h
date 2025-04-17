@@ -61,36 +61,7 @@ namespace TPG {
          * \param[in] dest pointer to the destination TPGVertex of the edge.
          */
         TPGConnectionEdge(const TPGVertex* src, const TPGVertex* dest)
-                    : TPGEdge{src, dest, nullptr} {};
-
-        /**
-         * \brief Get a const reference to the Program of the TPGEdge.
-         *
-         * \return a const reference to the Program of the TPGEdge.
-         */
-        virtual Program::Program& getProgram() const override;
-
-        /**
-         * \brief Set a new Program for the TPGEdge.
-         *
-         * This method is const to enable use outside of the TPGGraph which is
-         * the only class accessing the non-const TPGEdge. Since the program
-         * pointer attribute is mutable, this method can successfully be used to
-         * alter the program.
-         *
-         * \param[in] prog the new shared pointer to a Program.
-         */
-        virtual void setProgram(const std::shared_ptr<Program::Program> prog) const override;
-
-        /**
-         * \brief Get the shared_pointer to the Program.
-         *
-         * This method is voluntarily non-const to make sure that only the
-         * TPGGraph containing the edge can use it.
-         *
-         * \return a copy of the program attribute.
-         */
-        virtual std::shared_ptr<Program::Program> getProgramSharedPointer() override;
+                    : TPGEdge{src, dest} {};
 
 
         /// Delete the default constructor.

@@ -39,7 +39,7 @@
 
 #include "learn/adversarialLearningAgent.h"
 
-std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGVertex*>
+std::multimap<std::shared_ptr<Learn::EvaluationResult>, const TPG::TPGAgent*>
 Learn::AdversarialLearningAgent::evaluateAllRoots(uint64_t generationNumber,
                                                   Learn::LearningMode mode)
 {
@@ -48,7 +48,7 @@ Learn::AdversarialLearningAgent::evaluateAllRoots(uint64_t generationNumber,
         throw std::runtime_error(
             "Max number of threads for a non copyable environment is 1.");
     }
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>
         results;
     evaluateAllRootsInParallel(generationNumber, mode, results);
     return results;
@@ -57,7 +57,7 @@ Learn::AdversarialLearningAgent::evaluateAllRoots(uint64_t generationNumber,
 void Learn::AdversarialLearningAgent::evaluateAllRootsInParallelCompileResults(
     std::map<uint64_t, std::pair<std::shared_ptr<EvaluationResult>,
                                  std::shared_ptr<Job>>>& resultsPerJobMap,
-    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGVertex*>&
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results,
     std::map<uint64_t, Archive*>& archiveMap)
 {
@@ -107,7 +107,7 @@ void Learn::AdversarialLearningAgent::evaluateAllRootsInParallelCompileResults(
     // the order of resultsPerRootMap which depends on addresses.
     for (auto root : tpg->getRootVertices()) {
         auto& resultPerRoot = *resultsPerRootMap.find(root);
-        results.emplace(resultPerRoot.second, resultPerRoot.first);
+        //results.emplace(resultPerRoot.second, resultPerRoot.first); // TODO
     }
 
     champions.clear();
@@ -116,7 +116,7 @@ void Learn::AdversarialLearningAgent::evaluateAllRootsInParallelCompileResults(
                                  (double)tpg->getNbRootVertices() -
                              1.0;
          i++) {
-        champions.emplace_back((--iterator)->second);
+        //champions.emplace_back((--iterator)->second); // TODO
     }
     // Merge the archives
     this->mergeArchiveMap(archiveMap);
@@ -152,10 +152,10 @@ std::shared_ptr<Learn::EvaluationResult> Learn::AdversarialLearningAgent::
                nbActions < this->params.maxNbActionsPerEval) {
 
             // Get the actions
-            std::vector<double> actionsID =
+            std::vector<double> actionsID;/* =
                 tee.executeFromRoot(*(*rootsIterator),
                                     le.getInitActions())
-                    .second; // TODO
+                    .second; // TODO*/
 
             // Do it
             le.doActions(actionsID);
@@ -255,7 +255,7 @@ std::queue<std::shared_ptr<Learn::Job>> Learn::AdversarialLearningAgent::
 }
 
 std::shared_ptr<Learn::Job> Learn::AdversarialLearningAgent::makeJob(
-    const TPG::TPGVertex* vertex, Learn::LearningMode mode, int idx,
+    const TPG::TPGAgent* vertex, Learn::LearningMode mode, int idx,
     TPG::TPGGraph* tpgGraph)
 {
     throw std::runtime_error(

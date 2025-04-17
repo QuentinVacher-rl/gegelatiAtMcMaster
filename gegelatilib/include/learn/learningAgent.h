@@ -80,11 +80,11 @@ namespace Learn {
 
         /// Pointer to the best root encountered during training, together with
         /// its EvaluationResult.
-        std::pair<const TPG::TPGVertex*, std::shared_ptr<EvaluationResult>>
-            bestRoot{nullptr, nullptr};
+        std::pair<const TPG::TPGAgent*, std::shared_ptr<EvaluationResult>>
+            bestAgent{nullptr, nullptr};
 
         /**
-         * \brief Map associating root TPG::TPGVertex to their EvaluationResult.
+         * \brief Map associating root TPG::TPGAgent to their EvaluationResult.
          *
          * If a given TPGVertex is evaluated several times, its
          * EvaluationResult may be updated with the newer results.
@@ -96,8 +96,8 @@ namespace Learn {
          * evaluated more than LearningParameters::maxNbEvaluationPerPolicy
          * times.
          */
-        std::map<const TPG::TPGVertex*, std::shared_ptr<EvaluationResult>>
-            resultsPerRoot;
+        std::map<const TPG::TPGAgent*, std::shared_ptr<EvaluationResult>>
+            resultsPerAgent;
 
         /// Random Number Generator for this Learning Agent
         Mutator::RNG rng;
@@ -232,15 +232,15 @@ namespace Learn {
          * should be evaluated again, or if sufficient evaluations were already
          * performed.
          *
-         * \param[in] root The root TPGVertex whose number of evaluation is
+         * \param[in] agent The agent TPGAgent whose number of evaluation is
          * checked.
          * \param[out] previousResult the std::shared_ptr to the
          * EvaluationResult of the root from the resultsPerRoot if any.
          * \return true if the root has been evaluated enough times, false
          * otherwise.
          */
-        bool isRootEvalSkipped(
-            const TPG::TPGVertex& root,
+        bool isAgentEvalSkipped(
+            const TPG::TPGAgent& agent,
             std::shared_ptr<Learn::EvaluationResult>& previousResult) const;
 
         /**
@@ -256,7 +256,7 @@ namespace Learn {
          * evaluation.
          */
         virtual std::multimap<std::shared_ptr<EvaluationResult>,
-                              const TPG::TPGVertex*>
+                              const TPG::TPGAgent*>
         evaluateAllRoots(uint64_t generationNumber, LearningMode mode);
 
         /**
@@ -271,14 +271,14 @@ namespace Learn {
          * generation.
          * \param[in] mode the LearningMode to use during the policy
          * evaluation.
-         * \param[in] root the evaluated TPGVertex of the TPGGraph.
+         * \param[in] agent the evaluated TPGVertex of the TPGGraph.
          * \return the averaged EvaluationResult for the given TPGVertex.
          * \throws an exception in case the given root does not exist in the
          * TPGGraph.
          */
-        virtual std::shared_ptr<EvaluationResult> evaluateOneRoot(
+        virtual std::shared_ptr<EvaluationResult> evaluateOneAgent(
             uint64_t generationNumber, LearningMode mode,
-            const TPG::TPGVertex* root);
+            const TPG::TPGAgent* agent);
 
         /**
          * \brief Train the TPGGraph for one generation.
@@ -308,7 +308,7 @@ namespace Learn {
          */
         virtual void decimateWithTournament(
             std::multimap<std::shared_ptr<EvaluationResult>,
-                          const TPG::TPGVertex*>& results);
+                          const TPG::TPGAgent*>& results);
 
         /**
          * \brief Removes from the TPGGraph the root TPGVertex with the worst
@@ -325,7 +325,7 @@ namespace Learn {
          */
         virtual void decimateWorstRoots(
             std::multimap<std::shared_ptr<EvaluationResult>,
-                          const TPG::TPGVertex*>& results);
+                          const TPG::TPGAgent*>& results);
 
         /**
          * \brief Train the TPGGraph for a given number of generation.
@@ -365,7 +365,7 @@ namespace Learn {
          */
         void updateEvaluationRecords(
             const std::multimap<std::shared_ptr<EvaluationResult>,
-                                const TPG::TPGVertex*>& results);
+                                const TPG::TPGAgent*>& results);
 
         /**
          * \brief This method resets the previous registered scores per root.
@@ -385,7 +385,7 @@ namespace Learn {
          */
         void updateBestScoreLastGen(
             std::multimap<std::shared_ptr<Learn::EvaluationResult>,
-                          const TPG::TPGVertex*>& results);
+                          const TPG::TPGAgent*>& results);
 
         /**
          * \brief Get the best score reached at the last generation trained
@@ -402,9 +402,9 @@ namespace Learn {
          *
          * \return a reference to the bestRoot attribute.
          */
-        const std::pair<const TPG::TPGVertex*,
+        const std::pair<const TPG::TPGAgent*,
                         std::shared_ptr<EvaluationResult>>&
-        getBestRoot() const;
+        getBestAgent() const;
 
         /**
          * \brief This method keeps only the bestRoot policy in the TPGGraph.
@@ -415,11 +415,11 @@ namespace Learn {
         void keepBestPolicy();
 
         /**
-         * \brief Takes a given TPGVertex and creates a job containing it.
+         * \brief Takes a given TPGagent and creates a job containing it.
          * Useful for example in adversarial mode where a job could contain a
          * match of several roots.
          *
-         * \param[in] vertex the TPGVertex stemming a TPGGraph to be evaluated.
+         * \param[in] agent the TPGagent stemming a TPGGraph to be evaluated.
          * \param[in] mode the mode of the training, determining for example
          * if we generate values that we only need for training.
          * \param[in] idx The index of the job, can be used to organize a map
@@ -430,7 +430,7 @@ namespace Learn {
          * \return A job representing the root.
          */
         virtual std::shared_ptr<Learn::Job> makeJob(
-            const TPG::TPGVertex* vertex, Learn::LearningMode mode, int idx = 0,
+            const TPG::TPGAgent* agent, Learn::LearningMode mode, int idx = 0,
             TPG::TPGGraph* tpgGraph = nullptr);
 
         /**

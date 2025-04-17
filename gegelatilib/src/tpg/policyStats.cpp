@@ -207,7 +207,7 @@ void TPG::PolicyStats::analyzePolicy(const TPG::TPGVertex* root)
                     // Analyze outgoing edges
                     for (const TPG::TPGEdge* edge :
                          vertex->getOutgoingEdges()) {
-                        this->analyzeProgram(&edge->getProgram());
+                        //this->analyzeProgram(&edge->getProgram()); // TODO
                         nextStage.push_back(edge->getDestination());
                     }
                 }
@@ -219,7 +219,7 @@ void TPG::PolicyStats::analyzePolicy(const TPG::TPGVertex* root)
 
 
                 for(auto edge: action->getOutgoingActionEdges()){
-                    this->analyzeProgram(&edge->getProgram());
+                    //this->analyzeProgram(&edge->getProgram()); // TODO
                 }
             }
         }

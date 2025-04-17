@@ -47,6 +47,7 @@
 #include "tpg/tpgFactory.h"
 #include "tpg/tpgDecisionVertex.h"
 #include "tpg/tpgActivationVertex.h"
+#include "tpg/tpgAgent.h"
 
 namespace TPG {
     /**
@@ -150,6 +151,29 @@ namespace TPG {
         const TPGActivationVertex& addNewActivationVertex(const std::vector<uint64_t>& path = {0});
 
         /**
+         * \brief Create a new TPGAgent and add it to the map of species.
+         * 
+         * A species is represented by a TPGVertex (that should be a root)
+         * 
+         * \param[in] root vertex that represent the root of the species.
+         */
+        const TPGAgent& addNewAgent(const TPG::TPGVertex& root);
+
+        /**
+         * \brief Add a new root species in the map of species, with an empty list as value.
+         * 
+         * \param[in] root vertex that represent the root of the species.
+         */
+        void addSpecies(const TPG::TPGVertex& root);
+
+        /**
+         * \brief Remove a species from the map of species, and erase all the agent in it.
+         * 
+         * \param[in] root vertex that represent the root of the species.
+         */
+        void removeSpecies(const TPG::TPGVertex& root);
+
+        /**
          * \brief Get the number of TPGVertex contained in the TPGGraph.
          *
          * \return the size of the vertices attribute.
@@ -188,6 +212,23 @@ namespace TPG {
         const std::vector<const TPGVertex*> getRootVertices() const;
 
         /**
+         * \brief get the number of agents in the graph.
+         */
+        uint64_t getNbAgents() const;
+
+        /**
+         * \brief return a vector of all the agents in the graph.
+         */
+        const std::vector<const TPG::TPGAgent*> getAgents() const;
+
+        /**
+         * \brief return a reference to the list of all the agents of the specified species.
+         * 
+         * \param[in] root root species.
+         */
+        const std::list<TPG::TPGAgent*>& getAgentsOfSpecies(TPG::TPGVertex* root);
+
+        /**
          * \brief Check whether a given vertex exists in the TPGGraph.
          *
          * \param[in] vertex the TPG::TPGVertex whose presence in the TPGGraph
@@ -217,10 +258,34 @@ namespace TPG {
         const TPGVertex& cloneVertex(const TPGVertex& vertex);
 
         /**
+         * \brief Check whether a given agent exists in the TPGGraph.
+         *
+         * \param[in] agent the TPGAgent whose presence in the TPGGraph
+         * is checked.
+         * \return true if the agent exists in the TPGGraph, false otherwise.
+         */
+        bool hasAgent(const TPG::TPGAgent& agent);
+
+        /**
+         * \brief Remove a TPGAgent from the TPGGraph and destroy it.
+         * 
+         * \param[in] vertex a const reference to the TPGAgent to remove.
+         */
+        void removeAgent(const TPGAgent& agent);
+
+        /**
+         * \brief Clone a TPGAgent of the graph.
+         *
+         * \param[in] agent the const reference to the TPGAgent to clone.
+         * \return a const reference to the new TPGAgent.
+         */
+        const TPGAgent& cloneAgent(const TPGAgent& agent);
+
+        /**
          * \brief Add a new TPGDecisionEdge to the TPGGraph.
          *
-         * Add a new TPGDecisionEdge to the TPGGraph, between the two given TPGVertex
-         * and associated with the given Program. The newly created TPGDecisionEdge is
+         * Add a new TPGDecisionEdge to the TPGGraph, between the two given TPGVertex.
+         *  The newly created TPGDecisionEdge is
          * inserted in the incoming and outgoing edges lists of the connected
          * TPGVertex.
          * The TPGDecisionEdge is created using the TPGFactory of the TPGGraph.
@@ -228,24 +293,19 @@ namespace TPG {
          * \param[in] src the source TPGVertex of the newly created TPGDecisionEdge.
          * \param[in] dest the destination TPGVertex of the newly created
          *                TPGDecisionEdge.
-         * \param[in] prog shared pointer to the Program associated to the newly
-         *                 created TPGDecisionEdge.
          * \return a const reference to the created TPGDecisionEdge.
          */
-        const TPGDecisionEdge& addNewDecisionEdge(const TPGVertex& src, const TPGVertex& dest,
-                                          const std::shared_ptr<Program::Program> prog);
+        const TPGDecisionEdge& addNewDecisionEdge(const TPGVertex& src, const TPGVertex& dest);
         /**
          * \brief Add a new TPGActionEdge to the TPGGraph.
          *
-         * Add a new TPGActionEdge to the TPGGraph, between the give vertex is
-         * associated the given Program. The newly created TPGEdge is
+         * Add a new TPGActionEdge to the TPGGraph
+         * The newly created TPGEdge is
          * inserted in the outgoing edges list of the connected
          * TPGVertex.
          * The TPGActionEdge is created using the TPGFactory of the TPGGraph.
          *
          * \param[in] src the source TPGVertex of the newly created TPGEdge.
-         * \param[in] prog shared pointer to the Program associated to the newly
-         *                 created TPGEdge.
          * \param[in] actionClass of the actionEdge
          * \return a const reference to the created TPGEdge.
          * \throw std::runtime_error In case the TPGVertex does not
@@ -253,8 +313,7 @@ namespace TPG {
          *							             source is a TPGTeam.
          */
         const TPGActionEdge& addNewActionEdge(
-            const TPGVertex& src, const std::shared_ptr<Program::Program> prog,
-            uint64_t actionClass);
+            const TPGVertex& src, uint64_t actionClass);
 
         /**
          * \brief Add a new TPGConnectionEdge to the TPGGraph.
@@ -270,6 +329,15 @@ namespace TPG {
          * \return a const reference to the created TPGConnectionEdge.
          */
         const TPGConnectionEdge& addNewConnectionEdge(const TPGVertex& src, const TPGVertex& dest);
+
+        /**
+         * \brief Add a program to an agent with a give edge
+         * 
+         * \param[in] agent The agent TPGAgent on which a program is added.
+         * \param[in] edge The edge linked to the program added to the TPGAgent.
+         * \param[in] prog The Program added to the TPGAgent.
+         */
+        void setProgramToAgent(const TPGAgent& agent, const TPG::TPGEdge* edge, std::shared_ptr<Program::Program> prog);
 
         /**
          * \brief Get a const reference to the edges of the TPGGraph.
@@ -366,11 +434,11 @@ namespace TPG {
     
 
         /**
-         * Set the vertex to be deleted (during reproduction process)
+         * Set the TPGAgent to be deleted (during reproduction process)
          * 
-         * \param[in] vertex to set to delete
+         * \param[in] agent to set to delete
          */
-        void setToBeDeleted(const TPG::TPGVertex* vertex);
+        void setToBeDeleted(const TPG::TPGAgent& agent);
 
         /**
          * \brief compute and return all the vertices activable by this root.
@@ -397,6 +465,8 @@ namespace TPG {
          */
         void orderOutgoingEdges(const TPG::TPGVertex* vertex);
 
+
+
       protected:
         /// Environment of the TPGGraph
         const Environment& env;
@@ -413,6 +483,16 @@ namespace TPG {
          * \brief Set of TPGEdge composing the TPGGraph.
          */
         std::list<std::unique_ptr<TPGEdge>> edges;
+
+
+        /**
+         * \brief Unordored Map that stores the species in the graph.
+         * 
+         * A species is represented by at TPGVertex (that is a root).
+         * The key of the map is the species.
+         * The value is a list of a agent that belong to this species.
+         */
+        std::unordered_map<const TPGVertex*, std::list<TPGAgent*>> species;
 
         /**
          * \brief Find the non-const iterator to a vertex of the graph from
@@ -437,6 +517,17 @@ namespace TPG {
         std::list<std::unique_ptr<TPGEdge>>::iterator findEdge(
             const TPGEdge* edge);
 
+            
+        /**
+         * \brief Find the non-const iterator to an agent of the graph from
+         * its const pointer.
+         *
+         * \param[in] agent the const pointer to the TPGAgent.
+         * \return the iterator on the list in the species attribute, at the position of
+         *         the searched edge pointer.
+         */
+        std::list<TPGAgent*>::iterator findAgent(
+            const TPGAgent* agent);
 
 
     };
