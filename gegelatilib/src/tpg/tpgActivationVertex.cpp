@@ -89,30 +89,6 @@ std::list<TPG::TPGEdge*> TPG::TPGActivationVertex::getOutgoingActionEdges() cons
     return actionEdges;
 }
 
-
-void TPG::TPGActivationVertex::orderOutgoingEdges() {
-
-    outgoingEdges.sort([](TPG::TPGEdge* edge1, TPG::TPGEdge* edge2) {
-
-        if(dynamic_cast<TPG::TPGActionEdge*>(edge1) != nullptr){
-            // both edge are action edge
-            if(dynamic_cast<TPG::TPGActionEdge*>(edge2) != nullptr){
-                return dynamic_cast<TPG::TPGActionEdge*>(edge1)->getActionClass() < dynamic_cast<TPG::TPGActionEdge*>(edge2)->getActionClass();
-
-            // Edge1 is action edge and edge2 is ConnectionEdge
-            } else {
-                return false;
-            } 
-            // both edge are connection edge
-        } else if (dynamic_cast<TPG::TPGConnectionEdge*>(edge2) != nullptr){
-            return edge1->getDestination()->getPath().back() < edge2->getDestination()->getPath().back();
-            // Edge1 is connection edge and edge2 is ActionEdge
-        } else {
-            return true;
-        }
-    });
-}
-
 TPG::TPGActionEdge* TPG::TPGActivationVertex::getEdgeOfAction(uint64_t actionClass) const {
 
     auto actionEdges = this->getOutgoingConnectionEdges();

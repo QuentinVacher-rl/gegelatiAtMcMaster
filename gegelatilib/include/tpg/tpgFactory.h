@@ -89,19 +89,15 @@ namespace TPG {
          * \brief Create a TPGDecisionVertex for a TPGGraph.
          *
          * This method allocates and returns a new TPGDecisionVertex.
-         * 
-         * \param[in] path of the vertex
          */
-        virtual TPGDecisionVertex* createTPGDecisionVertex(const std::vector<uint64_t>& path) const;
+        virtual TPGDecisionVertex* createTPGDecisionVertex() const;
 
         /**
          * \brief Create a TPGActivationVertex for a TPGGraph.
          *
          * This method allocates and returns a new TPGActivationVertex.
-         * 
-         * \param[in] path of the vertex
          */
-        virtual TPGActivationVertex* createTPGActivationVertex(const std::vector<uint64_t>& path) const;
+        virtual TPGActivationVertex* createTPGActivationVertex() const;
 
 
         /**

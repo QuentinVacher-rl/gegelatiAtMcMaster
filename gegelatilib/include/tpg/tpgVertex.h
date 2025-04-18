@@ -57,11 +57,6 @@ namespace TPG {
         virtual ~TPGVertex() = default;
 
 
-        /**
-         * \brief Protected default constructor to forbid the instanciation of
-         * object of this abstract class.
-         */
-        TPGVertex(const std::vector<uint64_t>& initPath = {0}) : path{initPath} {};
 
         /**
          * \brief Get a const reference to incoming edges of this TPGVertex.
@@ -122,10 +117,6 @@ namespace TPG {
         virtual void removeOutgoingEdge(TPG::TPGEdge* edge);
 
         
-        /**
-         * Order the edges depending on the path of the destination.
-         */
-        virtual void orderOutgoingEdges();
 
         /**
          * \brief return assessed actions
@@ -144,22 +135,7 @@ namespace TPG {
          */
         virtual bool hasSameAssessedActions(std::set<uint64_t> actions) const;
 
-        /**
-         * Set if the vertex should be deleted during evolution process. 
-         * 
-         * \param[in] status boolean to indicate if the vertex should be deleted.
-         */
-        virtual void setToBeDeleted(bool status);
 
-        /**
-         * Return if the vertex should be deleted during evolution process. 
-         */
-        virtual bool isToBeDeleted() const; 
-
-        /**
-         * Return a vector corresponding to the path of this vertex.
-         */
-        virtual const std::vector<uint64_t>& getPath() const;
 
 
       protected:
@@ -180,10 +156,6 @@ namespace TPG {
          */
         std::set<uint64_t> assessedActions;
 
-        /**
-         * \brief path of this vertex in its graph.
-         */
-        std::vector<uint64_t> path;
     };
 }; // namespace TPG
 

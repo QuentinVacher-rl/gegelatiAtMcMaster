@@ -44,14 +44,14 @@ std::shared_ptr<TPG::TPGGraph> TPG::TPGFactory::createTPGGraph(
     return std::make_shared<TPG::TPGGraph>(env, std::make_unique<TPGFactory>());
 }
 
-TPG::TPGDecisionVertex* TPG::TPGFactory::createTPGDecisionVertex(const std::vector<uint64_t>& path) const
+TPG::TPGDecisionVertex* TPG::TPGFactory::createTPGDecisionVertex() const
 {
-    return new TPG::TPGDecisionVertex(path);
+    return new TPG::TPGDecisionVertex();
 }
 
-TPG::TPGActivationVertex* TPG::TPGFactory::createTPGActivationVertex(const std::vector<uint64_t>& path) const
+TPG::TPGActivationVertex* TPG::TPGFactory::createTPGActivationVertex() const
 {
-    return new TPG::TPGActivationVertex(path);
+    return new TPG::TPGActivationVertex();
 }
 
 TPG::TPGAgent* TPG::TPGFactory::createTPGAgent(const TPGVertex* rootSpecies) const

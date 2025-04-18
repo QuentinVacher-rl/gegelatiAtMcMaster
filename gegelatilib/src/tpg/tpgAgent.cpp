@@ -15,13 +15,13 @@ void TPG::TPGAgent::setProgram(
     this->programs[edge] = prog;
 }
 
-std::shared_ptr<Program::Program> TPG::TPGAgent::getProgramSharedPointer(TPG::TPGEdge* edge) const
+std::shared_ptr<Program::Program> TPG::TPGAgent::getProgramSharedPointer(const TPG::TPGEdge* edge) const
 {
     return this->programs.at(edge);
 }
 
 
-bool TPG::TPGAgent::deletePair(TPG::TPGEdge* edge)
+bool TPG::TPGAgent::deletePair(const TPG::TPGEdge* edge)
 {
     auto it = this->programs.find(edge);
     
@@ -32,7 +32,7 @@ bool TPG::TPGAgent::deletePair(TPG::TPGEdge* edge)
     return false;
 }
 
-const std::unordered_map<const TPG::TPGEdge*, std::shared_ptr<Program::Program>>& TPG::TPGAgent::getPrograms()
+const std::unordered_map<const TPG::TPGEdge*, std::shared_ptr<Program::Program>>& TPG::TPGAgent::getPrograms() const
 {
     return this->programs;
 }
@@ -40,6 +40,11 @@ const std::unordered_map<const TPG::TPGEdge*, std::shared_ptr<Program::Program>>
 const TPG::TPGVertex* TPG::TPGAgent::getRootSpecies() const
 {
     return this->rootSpecies;
+}
+
+void TPG::TPGAgent::setRootSpecies(const TPG::TPGVertex* newRoot)
+{
+    this->rootSpecies = newRoot;
 }
 
 size_t TPG::TPGAgent::agentSize() const

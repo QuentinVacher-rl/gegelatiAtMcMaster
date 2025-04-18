@@ -73,11 +73,5 @@ void TPG::TPGDecisionVertex::updateAssessedActions()
         // Insert all assessed actions from the destination
         const auto& destinationActions = edge->getDestination()->getAssessedActions();
         assessedActions.insert(destinationActions.begin(), destinationActions.end());
-
-
-        // If all actions are stored, no need to search for more
-        if(assessedActions.size() == edge->getProgram().getEnvironment().getNbContinuousActions()){
-            return;
-        }
     }
 }

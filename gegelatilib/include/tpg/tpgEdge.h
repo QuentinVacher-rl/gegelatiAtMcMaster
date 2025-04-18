@@ -61,8 +61,6 @@ namespace TPG {
          *
          * \param[in] src pointer to the source TPGVertex of the edge.
          * \param[in] dest pointer to the destination TPGVertex of the edge.
-         * \param[in] prog the shared pointer to the Program associated to the
-         *            edge.
          */
         TPGEdge(const TPGVertex* src, const TPGVertex* dest)
             : source{src}, destination{dest} {};

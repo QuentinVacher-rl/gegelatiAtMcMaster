@@ -49,13 +49,6 @@ namespace TPG {
         public: 
 
             /**
-             * \brief Constructor of Activation vertex
-             * 
-             * \param[in] path of the vertex.
-             */
-            TPGActivationVertex(const std::vector<uint64_t>& path) : TPGVertex(path) {}
-
-            /**
              * \brief Specialisation of TPGVertex method to accept only DecisionEdges
              *
              * \param[in] edge the TPGEdge pointer to be added to the outgoingEdges
@@ -71,10 +64,6 @@ namespace TPG {
              */
             virtual void addOutgoingEdge(TPG::TPGEdge* edge) override;
 
-            /**
-             * \brief Specialisation of TPGVertex method to take into account actionEdge that does not have a destination.
-             */
-            virtual void orderOutgoingEdges() override;
             
             /**
              * \brief Get a list to outgoing decision edges of this TPGVertex.

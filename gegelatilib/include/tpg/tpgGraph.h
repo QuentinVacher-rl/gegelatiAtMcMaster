@@ -130,12 +130,10 @@ namespace TPG {
          *
          * The new TPGDecisionVertex is added to the back of the vertices list.
          * The TPGDecisionVertex is created using the TPGFactory of the TPGGraph.
-         *
-         * \param[in] path of the vertex.
          * 
          * \return a const reference to the newly created TPGDecisionVertex.
          */
-        const TPGDecisionVertex& addNewDecisionVertex(const std::vector<uint64_t>& path = {0});
+        const TPGDecisionVertex& addNewDecisionVertex();
 
         /**
          * \brief Create a new TPGActivationVertex and add it to the vertices of the
@@ -143,12 +141,10 @@ namespace TPG {
          *
          * The new TPGActivationVertex is added to the back of the vertices list.
          * The TPGActivationVertex is created using the TPGFactory of the TPGGraph.
-         * 
-         * \param[in] path of the vertex.
          *
          * \return a const reference to the newly created TPGAction.
          */
-        const TPGActivationVertex& addNewActivationVertex(const std::vector<uint64_t>& path = {0});
+        const TPGActivationVertex& addNewActivationVertex();
 
         /**
          * \brief Create a new TPGAgent and add it to the map of species.
@@ -172,6 +168,7 @@ namespace TPG {
          * \param[in] root vertex that represent the root of the species.
          */
         void removeSpecies(const TPG::TPGVertex& root);
+
 
         /**
          * \brief Get the number of TPGVertex contained in the TPGGraph.
@@ -226,7 +223,14 @@ namespace TPG {
          * 
          * \param[in] root root species.
          */
-        const std::list<TPG::TPGAgent*>& getAgentsOfSpecies(TPG::TPGVertex* root);
+        const std::list<const TPG::TPGAgent*>& getAgentsOfSpecies(const TPG::TPGVertex& root);
+
+        /**
+         * \brief return a the number of agents of the specified species.
+         * 
+         * \param[in] root root species.
+         */
+        uint64_t getNbAgentsOfSpecies(const TPG::TPGVertex& root);
 
         /**
          * \brief Check whether a given vertex exists in the TPGGraph.
@@ -269,7 +273,7 @@ namespace TPG {
         /**
          * \brief Remove a TPGAgent from the TPGGraph and destroy it.
          * 
-         * \param[in] vertex a const reference to the TPGAgent to remove.
+         * \param[in] agent a const reference to the TPGAgent to remove.
          */
         void removeAgent(const TPGAgent& agent);
 
@@ -280,6 +284,15 @@ namespace TPG {
          * \return a const reference to the new TPGAgent.
          */
         const TPGAgent& cloneAgent(const TPGAgent& agent);
+
+
+        /**
+         * \brief Change the species of an agent from its origin root species to a new root species.
+         * 
+         * \param[in] agent agent whose species is changed.
+         * \param[in] root new species.
+         */
+        void changeSpecies(const TPG::TPGAgent& agent, const TPG::TPGVertex& root);
 
         /**
          * \brief Add a new TPGDecisionEdge to the TPGGraph.
@@ -338,6 +351,14 @@ namespace TPG {
          * \param[in] prog The Program added to the TPGAgent.
          */
         void setProgramToAgent(const TPGAgent& agent, const TPG::TPGEdge* edge, std::shared_ptr<Program::Program> prog);
+
+        /**
+         * \brief Remove a program to an agent with a give edge
+         * 
+         * \param[in] agent The agent TPGAgent on which a program is removed.
+         * \param[in] edge The edge linked to the program removed to the TPGAgent.
+         */
+        void removeProgramToAgent(const TPGAgent& agent, const TPG::TPGEdge* edge);
 
         /**
          * \brief Get a const reference to the edges of the TPGGraph.
@@ -458,12 +479,6 @@ namespace TPG {
         std::vector<TPG::TPGEdge*> getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge = true);
 
 
-        /**
-         * \brief Order the outgoing edges of the vertex and recursively its outgoing vertex.
-         * 
-         * \param[in] vertex TPG::TPGVertex whose edges are ordered.
-         */
-        void orderOutgoingEdges(const TPG::TPGVertex* vertex);
 
 
 
@@ -484,6 +499,10 @@ namespace TPG {
          */
         std::list<std::unique_ptr<TPGEdge>> edges;
 
+        /**
+         * \brief List of TPGAgent composing the TPGGraph
+         */
+        std::list<TPGAgent*> agents;
 
         /**
          * \brief Unordored Map that stores the species in the graph.
@@ -492,7 +511,8 @@ namespace TPG {
          * The key of the map is the species.
          * The value is a list of a agent that belong to this species.
          */
-        std::unordered_map<const TPGVertex*, std::list<TPGAgent*>> species;
+        std::unordered_map<const TPGVertex*, std::list<const TPGAgent*>> species;
+
 
         /**
          * \brief Find the non-const iterator to a vertex of the graph from

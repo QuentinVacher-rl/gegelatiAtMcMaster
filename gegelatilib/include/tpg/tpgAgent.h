@@ -28,6 +28,11 @@ namespace TPG {
 
         public:
 
+        /**
+         * Main constructor of a TPGAgent.
+         * 
+         * \param[in] rootSp root that indicate the species of the agent
+         */
         TPGAgent(const TPG::TPGVertex* rootSp): rootSpecies{rootSp} {};
 
         /**
@@ -45,7 +50,7 @@ namespace TPG {
          * \param[in] prog the new shared pointer to a Program.
          * \param[in] edge the new edge to the program
          */
-        virtual void setProgram(const TPG::TPGEdge* edgeconst, std::shared_ptr<Program::Program> prog);
+        virtual void setProgram(const TPG::TPGEdge* edge, std::shared_ptr<Program::Program> prog);
 
         /**
          * \brief Get the shared_pointer to the Program.
@@ -53,16 +58,17 @@ namespace TPG {
          * This method is voluntarily non-const to make sure that only the
          * TPGGraph containing the edge can use it.
          *
+         * \param[in] edge TPGEdge linked to the program
          * \return a copy of the program attribute.
          */
-        virtual std::shared_ptr<Program::Program> getProgramSharedPointer(TPG::TPGEdge* edge) const;
+        virtual std::shared_ptr<Program::Program> getProgramSharedPointer(const TPG::TPGEdge* edge) const;
 
         /**
          * \brief erase a pair of edge/program to the programs map.
          * 
          * \param[in] edge the edge to be erased.
          */
-        virtual bool deletePair(TPG::TPGEdge* edge);
+        virtual bool deletePair(const TPG::TPGEdge* edge);
 
         /**
          * \brief return the unordered_map of TPGEdge-Program of the TPGagent.
@@ -73,6 +79,14 @@ namespace TPG {
          * \brief return a const pointer to the TPGVertex* at the root of the species of the TPGAgent.
          */
         virtual const TPG::TPGVertex* getRootSpecies() const;
+
+
+        /**
+         * \brief set a new root species for this agent
+         * 
+         * \param newRoot new root species set.
+         */
+        virtual void setRootSpecies(const TPG::TPGVertex* newRoot);
 
         /**
          * \brief method that return the size of the programs map.

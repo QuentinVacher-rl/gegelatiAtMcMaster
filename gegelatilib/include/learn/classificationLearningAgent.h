@@ -148,13 +148,13 @@ namespace Learn {
     {
         // Only consider the first root of jobs as we are not in adversarial
         // mode
-        const TPG::TPGVertex* root = job.getRoot();
+        const TPG::TPGAgent* agent = job.getAgent();
 
         // Skip the root evaluation process if enough evaluations were already
         // performed. In the evaluation mode only.
         std::shared_ptr<Learn::EvaluationResult> previousEval;
         if (mode == LearningMode::TRAINING &&
-            this->isRootEvalSkipped(*root, previousEval)) {
+            this->isAgentEvalSkipped(*agent, previousEval)) {
             return previousEval;
         }
 
@@ -179,7 +179,7 @@ namespace Learn {
                    nbActions < this->params.maxNbActionsPerEval) {
                 // Get the actions
                 std::vector<double> actionsID =
-                    tee.executeFromRoot(*root, le.getInitActions())
+                    tee.executeFromRoot(*agent, le.getInitActions())
                         .second; // TODO
                 // Do it
                 le.doActions(actionsID);

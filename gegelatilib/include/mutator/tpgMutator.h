@@ -125,7 +125,7 @@ namespace Mutator {
          *
          * \param[in,out] graph the TPGGraph within which the team and edge are
          *                stored.
-         * \param[in] species vector with all the agents of the species
+         * \param[in] species root species
          * \param[in,out] newPrograms List of new Program created during
          *                mutations of the TPGTeam. The behavior of these
          *                Program must be mutated to complete the mutation
@@ -134,7 +134,7 @@ namespace Mutator {
          * \param[in] rng Random Number Generator used in the mutation process.
          */
         bool addEdgeSpecies(TPG::TPGGraph& graph, 
-            std::vector<const TPG::TPGVertex*> species,
+            const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
         /**
@@ -143,7 +143,7 @@ namespace Mutator {
          *
          * \param[in,out] graph the TPGGraph within which the team and edge are
          *                stored.
-         * \param[in] species vector with all the agents of the species
+         * \param[in] species root species
          * \param[in,out] newPrograms List of new Program created during
          *                mutations of the TPGTeam. The behavior of these
          *                Program must be mutated to complete the mutation
@@ -152,7 +152,7 @@ namespace Mutator {
          * \param[in] rng Random Number Generator used in the mutation process.
          */
         bool deleteEdgeSpecies(TPG::TPGGraph& graph, 
-            std::vector<const TPG::TPGVertex*> species,
+            const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
         /**
@@ -161,7 +161,7 @@ namespace Mutator {
          *
          * \param[in,out] graph the TPGGraph within which the team and edge are
          *                stored.
-         * \param[in] species vector with all the agents of the species
+         * \param[in] species root species
          * \param[in,out] newPrograms List of new Program created during
          *                mutations of the TPGTeam. The behavior of these
          *                Program must be mutated to complete the mutation
@@ -170,7 +170,7 @@ namespace Mutator {
          * \param[in] rng Random Number Generator used in the mutation process.
          */
         void changeActionClassSpecies(TPG::TPGGraph& graph, 
-            std::vector<const TPG::TPGVertex*> species,
+            const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
         /**
@@ -179,7 +179,7 @@ namespace Mutator {
          *
          * \param[in,out] graph the TPGGraph within which the team and edge are
          *                stored.
-         * \param[in] species vector with all the agents of the species
+         * \param[in] species root species
          * \param[in,out] newPrograms List of new Program created during
          *                mutations of the TPGTeam. The behavior of these
          *                Program must be mutated to complete the mutation
@@ -188,10 +188,25 @@ namespace Mutator {
          * \param[in] rng Random Number Generator used in the mutation process.
          */
         void extendSpecies(TPG::TPGGraph& graph, 
-            std::vector<const TPG::TPGVertex*> species,
+            const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
 
+            
+        /**
+         * \brief Move random selected agents from a specify species to a new species.
+         * 
+         * A new species is copied from the original species and is return by this function
+         *
+         * \param[in,out] graph the TPGGraph within which the team and edge are
+         *                stored.
+         * \param[in] species root species
+         * \param[in] params Probability parameters for the mutation.
+         * \param[in] rng Random Number Generator used in the mutation process.
+         */
+        const TPG::TPGVertex* moveAgentSpecies(TPG::TPGGraph& graph, 
+            const TPG::TPGVertex* species,
+            const Mutator::MutationParameters& params, Mutator::RNG& rng);
 
         /**
          * \brief Mutate a whole species with the exact same graph mutation.
@@ -199,7 +214,7 @@ namespace Mutator {
          *
          * \param[in,out] graph the TPGGraph within which the team and edge are
          *                stored.
-         * \param[in] species vector with all the agents of the species
+         * \param[in] species root species
          * \param[in,out] newPrograms List of new Program created during
          *                mutations of the TPGTeam. The behavior of these
          *                Program must be mutated to complete the mutation
@@ -208,9 +223,10 @@ namespace Mutator {
          * \param[in] rng Random Number Generator used in the mutation process.
          */
         void mutateSpecies(TPG::TPGGraph& graph, 
-            std::vector<const TPG::TPGVertex*> species,
+            const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
+
 
         /**
          * \brief Copy and mutate a TPGAction vertex 
