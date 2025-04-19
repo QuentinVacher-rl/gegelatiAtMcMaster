@@ -1009,36 +1009,36 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
     // Create an empty list to store Programs to mutate.
     std::list<std::shared_ptr<Program::Program>> newPrograms;
 
+
+    // Copied the vector of root species
+    std::vector<const TPG::TPGVertex *> rootSpecies(graph.getRootVertices());
+
+
     // Get the number of agents.
     size_t currentNumberOfAgents = graph.getNbAgents();
-
-
+    
     for(const TPG::TPGVertex* species: graph.getRootVertices()){
-        std::cout<<"size species "<<graph.getAgentsOfSpecies(*species).size()<<std::endl;
-    }
-
-    for(const TPG::TPGVertex* species: graph.getRootVertices()){
-
 
         // Get current vertex set (copy)
         std::list<const TPG::TPGAgent *> agents(graph.getAgentsOfSpecies(*species));
 
+        // Get the current number of agents
+        size_t currentSizeOfSpecies = agents.size();
+
+        bool useTournamentSelection = graph.getEnvironment().getParams().useTournamentSelection;
+        if (useTournamentSelection) {
+            // The root not set to be deleted are not used during evolution
+            agents.erase(
+                std::remove_if(agents.begin(), agents.end(),
+                            [](const TPG::TPGAgent* agent) -> bool {
+                                return !agent->isToBeDeleted();}),
+                                agents.end());
+        }
+
         if(agents.size()>10){
-            // Get the current number of agents
-            size_t currentSizeOfSpecies = agents.size();
-
-            bool useTournamentSelection = graph.getEnvironment().getParams().useTournamentSelection;
-            if (useTournamentSelection) {
-                // The root not set to be deleted are not used during evolution
-                agents.erase(
-                    std::remove_if(agents.begin(), agents.end(),
-                                [](const TPG::TPGAgent* agent) -> bool {
-                                    return !agent->isToBeDeleted();}),
-                                    agents.end());
-            }
-
 
             // Get the expected size of the species and compute the number of agents to create
+            
             uint64_t expectedSizeOfSpecies = params.tpg.nbRoots * currentSizeOfSpecies / currentNumberOfAgents;
             uint64_t nbAgentsToCreate = expectedSizeOfSpecies - currentSizeOfSpecies + (agents.size() * useTournamentSelection);
 
@@ -1099,25 +1099,20 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                     graph.removeAgent(*agent);
                 }
             }
-        } else {
-            for(auto agent: agents){
-                graph.removeAgent(*agent);
-            }
-            graph.removeSpecies(*species);
-            graph.removeVertex(*species);
-        }
 
+
+        // Do not delete a species at first generation
+        }
 
 
     }
 
 
     double probaMutateSpecies = 1.0;
-    if(probaMutateSpecies > rng.getDouble(0, 1) && nbActions > 0 && nbActions < 10){
+    if(probaMutateSpecies > rng.getDouble(0, 1) && nbActions > 0 && nbActions < 50000){
 
         std::vector<const TPG::TPGVertex*> species(graph.getRootVertices());
 
-        std::cout<<"\n"<<species.size()<<std::endl;
         // The root not set to be deleted are not used during evolution
         species.erase(
             std::remove_if(species.begin(), species.end(),
@@ -1125,13 +1120,12 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                             return graph.getNbAgentsOfSpecies(*root) < 100;}),
                             species.end());
 
-        std::cout<<"\n"<<species.size()<<std::endl;
 
         if(species.size() > 0){
             size_t index = rng.getUnsignedInt64(0, species.size()- 1);
-            std::cout<<"Index hchoosen "<<index<<std::endl;
             // Dupplicate species and copy the new agents
             mutateSpecies(graph, species.at(index), newPrograms, params, rng);
+            
         }
     }
 

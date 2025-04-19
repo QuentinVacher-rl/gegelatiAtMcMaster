@@ -252,7 +252,6 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
     // Remove worst performing roots
     decimateWorstRoots(results);
     // Update the best
-    
     this->updateEvaluationRecords(results);
 
     for (auto logger : loggers) {
@@ -280,6 +279,7 @@ void Learn::LearningAgent::decimateWithTournament(
     std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results)
 {
+
 
     size_t nbAgentsInTournament = results.size() - (params.mutation.tpg.nbRoots * (1-params.ratioDeletedRoots));
 
@@ -323,7 +323,55 @@ void Learn::LearningAgent::decimateWithTournament(
     for (size_t i = 0; i < nbAgentsInTournament && it != results.end(); ++i) {
         this->resultsPerAgent.erase(itDel->second);
         results.erase(itDel++);
-        
+    }
+
+    itDel = results.begin();
+    while(itDel != results.end()) {
+
+        // Get current vertex set (copy)
+        std::list<const TPG::TPGAgent *> agents(tpg->getAgentsOfSpecies(*(*itDel).second->getRootSpecies()));
+
+
+        bool useTournamentSelection = tpg->getEnvironment().getParams().useTournamentSelection;
+        if (useTournamentSelection) {
+            // The root not set to be deleted are not used during evolution
+            agents.erase(
+                std::remove_if(agents.begin(), agents.end(),
+                            [](const TPG::TPGAgent* agent) -> bool {
+                                return !agent->isToBeDeleted();}),
+                                agents.end());
+        }
+
+        if(agents.size() <= 10){
+            this->resultsPerAgent.erase((*itDel).second);
+            tpg->removeAgent(*(*itDel).second); 
+            itDel = results.erase(itDel);         
+        } else {
+            ++itDel;
+        }
+    }
+
+
+    std::vector<const TPG::TPGVertex*> species(tpg->getRootVertices());
+    for(auto root: species){
+        // Get current vertex set (copy)
+        std::list<const TPG::TPGAgent *> agents(tpg->getAgentsOfSpecies(*root));
+
+
+        // Solution temporaire
+        if(agents.size() <= 10){
+
+            bool shouldRemoveSpecies = true;
+            while(!agents.empty()){
+                this->resultsPerAgent.erase(agents.front());
+                tpg->removeAgent(*agents.front());                
+                agents.erase(agents.begin());   
+            }
+
+            tpg->removeSpecies(*root);
+            tpg->removeVertex(*root);
+
+        }
     }
 }
 
@@ -409,6 +457,7 @@ void Learn::LearningAgent::updateEvaluationRecords(
 {
     { // Update resultsPerRoot
         for (auto result : results) {
+
             auto mapIterator = this->resultsPerAgent.find(result.second);
             if (mapIterator == this->resultsPerAgent.end()) {
                 // First time this root is evaluated
