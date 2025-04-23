@@ -294,6 +294,20 @@ namespace Learn {
         virtual void trainOneGeneration(uint64_t generationNumber);
 
         /**
+         * \brief Take the results of each agent, and compute the average score of each species
+         * 
+         * This average score is then standardize.
+         * 
+         * Then a softmax activation is applied on the standardized scores.
+         * 
+         * \param[in] results multimap containing root TPGVertex
+         * associated to their score during an evaluation.
+         */
+        virtual std::unordered_map<const TPG::TPGVertex*, double> computeSoftmaxSpeciesScores(
+            std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
+            results);
+
+        /**
          * \brief Removes from the TPGGraph the root TPGVertex with the worst
          * results with tournament selection.
          *

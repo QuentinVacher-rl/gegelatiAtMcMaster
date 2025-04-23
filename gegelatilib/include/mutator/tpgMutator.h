@@ -169,7 +169,7 @@ namespace Mutator {
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        void changeActionClassSpecies(TPG::TPGGraph& graph, 
+        bool changeActionClassSpecies(TPG::TPGGraph& graph, 
             const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,
             const Mutator::MutationParameters& params, Mutator::RNG& rng);
@@ -303,7 +303,7 @@ namespace Mutator {
         void crossProgram(
             TPG::TPGGraph& graph,
             std::vector<const TPG::TPGAgent*>& childs,
-            TPG::TPGEdge* edge,
+            const TPG::TPGEdge* edge,
             const Mutator::MutationParameters& params,
             Mutator::RNG& rng);
 
@@ -320,7 +320,7 @@ namespace Mutator {
         void crossEdges(
             TPG::TPGGraph& graph,
             std::vector<const TPG::TPGAgent*>& childs,
-            std::vector<TPG::TPGEdge*>& edges,
+            std::vector<const TPG::TPGEdge*>& edges,
             const Mutator::MutationParameters& params,
             Mutator::RNG& rng);
 

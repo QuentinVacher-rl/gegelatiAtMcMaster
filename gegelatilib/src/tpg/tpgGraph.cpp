@@ -777,8 +777,8 @@ std::vector<const TPG::TPGVertex*> TPG::TPGGraph::getVerticesOfRoot(const TPG::T
     return vertices;
 }
 
-std::vector<TPG::TPGEdge*> TPG::TPGGraph::getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge){
-    std::vector<TPG::TPGEdge*> edges;
+std::vector<const TPG::TPGEdge*> TPG::TPGGraph::getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge){
+    std::vector<const TPG::TPGEdge*> edges;
 
     // Get all the vertices of this root
     std::vector<const TPG::TPGVertex*> vertices = getVerticesOfRoot(root);

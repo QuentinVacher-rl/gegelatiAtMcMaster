@@ -275,102 +275,174 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
     }
 }
 
+std::unordered_map<const TPG::TPGVertex*, double> Learn::LearningAgent::computeSoftmaxSpeciesScores(
+    std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
+    results)
+{
+    double averageScores = 0;
+    double stdScores = 0;
+    double expSumScores = 0;
+    
+    // Get the average score of each species
+    std::unordered_map<const TPG::TPGVertex*, double> scoreSpecies;
+
+
+    // Fill the map with root species.
+    for(auto vertex: tpg->getRootVertices()){
+        scoreSpecies.insert({vertex, 0.0});
+    }
+    // Compute the sum of results.
+    for(auto& pair: results){
+        scoreSpecies[pair.second->getRootSpecies()] += pair.first->getResult();
+    }
+    // Divide by the number of agents to the average, while getting the sum of the scores.
+    for(auto& pair: scoreSpecies){
+        pair.second /= tpg->getNbAgentsOfSpecies(*pair.first);
+
+        averageScores += pair.second;
+    }
+    averageScores /= scoreSpecies.size();
+
+    for(auto& pair: scoreSpecies){
+        stdScores += std::pow(averageScores - pair.second, 2);
+    }
+
+    // Standardize the scores and get the sum of exponential scores
+    for (auto& pair: scoreSpecies){
+        pair.second = (pair.second - stdScores) / averageScores;
+        expSumScores += std::exp(pair.second);
+    }
+
+    // Apply softmax on the scores
+    for (auto& pair: scoreSpecies){
+        pair.second = std::exp(pair.second) / expSumScores;
+    }
+
+    return scoreSpecies;
+}
+
 void Learn::LearningAgent::decimateWithTournament(
     std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>&
         results)
 {
 
 
-    size_t nbAgentsInTournament = results.size() - (params.mutation.tpg.nbRoots * (1-params.ratioDeletedRoots));
 
-    // Create subVector of results without the best agents.
-    std::vector<std::pair<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>> elements;
-    auto it = results.begin();
-    for (size_t i = 0; i < nbAgentsInTournament && it != results.end(); ++i) {
-        elements.push_back(*it++);
+    auto scoreSpecies = computeSoftmaxSpeciesScores(results);
+
+    bool deleteMin = scoreSpecies.size() == 8;
+    double min = 1;
+    const TPG::TPGVertex* minVertex;
+    if(deleteMin){
+        for(auto& pair: scoreSpecies){
+            if(min > pair.second){
+                pair.second = min;
+                minVertex = pair.first;
+            }
+        }
     }
 
-    for (size_t i = 0; i < nbAgentsInTournament; i += params.sizeTournament) {
-        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*> subMap;
-        
-        // Fill subMap with a size corresponding to the hardness of the tournament.
-        for (size_t j = i; j < i + params.sizeTournament && j < nbAgentsInTournament; ++j) {
 
-            uint64_t index = rng.getUnsignedInt64(0, elements.size() - 1);
+    for(auto& pair: scoreSpecies){
 
-            subMap.insert(elements[index]);
+        if(pair.second < 0.1 || (deleteMin && pair.first == minVertex)){ // Don't forget to add an incremental value for letting a new species survive
 
-            elements.erase(elements.begin() + index);
+            // Score of the species is to low, species is removed
+            auto agents = tpg->getAgentsOfSpecies(*pair.first);
+            while(agents.size() > 0){
+                const TPG::TPGAgent* agent = agents.front();
+
+                for(auto it = results.begin(); it != results.end(); ){
+                    if((*it).second == agent){
+                        it = results.erase(it);
+                        break;
+                    } else {
+                        it++;
+                    }
+                }
+
+                this->resultsPerAgent.erase(agent);
+                tpg->removeAgent(*agent);
+                agents.pop_front();
+
+
+            }
+            tpg->removeSpecies(*pair.first);
+            tpg->removeVertex(*pair.first);
         }
 
-        // After the subMap is filled, erased the worse results from it, from the graph, and from the original results.
-        while(subMap.size() != 1){
-            tpg->removeAgent(*subMap.begin()->second);
+    }
 
+    // If the size is differnt, it mean some species have been deleted, a new softmax score need to be computed.
+    if(scoreSpecies.size() != tpg->getNbRootVertices()){
+        scoreSpecies = computeSoftmaxSpeciesScores(results);
+    }
 
-            auto itRes = results.find(subMap.begin()->first);
-            auto range = results.equal_range(subMap.begin()->first);
+    std::vector<std::pair<const TPG::TPGVertex*, std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>>> resultsAllSpecies;
+    for(const TPG::TPGVertex* species: tpg->getRootVertices()){
 
-            subMap.erase(subMap.begin());
+        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*> resultsSpecies;
+        for(auto& r : results) {
+            if(r.second->getRootSpecies() == species) {
+                resultsSpecies.insert(r);
+            }
+        }
+        resultsAllSpecies.push_back({species, resultsSpecies});
+    }
+
+    for(auto& pair: resultsAllSpecies){
+
+        const TPG::TPGVertex* species = pair.first;
+        // Get the results of this species only
+        std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>& resultsSpecies = pair.second;
+
+        size_t nbAgentsInTournament = resultsSpecies.size() * params.ratioDeletedRoots;
+
+        // Create subVector of results without the best agents.
+        std::vector<std::pair<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>> elements;
+        auto it = resultsSpecies.begin();
+        for (size_t i = 0; i < nbAgentsInTournament; ++i) {
+            elements.push_back(*it++);
+        }
+
             
-        }
-        
-        tpg->setToBeDeleted(*subMap.begin()->second);
-    }
+        for (size_t i = 0; i < nbAgentsInTournament; i += params.sizeTournament) {
+            std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*> subMap;
+            
+            // Fill subMap with a size corresponding to the hardness of the tournament.
+            for (size_t j = i; j < i + params.sizeTournament && j < nbAgentsInTournament; ++j) {
 
-    // Delete from results and resultsPerRoot
-    auto itDel = results.begin();
-    for (size_t i = 0; i < nbAgentsInTournament && it != results.end(); ++i) {
-        this->resultsPerAgent.erase(itDel->second);
-        results.erase(itDel++);
-    }
-
-    itDel = results.begin();
-    while(itDel != results.end()) {
-
-        // Get current vertex set (copy)
-        std::list<const TPG::TPGAgent *> agents(tpg->getAgentsOfSpecies(*(*itDel).second->getRootSpecies()));
-
-
-        bool useTournamentSelection = tpg->getEnvironment().getParams().useTournamentSelection;
-        if (useTournamentSelection) {
-            // The root not set to be deleted are not used during evolution
-            agents.erase(
-                std::remove_if(agents.begin(), agents.end(),
-                            [](const TPG::TPGAgent* agent) -> bool {
-                                return !agent->isToBeDeleted();}),
-                                agents.end());
-        }
-
-        if(agents.size() <= 10){
-            this->resultsPerAgent.erase((*itDel).second);
-            tpg->removeAgent(*(*itDel).second); 
-            itDel = results.erase(itDel);         
-        } else {
-            ++itDel;
-        }
-    }
-
-
-    std::vector<const TPG::TPGVertex*> species(tpg->getRootVertices());
-    for(auto root: species){
-        // Get current vertex set (copy)
-        std::list<const TPG::TPGAgent *> agents(tpg->getAgentsOfSpecies(*root));
-
-
-        // Solution temporaire
-        if(agents.size() <= 10){
-
-            bool shouldRemoveSpecies = true;
-            while(!agents.empty()){
-                this->resultsPerAgent.erase(agents.front());
-                tpg->removeAgent(*agents.front());                
-                agents.erase(agents.begin());   
+                uint64_t index = rng.getUnsignedInt64(0, elements.size() - 1);
+                subMap.insert(elements[index]);
+                elements.erase(elements.begin() + index);
             }
 
-            tpg->removeSpecies(*root);
-            tpg->removeVertex(*root);
+            // After the subMap is filled, erased the worse results from it, from the graph, and from the original results.
+            while(subMap.size() != 1){
+                tpg->removeAgent(*subMap.begin()->second);
+                subMap.erase(subMap.begin());
+                
+            }
+            
+            tpg->setToBeDeleted(*subMap.begin()->second);
+        }
 
+        // Delete from results and resultsPerRoot
+        auto itDel = resultsSpecies.begin();
+        for (size_t i = 0; i < nbAgentsInTournament && itDel != resultsSpecies.end(); ++i) {
+            this->resultsPerAgent.erase(itDel->second);
+            for (auto it = results.begin(); it != results.end(); ) {
+                if (it->second == itDel->second)
+                    it = results.erase(it);
+                else
+                    ++it;
+            }
+            itDel++;
+        }
+
+        itDel = resultsSpecies.begin();
+        while(resultsSpecies.size() > 0){
+            itDel = resultsSpecies.erase(itDel);
         }
     }
 }

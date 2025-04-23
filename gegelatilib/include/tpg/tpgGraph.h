@@ -476,7 +476,7 @@ namespace TPG {
          * \param[in] root root used.
          * \param[in] getConnectionEdge boolean to indicate if connectionEdge must be collected too.
          */
-        std::vector<TPG::TPGEdge*> getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge = true);
+        std::vector<const TPG::TPGEdge*> getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge = true);
 
 
 
