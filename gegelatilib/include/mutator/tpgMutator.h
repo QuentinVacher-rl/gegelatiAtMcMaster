@@ -169,24 +169,7 @@ namespace Mutator {
          * \param[in] params Probability parameters for the mutation.
          * \param[in] rng Random Number Generator used in the mutation process.
          */
-        bool changeActionClassSpecies(TPG::TPGGraph& graph, 
-            const TPG::TPGVertex* species,
-            std::list<std::shared_ptr<Program::Program>>& newPrograms,
-            const Mutator::MutationParameters& params, Mutator::RNG& rng);
-        /**
-         * \brief Mutate a whole species with the exact extension of graph.
-         *
-         *
-         * \param[in,out] graph the TPGGraph within which the team and edge are
-         *                stored.
-         * \param[in] species root species
-         * \param[in,out] newPrograms List of new Program created during
-         *                mutations of the TPGTeam. The behavior of these
-         *                Program must be mutated to complete the mutation
-         *                process.
-         * \param[in] params Probability parameters for the mutation.
-         * \param[in] rng Random Number Generator used in the mutation process.
-         */
+
         void extendSpecies(TPG::TPGGraph& graph, 
             const TPG::TPGVertex* species,
             std::list<std::shared_ptr<Program::Program>>& newPrograms,

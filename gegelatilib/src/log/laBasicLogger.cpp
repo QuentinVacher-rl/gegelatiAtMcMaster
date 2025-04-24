@@ -73,7 +73,7 @@ void Log::LABasicLogger::logHeader()
 
     // Second line of header
     //*this << std::right;
-    *this << std::setw(colWidth) << "Gen" << std::setw(colWidth) << "NbVert"
+    *this << std::setw(colWidth) << "Gen" << std::setw(2*colWidth) << "NbVert"
           << std::setw(colWidth) << "NbActR" << std::setw(colWidth) << "NbTeamR"
           << std::setw(colWidth) << "Min" << std::setw(colWidth) << "Avg"
           << std::setw(colWidth) << "Max";
@@ -152,5 +152,5 @@ void Log::LABasicLogger::logEndOfTraining()
     if (doValidation) {
         *this << std::setw(colWidth) << validTime;
     }
-    *this << std::setw(colWidth) << getDurationFrom(*start) << std::endl;
+    *this << std::setw(colWidth) << getDurationFrom(*start);
 }

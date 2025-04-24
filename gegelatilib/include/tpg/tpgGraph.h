@@ -479,6 +479,13 @@ namespace TPG {
         std::vector<const TPG::TPGEdge*> getEdgesOfRoot(const TPG::TPGVertex* root, bool getConnectionEdge = true);
 
 
+        /**
+         * \brief Set the new proportion of the species in the whole population
+         * 
+         * \param[in] species on which a new proportion is set.
+         * \param[in] prop new proportion set
+         */
+        virtual void setProportionOfSpecies(const TPG::TPGVertex& species, double prop);
 
 
 

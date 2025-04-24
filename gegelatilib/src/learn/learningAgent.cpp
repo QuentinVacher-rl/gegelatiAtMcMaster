@@ -273,6 +273,12 @@ void Learn::LearningAgent::trainOneGeneration(uint64_t generationNumber)
     for (auto logger : loggers) {
         logger.get().logEndOfTraining();
     }
+
+    for(auto v: tpg->getRootVertices()){
+        std::cout<<" "<<v->getProportionSpecies()<<" - ";
+    }
+    std::cout<<std::endl;
+
 }
 
 std::unordered_map<const TPG::TPGVertex*, double> Learn::LearningAgent::computeSoftmaxSpeciesScores(
@@ -306,17 +312,23 @@ std::unordered_map<const TPG::TPGVertex*, double> Learn::LearningAgent::computeS
     for(auto& pair: scoreSpecies){
         stdScores += std::pow(averageScores - pair.second, 2);
     }
+    stdScores = std::sqrt(stdScores / scoreSpecies.size());
 
+    //std::cout<<"\nAverage results with std and average : "<<stdScores<<" "<<averageScores<<std::endl;;
     // Standardize the scores and get the sum of exponential scores
     for (auto& pair: scoreSpecies){
+        //std::cout<<pair.second<<" ";
         pair.second = (pair.second - stdScores) / averageScores;
+        //std::cout<<pair.second<<" - ";
         expSumScores += std::exp(pair.second);
     }
-
+    //std::cout<<"\nSoftmax results with expSum : "<<expSumScores<<std::endl;
     // Apply softmax on the scores
     for (auto& pair: scoreSpecies){
         pair.second = std::exp(pair.second) / expSumScores;
+        //std::cout<<pair.second<<" ";
     }
+    //std::cout<<std::endl;
 
     return scoreSpecies;
 }
@@ -336,7 +348,7 @@ void Learn::LearningAgent::decimateWithTournament(
     if(deleteMin){
         for(auto& pair: scoreSpecies){
             if(min > pair.second){
-                pair.second = min;
+                min = pair.second;
                 minVertex = pair.first;
             }
         }
@@ -345,7 +357,8 @@ void Learn::LearningAgent::decimateWithTournament(
 
     for(auto& pair: scoreSpecies){
 
-        if(pair.second < 0.1 || (deleteMin && pair.first == minVertex)){ // Don't forget to add an incremental value for letting a new species survive
+        if(pair.second < 0.1 || (deleteMin && pair.first == minVertex && false)){ // Don't forget to add an incremental value for letting a new species survive
+
 
             // Score of the species is to low, species is removed
             auto agents = tpg->getAgentsOfSpecies(*pair.first);
@@ -377,9 +390,11 @@ void Learn::LearningAgent::decimateWithTournament(
     if(scoreSpecies.size() != tpg->getNbRootVertices()){
         scoreSpecies = computeSoftmaxSpeciesScores(results);
     }
-
     std::vector<std::pair<const TPG::TPGVertex*, std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*>>> resultsAllSpecies;
     for(const TPG::TPGVertex* species: tpg->getRootVertices()){
+
+        // Set the proportion of the species.
+        tpg->setProportionOfSpecies(*species, scoreSpecies.at(species));
 
         std::multimap<std::shared_ptr<EvaluationResult>, const TPG::TPGAgent*> resultsSpecies;
         for(auto& r : results) {

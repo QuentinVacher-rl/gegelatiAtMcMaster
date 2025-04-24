@@ -84,32 +84,35 @@ void Mutator::TPGMutator::initRandomTPG(
     graph.clear();
 
 
+    for(size_t indexSpecies = 0; indexSpecies < 1; indexSpecies++){
+        // Create only one species for now, with one activation vertex and nbActionEdgeInit actionEdge.
+        const TPG::TPGActivationVertex& vertex = graph.addNewActivationVertex();
+        for(size_t actionValue = 0; actionValue < nbActionEdgeInit; actionValue++){
+            graph.addNewActionEdge(vertex, actionValue+indexSpecies);
+        }
+        graph.addSpecies(vertex);
+        graph.setProportionOfSpecies(vertex, 1.0);
 
-    // Create only one species for now, with one activation vertex and nbActionEdgeInit actionEdge.
-    const TPG::TPGActivationVertex& vertex = graph.addNewActivationVertex();
-    for(size_t actionValue = 0; actionValue < nbActionEdgeInit; actionValue++){
-        graph.addNewActionEdge(vertex, actionValue);
-    }
-    graph.addSpecies(vertex);
-
-    // Create agents
-    for(size_t indexAgent = 0; indexAgent < params.tpg.nbRoots; indexAgent++){
-        
-        const TPG::TPGAgent& agent = graph.addNewAgent(vertex);
-
-        for(auto edge: vertex.getOutgoingEdges()){
-
+        // Create agents
+        for(size_t indexAgent = 0; indexAgent < params.tpg.nbRoots; indexAgent++){
             
-            // Create a program and specify action program
-            std::shared_ptr<Program::Program> prog =
-                std::make_shared<Program::Program>(graph.getEnvironment(),
-                                                   true);
+            const TPG::TPGAgent& agent = graph.addNewAgent(vertex);
 
-            // RandomInit the Programs.
-            Mutator::ProgramMutator::initRandomProgram(*prog, params, rng);
+            for(auto edge: vertex.getOutgoingEdges()){
 
-            // Add the program to the agent.
-            graph.setProgramToAgent(agent, edge, prog);
+                
+                // Create a program and specify action program
+                std::shared_ptr<Program::Program> prog =
+                    std::make_shared<Program::Program>(graph.getEnvironment(),
+                                                    true);
+
+                // RandomInit the Programs.
+                Mutator::ProgramMutator::initRandomProgram(*prog, params, rng);
+
+                // Add the program to the agent.
+                graph.setProgramToAgent(agent, edge, prog);
+            }
+
         }
 
     }
@@ -439,13 +442,8 @@ bool Mutator::TPGMutator::deleteEdgeSpecies(TPG::TPGGraph& graph,
 
     
 }
-bool Mutator::TPGMutator::changeActionClassSpecies(TPG::TPGGraph& graph, 
-    const TPG::TPGVertex* species,
-    std::list<std::shared_ptr<Program::Program>>& newPrograms,
-    const Mutator::MutationParameters& params, Mutator::RNG& rng)
-{
-    
-}
+
+
 void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph, 
     const TPG::TPGVertex* species,
     std::list<std::shared_ptr<Program::Program>>& newPrograms,
@@ -540,10 +538,9 @@ void Mutator::TPGMutator::extendSpecies(TPG::TPGGraph& graph,
         // Erase the edge and increase probability
         actionEdges.erase(itEdges);
         proba *= probaExtendActionEdge;
-
-
     }
 }
+
 
 const TPG::TPGVertex* Mutator::TPGMutator::moveAgentSpecies(TPG::TPGGraph& graph, 
     const TPG::TPGVertex* species,
@@ -610,38 +607,39 @@ void Mutator::TPGMutator::mutateSpecies(TPG::TPGGraph& graph,
     
 
     double probaAddEdge = 1.0;
-    double probaDeletionEdge = 1.0;
-    double probaChangeActionClass = 0.0;
-    double probaExtension = 0.1;
+    double probaDeletionEdge = 0.8;
+    double probaExtension = 0.5;
 
     bool success = false;
-    while(!success){
-        double mutationValue = rng.getDouble(0.0, probaAddEdge + probaDeletionEdge + probaChangeActionClass + probaExtension);
+    while(!success && probaAddEdge + probaDeletionEdge + probaExtension > 0){
+        double mutationValue = rng.getDouble(0.0, probaAddEdge + probaDeletionEdge + probaExtension);
 
 
         if(probaAddEdge > mutationValue){
-            std::cout<<" Add  ";
+
             success = addEdgeSpecies(graph, newSpecies, newPrograms, params, rng);
 
             if(!success){
                 probaAddEdge = 0.0;
             }
+            if(success){
+                std::cout<<"  Add     ";
+            }
         } else if(probaAddEdge + probaDeletionEdge > mutationValue){
-            std::cout<<" Delete  ";
+
             success = deleteEdgeSpecies(graph, newSpecies, newPrograms, params, rng);
             if(!success){
                 probaDeletionEdge = 0.0;
             }
-        } else if(probaAddEdge + probaDeletionEdge + probaChangeActionClass > mutationValue){
-            std::cout<<" Change  ";
-            success = changeActionClassSpecies(graph, newSpecies, newPrograms, params, rng);
-            if(!success){
-                probaDeletionEdge = 0.0;
+            if(success){
+                std::cout<<"  Delete  ";
             }
         } else {
-            std::cout<<" Extend  ";
             extendSpecies(graph, newSpecies, newPrograms, params, rng);
             success = true;
+            if(success){
+                std::cout<<"  Extend  ";
+            }
         }
 
     }
@@ -660,6 +658,9 @@ void Mutator::TPGMutator::mutateTPGVertex(
 
     auto agentPrograms = agent.getPrograms();
 
+    auto edges = graph.getEdgesOfRoot(agent.getRootSpecies(), false);
+
+    // TODO add swap of edges
 
     bool anyMutationDone = false;
     do {
@@ -667,36 +668,71 @@ void Mutator::TPGMutator::mutateTPGVertex(
         uint64_t index;
         // 4. mutate randomly selected program on action Edge. 
         double proba = params.tpg.pMutateActionProgram;
-        while(indexUsed.size() < agentPrograms.size()  && proba > rng.getDouble(0.0, 1.0)){
+        while(indexUsed.size() < edges.size()  && proba > rng.getDouble(0.0, 1.0)){
 
             // Search an index not alreay used
             do {
-                index = rng.getUnsignedInt64(0, agentPrograms.size()-1);
+                index = rng.getUnsignedInt64(0, edges.size()-1);
             } while(std::find(indexUsed.begin(), indexUsed.end(), index) != indexUsed.end()) ;
 
             // Save the index to avoid using it again
             indexUsed.push_back(index);
     
             // Get the search pair
-            auto iter = agentPrograms.begin();
+            auto iter = edges.begin();
             std::advance(iter, index);
-            auto pair = *iter;
+            auto edge = *iter;
 
             // copy program
             std::shared_ptr<Program::Program> newProg(
-                new Program::Program(*pair.second, pair.second->isActionProgram()));
+                new Program::Program(*agentPrograms.at(edge), agentPrograms.at(edge)->isActionProgram()));
 
             // Add it to the list of new Program to be mutated.
             newPrograms.push_back(newProg);
 
             // Set the new program to this agent
-            graph.setProgramToAgent(agent, pair.first, pair.second);
+            graph.setProgramToAgent(agent, edge, newProg);
 
             // Decrease the probability of mutation a new edge.
             proba *= params.tpg.pMutateActionProgram;
             anyMutationDone = true;
         }
+
+        proba = 0.8;
+        size_t nbSwapped = 0;
+        while(edges.size() > 1 + nbSwapped && proba > rng.getDouble(0.0, 1.0)){
+
+            size_t index1 = rng.getUnsignedInt64(0, edges.size() - 1);
+            size_t index2 = rng.getUnsignedInt64(0, edges.size() - 2);
+
+            if(index1 == index2){
+                index2++;
+            }
+    
+            // Get the search pair
+            auto iter = edges.begin();
+            std::advance(iter, std::min(index1, index2));
+            auto edge1 = *iter;
+            auto prog1 = agentPrograms.at(edge1);
+
+            std::advance(iter, std::max(index1, index2) - std::min(index1, index2));
+            auto edge2 = *iter;
+            auto prog2 = agentPrograms.at(edge2);
+
+            // Set the new program to this agent
+            graph.setProgramToAgent(agent, edge1, prog2);
+            graph.setProgramToAgent(agent, edge2, prog1);
+
+            // Decrease the probability of mutation a new edge.
+            proba *= 0.8;
+            nbSwapped++;
+            anyMutationDone = true;
+        }
+
+
     } while (!anyMutationDone && params.tpg.pMutateActionProgram != 0.0);
+
+
 
 
 }
@@ -992,13 +1028,8 @@ void Mutator::TPGMutator::crossTPGAgents(
         proba *= params.tpg.probaCrossPrograms;
     }
 
-
-
-
-    
-
-
 }
+
 
 void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                                       const Archive& archive,
@@ -1016,7 +1047,6 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
 
     // Get the number of agents.
     size_t currentNumberOfAgents = graph.getNbAgents();
-    
     for(const TPG::TPGVertex* species: graph.getRootVertices()){
 
         // Get current vertex set (copy)
@@ -1035,11 +1065,9 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                                 agents.end());
         }
 
-        if(agents.size()>10){
-
+        if(agents.size() > 2){
             // Get the expected size of the species and compute the number of agents to create
-            
-            uint64_t expectedSizeOfSpecies = params.tpg.nbRoots * currentSizeOfSpecies / currentNumberOfAgents;
+            uint64_t expectedSizeOfSpecies = params.tpg.nbRoots * species->getProportionSpecies();
             uint64_t nbAgentsToCreate = expectedSizeOfSpecies - currentSizeOfSpecies + (agents.size() * useTournamentSelection);
 
 
@@ -1092,24 +1120,21 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
                 nbAgentsCreated += 2;
             }
 
-
-
-            for(auto agent: agents){
-                if(agent->isToBeDeleted()){
-                    graph.removeAgent(*agent);
-                }
-            }
-
-
-        // Do not delete a species at first generation
         }
+        
 
 
+
+        for(auto agent: agents){
+            if(agent->isToBeDeleted()){
+                graph.removeAgent(*agent);
+            }
+        }
     }
 
 
-    double probaMutateSpecies = 1;
-    if(probaMutateSpecies > rng.getDouble(0, 1) && nbActions > 0 && nbActions < 50000 && graph.getNbRootVertices() < 8){
+    double probaMutateSpecies = 0.1;
+    if(probaMutateSpecies > rng.getDouble(0, 1) && nbActions > 0 && nbActions < 0 && graph.getNbRootVertices() < 8){
 
         std::vector<const TPG::TPGVertex*> species(graph.getRootVertices());
 
@@ -1117,7 +1142,7 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
         species.erase(
             std::remove_if(species.begin(), species.end(),
                         [&graph](const TPG::TPGVertex* root) -> bool {
-                            return graph.getNbAgentsOfSpecies(*root) < 100;}),
+                            return root->getProportionSpecies() < 0.3;}),
                             species.end());
 
 
@@ -1125,8 +1150,11 @@ void Mutator::TPGMutator::populateTPG(TPG::TPGGraph& graph,
             size_t index = rng.getUnsignedInt64(0, species.size()- 1);
             // Dupplicate species and copy the new agents
             mutateSpecies(graph, species.at(index), newPrograms, params, rng);
-            
+        } else {
+            std::cout<<"  Nothing ";
         }
+    } else {
+        std::cout<<"  Nothing ";
     }
 
     // Mutate the new Programs

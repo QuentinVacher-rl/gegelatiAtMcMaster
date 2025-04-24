@@ -135,7 +135,17 @@ namespace TPG {
          */
         virtual bool hasSameAssessedActions(std::set<uint64_t> actions) const;
 
+        /**
+         * \brief return the proportion of the species in the whole population
+         */
+        virtual double getProportionSpecies() const;
 
+        /**
+         * \brief Set the new proportion of the species in the whole population
+         * 
+         * \param[in] prop new proportion.
+         */
+        virtual void setProportionSpecies(double prop);
 
 
       protected:
@@ -155,6 +165,11 @@ namespace TPG {
          * \brief Set of assessed actions by the team
          */
         std::set<uint64_t> assessedActions;
+
+        /**
+         * \brief If this vertex is a species root, this value is the proportion of the species in the population
+         */       
+        double proportionSpecies;
 
     };
 }; // namespace TPG

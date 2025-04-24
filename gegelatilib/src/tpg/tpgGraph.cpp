@@ -796,3 +796,19 @@ std::vector<const TPG::TPGEdge*> TPG::TPGGraph::getEdgesOfRoot(const TPG::TPGVer
     return edges;
 }
 
+
+void TPG::TPGGraph::setProportionOfSpecies(const TPG::TPGVertex& species, double prop)
+{
+    // Find the vertex to get the non-const reference
+    auto it = this->findVertex(&species);
+    if (it != this->vertices.end()) {
+        if((*it)->getIncomingEdges().size() == 0){
+            (*it)->setProportionSpecies(prop);
+        } else {
+            throw std::runtime_error("Cannot change a proportion of a vertex not root");
+        }
+
+    } else {
+        throw std::runtime_error("Cannot change a proportion of a species not in the graph");
+    }
+}

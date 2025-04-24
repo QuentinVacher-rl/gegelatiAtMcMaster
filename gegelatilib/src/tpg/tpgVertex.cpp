@@ -101,3 +101,13 @@ bool TPG::TPGVertex::hasSameAssessedActions(std::set<uint64_t> actions) const {
 
     return !intersectionResult.empty();
 }
+
+double TPG::TPGVertex::getProportionSpecies() const
+{
+    return proportionSpecies;
+}
+
+void TPG::TPGVertex::setProportionSpecies(double prop)
+{
+    this->proportionSpecies = prop;
+}
